@@ -22,7 +22,7 @@ pip install h5py
 python recipes/LibriSpeech/ASR/transformer/hparams/speechllm_e2e.yaml \
     --seed 42 \
     --data_folder /path/to/LibriSpeech \
-    --train_splits='["train-clean-100"] \
+    --train_splits='["train-clean-100"]' \
     --output_folder ./results/speechllm_e2e/42/ls960 \
     --ssl_hub microsoft/wavlm-large \
     --ssl_folder ssl_checkpoints \
