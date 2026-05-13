@@ -42,10 +42,12 @@ ssl_hub: !PLACEHOLDER
 ssl_folder: !ref <save_folder>/ssl_checkpoint
 ssl_frozen: True
 ssl_device: cuda
+ssl_output_norm: True
 use_feats: False
 # LLM Configuration
 llm_path: !PLACEHOLDER
 llm_emb_size: 2048
+llm_save_path: !ref <save_folder>
 
 ####################### Training Hyperparameters ###########################
 
@@ -146,7 +148,7 @@ normalize: !new:speechbrain.processing.features.InputNormalization
 
 ssl: !new:speechbrain.integrations.huggingface.wav2vec2.Wav2Vec2
     source: !ref <ssl_hub>
-    output_norm: True
+    output_norm: !ref <ssl_output_norm>
     freeze: !ref <ssl_frozen>
     save_path: !ref <ssl_folder>
     device_map: !ref <ssl_device>
@@ -164,7 +166,7 @@ proj: !new:speechbrain.lobes.models.VanillaNN.VanillaNN
 
 backbone_llm: !new:speechbrain.integrations.huggingface.llama.LLaMA
     source: !ref <llm_path>
-    save_path: !ref <save_folder>
+    save_path: !ref <llm_save_path>
     freeze: True
     attn_implementation: sdpa
     device: cuda

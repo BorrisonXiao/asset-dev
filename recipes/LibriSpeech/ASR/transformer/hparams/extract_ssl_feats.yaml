@@ -30,13 +30,14 @@ device: cuda
 ssl_hub: !PLACEHOLDER
 ssl_folder: !ref <save_folder>/ssl_checkpoint
 ssl_frozen: True
+ssl_output_norm: True
 
 ####################### Model Components ####################################
 normalize: !new:speechbrain.processing.features.InputNormalization
     norm_type: sentence
 ssl: !new:speechbrain.integrations.huggingface.wav2vec2.Wav2Vec2
     source: !ref <ssl_hub>
-    output_norm: True
+    output_norm: !ref <ssl_output_norm>
     freeze: !ref <ssl_frozen>
     save_path: !ref <ssl_folder>
     device_map: !ref <device>

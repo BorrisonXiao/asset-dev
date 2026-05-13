@@ -39,6 +39,7 @@ test_csv:
 # LLM Configuration
 llm_path: !PLACEHOLDER  # e.g., /path/to/meta-llama/Llama-3.2-1B
 llm_emb_size: 2048
+llm_save_path: !ref <save_folder>
 
 ####################### Training Hyperparameters ###########################
 
@@ -150,7 +151,7 @@ proj: !new:speechbrain.lobes.models.VanillaNN.VanillaNN
 
 backbone_llm: !new:speechbrain.integrations.huggingface.llama.LLaMA
     source: !ref <llm_path>
-    save_path: !ref <save_folder>
+    save_path: !ref <llm_save_path>
     freeze: True
     attn_implementation: sdpa
     device: cuda
