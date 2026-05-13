@@ -31,7 +31,9 @@ python recipes/LibriSpeech/ASR/transformer/hparams/speechllm_e2e.yaml \
     --llm_emb_size 2048 \
     --bos_index 128000 \
     --eos_index 128001 \
-    --pad_token 128004
+    --pad_token 128004 \
+    --max_batch_length_train 200 \
+    --grad_accumulation_factor 10
 ```
 
 2. End-to-end training on 960hrs:
