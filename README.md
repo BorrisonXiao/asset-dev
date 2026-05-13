@@ -17,7 +17,24 @@ pip install h5py
 
 ### Speech Encoder + LLM for ASR on LibriSpeech
 
-1. End-to-end training:
+1. Quickstart: end-to-end training with 100hrs of LibriSpeech using WavLM Large and Llama 3.2 1B
+```bash
+python recipes/LibriSpeech/ASR/transformer/hparams/speechllm_e2e.yaml \
+    --seed 42 \
+    --data_folder /path/to/LibriSpeech \
+    --train_splits='["train-clean-100"] \
+    --output_folder ./results/speechllm_e2e/42/ls960 \
+    --ssl_hub microsoft/wavlm-large \
+    --ssl_folder ssl_checkpoints \
+    --ssl_feat_dims 1024 \
+    --llm_path meta-llama/Llama-3.2-1B \
+    --llm_emb_size 2048 \
+    --bos_index 128000 \
+    --eos_index 128001 \
+    --pad_token 128004
+```
+
+2. End-to-end training on 960hrs:
 ```bash
 python recipes/LibriSpeech/ASR/transformer/train_speechllm.py \
     recipes/LibriSpeech/ASR/transformer/hparams/speechllm_e2e.yaml \
@@ -50,7 +67,7 @@ python recipes/LibriSpeech/ASR/transformer/train_speechllm.py \
 # 4. Use original LLM without LoRA adapters
     # --llm='!ref <backbone_llm>' \
 ```
-2. Precompute SSL features, then train LLM:
+3. Precompute SSL features, then train LLM on 960hrs:
 ```bash
 python recipes/LibriSpeech/ASR/transformer/extract_ssl_feats.py \
     recipes/LibriSpeech/ASR/transformer/hparams/extract_ssl_feats.yaml \
