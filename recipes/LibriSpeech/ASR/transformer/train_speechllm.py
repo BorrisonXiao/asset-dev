@@ -441,7 +441,8 @@ def dataio_prepare(hparams, tokenizer):
         """Process text through tokenization pipeline.
 
         Creates the following sequence structure:
-        tokens_bos: [<|start_of_audio|>, <|end_of_audio|>, prompt_tokens, <bos>, text_tokens]
+        tokens_bos: [<|start_of_audio|>, <|end_of_audio|>, prompt_tokens, <bos>?, text_tokens]
+        (<bos> is omitted when bos_index is None, e.g. for tokenizers with no BOS token)
         tokens_eos: [text_tokens, <eos>]
 
         Arguments
@@ -471,7 +472,7 @@ def dataio_prepare(hparams, tokenizer):
             [start_of_audio_index]
             + [end_of_audio_index]
             + prompt_ids
-            + [bos_index]
+            + ([bos_index] if bos_index is not None else [])
             + tokens_list
         )
         yield tokens_bos
