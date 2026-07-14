@@ -57,8 +57,10 @@ class S2SBaseSearcher(torch.nn.Module):
 
     Arguments
     ---------
-    bos_index : int
-        The index of the beginning-of-sequence (bos) token.
+    bos_index : int or None
+        The index of the beginning-of-sequence (bos) token. May be None for
+        models whose tokenizer has no bos token (greedy search then makes its
+        first prediction from the encoder states alone).
     eos_index : int
         The index of end-of-sequence (eos) token.
     min_decode_ratio : float
@@ -209,10 +211,15 @@ class S2SGreedySearcher(S2SBaseSearcher):
 
         memory = self.reset_mem(batch_size, device=device)
 
-        # Using bos as the first input
-        inp_tokens = (
-            enc_states.new_zeros(batch_size).fill_(self.bos_index).long()
-        )
+        # Using bos as the first input, when the tokenizer defines one.
+        # When bos_index is None (e.g. LLMs without a BOS token), no initial
+        # token is fed and the first prediction comes from enc_states alone.
+        if self.bos_index is not None:
+            inp_tokens = (
+                enc_states.new_zeros(batch_size).fill_(self.bos_index).long()
+            )
+        else:
+            inp_tokens = None
 
         log_probs_lst = []
         min_decode_steps = int(enc_states.shape[1] * self.min_decode_ratio)
@@ -224,7 +231,9 @@ class S2SGreedySearcher(S2SBaseSearcher):
 
         has_ended = enc_states.new_zeros(batch_size).bool()
         for step in range(min_decode_steps, max_decode_steps):
-            if attention_mask is not None:
+            # The mask only grows when a token is appended to the sequence;
+            # on the first step with no bos token, nothing is appended.
+            if attention_mask is not None and inp_tokens is not None:
                 attention_mask = torch.cat(
                     [
                         attention_mask,
@@ -403,14 +412,22 @@ class S2SHuggingFaceLLMGreedySearcher(S2SGreedySearcher):
         self, inp_tokens, memory, enc_states, enc_lens, attention_mask
     ):
         """Performs a step in the implemented greedy searcher."""
-        memory = self._update_mem_embeddings(inp_tokens.unsqueeze(-1), memory)
-        multimodal_embds = torch.cat(
-            [
-                enc_states,
-                memory,
-            ],
-            dim=1,
-        )
+        if inp_tokens is not None:
+            memory = self._update_mem_embeddings(
+                inp_tokens.unsqueeze(-1), memory
+            )
+        if memory is None:
+            # No bos token and no generated tokens yet: predict the first
+            # token from the audio + prompt embeddings alone.
+            multimodal_embds = enc_states
+        else:
+            multimodal_embds = torch.cat(
+                [
+                    enc_states,
+                    memory,
+                ],
+                dim=1,
+            )
         logits = self.llm_model(
             inputs_embeds=multimodal_embds,
             attention_mask=attention_mask,
