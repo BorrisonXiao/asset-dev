@@ -23,6 +23,15 @@ python train_speechllm.py hparams/speechllm_ssl_feats.yaml
     --feats_cache_dir path/to/feats_cache \
     ...other_hparams...
 
+This script also supports fixed-segmentation baselines via `boundary_source`
+(see hparams/speechllm_fixed_pooling.yaml), which replace the fixed
+feat_downsampler with mean-pooling between boundaries:
+ - none (default): original behavior (e.g. ConcatDownsampler)
+ - fixed_rate: mean-pool every `fixed_rate_k` frames
+ - alignment: mean-pool between externally provided boundaries, loaded from
+   per-utterance `<id>.pt` files in `boundary_target_dir` (per-frame {0,1}
+   labels at the encoder frame rate)
+
 Authors
 -------
  * Adel Moumen, 2025
@@ -36,6 +45,12 @@ import torch
 from hyperpyyaml import load_hyperpyyaml
 
 import speechbrain as sb
+from segment_pooling import (
+    fixed_rate_boundary_targets,
+    lengths_to_padding_mask,
+    mean_pool_segments,
+    padding_mask_to_lengths,
+)
 from speechbrain.integrations.hdf5.cached_item import CachedHDF5DynamicItem
 from speechbrain.utils.distributed import if_main_process, run_on_main
 from speechbrain.utils.logger import get_logger
@@ -104,6 +119,40 @@ def get_multimodal_attention_mask(wav, wav_lens, txt, txt_lens, device):
 
 # Define training procedure
 class ASR(sb.core.Brain):
+    def get_fixed_boundaries(self, boundary_source, pad_mask, batch):
+        """Boundary decisions ``(B, T)`` in ``{1, 0, -1}`` from a non-learned source.
+
+        Arguments
+        ---------
+        boundary_source : str
+            "fixed_rate" (a boundary every `fixed_rate_k` frames) or
+            "alignment" (per-frame labels from `batch.boundary_target`).
+        pad_mask : torch.Tensor
+            (B, T) boolean, True at padding.
+        batch : PaddedBatch
+            Current batch (used for `boundary_target` in alignment mode).
+
+        Returns
+        -------
+        boundary : torch.Tensor
+            (B, T) long with values {1, 0, -1} (pad == -1).
+        """
+        if boundary_source == "fixed_rate":
+            return fixed_rate_boundary_targets(
+                pad_mask, int(self.hparams.fixed_rate_k)
+            )
+        if boundary_source == "alignment":
+            boundary, _ = batch.boundary_target
+            T = pad_mask.size(1)
+            if boundary.size(1) != T:
+                raise ValueError(
+                    f"boundary_target has {boundary.size(1)} frames but the "
+                    f"encoder produced {T}. Alignment labels must be at the "
+                    "encoder frame rate (one {0,1} label per encoder frame)."
+                )
+            return boundary.long().masked_fill(pad_mask, -1)
+        raise ValueError(f"Unknown boundary_source '{boundary_source}'.")
+
     def compute_forward(self, batch, stage):
         """Forward computations from the waveform batches to the output probabilities.
 
@@ -145,8 +194,25 @@ class ASR(sb.core.Brain):
             wavs = self.hparams.normalize(wavs, wav_lens)
             audio_feats = self.modules.ssl(wavs, wav_lens)
             audio_feats_lens = wav_lens
-        # R^L*D -> R^(L/R)*(D*R)
-        audio_down_feats = self.modules.feat_downsampler(audio_feats)
+        boundary_source = getattr(self.hparams, "boundary_source", "none")
+        if boundary_source and boundary_source != "none":
+            # Fixed-segmentation baseline: mean-pool frames between boundaries
+            # instead of the fixed feat_downsampler. Sequence lengths change
+            # per utterance, so recompute relative lengths from the pooled mask.
+            pad_mask = lengths_to_padding_mask(
+                audio_feats_lens, audio_feats.size(1)
+            )
+            boundary = self.get_fixed_boundaries(
+                boundary_source, pad_mask, batch
+            )
+            audio_down_feats, seg_pad_mask = mean_pool_segments(
+                audio_feats, pad_mask, boundary
+            )
+            audio_down_lens = padding_mask_to_lengths(seg_pad_mask)
+        else:
+            # R^L*D -> R^(L/R)*(D*R)
+            audio_down_feats = self.modules.feat_downsampler(audio_feats)
+            audio_down_lens = audio_feats_lens
         # R^D' -> R^llm_emb_size
         projected_audio_feats = self.modules.proj(audio_down_feats)
         txt_embds = self.txt_embedding(tokens_bos)
@@ -161,7 +227,7 @@ class ASR(sb.core.Brain):
         # attention_mask should be all the true audio features + all the true text features
         attention_mask = get_multimodal_attention_mask(
             projected_audio_feats,
-            audio_feats_lens,
+            audio_down_lens,
             txt_embds,
             tokens_bos_lens,
             self.device,
@@ -178,7 +244,7 @@ class ASR(sb.core.Brain):
             inputs_embeds = multimodal_embds[:, :audio_and_prompt_len]
             hyps = self.modules.searcher(
                 inputs_embeds,
-                audio_feats_lens,
+                audio_down_lens,
                 attention_mask[:, :audio_and_prompt_len],
             )
         return logits, hyps
@@ -407,6 +473,22 @@ def dataio_prepare(hparams, tokenizer):
             )
 
     logger.info("use_feats=%s", use_feats)
+
+    # The alignment-boundary pipeline serves both the fixed-pooling baseline
+    # (`boundary_source: alignment`) and the segmenter warm-start
+    # (`warmstart_target: alignment` in train_speechllm_with_segmenter.py).
+    boundary_source = hparams.get("boundary_source", "none") or "none"
+    needs_boundary_target = (
+        boundary_source == "alignment"
+        or hparams.get("warmstart_target", None) == "alignment"
+    )
+    if needs_boundary_target and not hparams.get("boundary_target_dir"):
+        raise ValueError(
+            "Alignment boundaries require `boundary_target_dir`: a directory "
+            "of per-utterance `<id>.pt` files, each a 1-D {0,1} tensor with "
+            "one label per encoder frame (1 = frame starts a new segment)."
+        )
+
     # Token indices and prompt setup
     bos_index = hparams["bos_index"]
     eos_index = hparams["eos_index"]
@@ -485,6 +567,19 @@ def dataio_prepare(hparams, tokenizer):
         )
         yield prompt_len
 
+    extra_items = []
+    if needs_boundary_target:
+        boundary_dir = hparams["boundary_target_dir"]
+
+        @sb.utils.data_pipeline.takes("id")
+        @sb.utils.data_pipeline.provides("boundary_target")
+        def boundary_pipeline(utt_id):
+            """Load per-frame {0,1} boundary labels for one utterance."""
+            path = os.path.join(boundary_dir, f"{utt_id}.pt")
+            return torch.load(path).view(-1).long()
+
+        extra_items.append(boundary_pipeline)
+
     # Define dynamic items based on mode
     # Note: build_dynamic_items is defined outside the if/else to avoid scope issues
     def build_dynamic_items():
@@ -503,7 +598,7 @@ def dataio_prepare(hparams, tokenizer):
                 provides=["feats"],
                 compression="gzip",
             )
-            return [text_pipeline, feats_pipeline]
+            return [text_pipeline, feats_pipeline] + extra_items
         else:
 
             @sb.utils.data_pipeline.takes("wav")
@@ -524,7 +619,7 @@ def dataio_prepare(hparams, tokenizer):
                 sig = sb.dataio.dataio.read_audio(wav)
                 return sig
 
-            return [text_pipeline, audio_pipeline]
+            return [text_pipeline, audio_pipeline] + extra_items
 
     # Set output keys based on mode
     if use_feats:
@@ -547,6 +642,8 @@ def dataio_prepare(hparams, tokenizer):
             "tokens",
             "prompt_len",
         ]
+    if needs_boundary_target:
+        output_keys.append("boundary_target")
 
     def _create_dataset(csv_path, sorting="ascending"):
         """Create a dataset from CSV file with optional sorting.
