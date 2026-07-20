@@ -1,0 +1,105 @@
+seed: 3407
+__set_seed: !apply:speechbrain.utils.seed_everything [!ref <seed>]
+
+project_name: jsalt26-omnienc
+pooling_factor: "word_boundaries"
+experiment_name: !ref <pooling_factor>/mean_pool/stress
+output_folder: !ref results_easy/<experiment_name>/<seed>
+save_folder: !ref <output_folder>/save
+train_log: !ref <output_folder>/train_log.txt
+
+dataset: "stress_full_mfa"
+
+
+number_of_epochs: 200
+batch_size: 16
+grad_accumulation_factor: 1
+num_workers: 4
+precision: fp32
+
+max_grad_norm: 1.0
+
+initial_lr: 1e-4
+final_lr: 1e-6
+weight_decay: 0.1
+
+# SSL
+ssl_hub: microsoft/wavlm-large
+ssl_folder: !ref <save_folder>/ssl_checkpoint
+ssl_frozen: True
+
+# LLM
+llm_path: meta-llama/Llama-3.2-1B-Instruct
+llm_emb_size: 2048
+
+# Projection
+wavlm_dim: 1024
+
+# LoRA
+lora_rank: 16
+lora_alpha: 32
+lora_dropout: 0.1
+
+ssl_frame_rate: 50
+
+# 
+# ssl: !new:speechbrain.integrations.huggingface.hubert.HuBERT 
+ssl: !new:speechbrain.integrations.huggingface.wavlm.WavLM
+  source: !ref <ssl_hub>
+  freeze: !ref <ssl_frozen>
+  save_path: !ref <ssl_folder>
+
+proj: !new:torch.nn.Sequential
+    - !new:torch.nn.Linear
+        in_features: !ref <wavlm_dim>
+        out_features: !ref <llm_emb_size>
+    - !new:torch.nn.GELU
+    - !new:torch.nn.LayerNorm
+        normalized_shape: !ref <llm_emb_size>
+    - !new:torch.nn.Linear
+        in_features: !ref <llm_emb_size>
+        out_features: !ref <llm_emb_size>
+
+backbone_llm: !new:speechbrain.integrations.huggingface.llama.LLaMA
+    source: !ref <llm_path>
+    save_path: !ref <save_folder>
+    freeze: True
+    torch_dtype: !name:torch.float32
+
+llm: !new:speechbrain.nnet.adapters.AdaptedModel
+    model_to_adapt: !ref <backbone_llm>
+    adapter_class: !name:speechbrain.nnet.adapters.LoRA
+    all_linear: False
+    adapter_kwargs:
+        rank: !ref <lora_rank>
+        alpha: !ref <lora_alpha>
+        dropout: !ref <lora_dropout>
+        target_modules: ["q_proj", "v_proj"]
+        # target_modules: ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+
+modules:
+    ssl: !ref <ssl>
+    proj: !ref <proj>
+    llm: !ref <llm>
+
+opt_class: !name:torch.optim.AdamW
+    lr: !ref <initial_lr>
+    weight_decay: !ref <weight_decay>
+
+lr_scheduler: !new:speechbrain.nnet.schedulers.LinearScheduler
+    initial_value: !ref <initial_lr>
+    final_value: !ref <final_lr>
+    epoch_count: !ref <number_of_epochs>
+
+epoch_counter: !new:speechbrain.utils.epoch_loop.EpochCounter
+    limit: !ref <number_of_epochs>
+
+checkpointer: !new:speechbrain.utils.checkpoints.Checkpointer
+    checkpoints_dir: !ref <save_folder>
+    recoverables:
+        llm: !ref <llm>
+        proj: !ref <proj>
+        counter: !ref <epoch_counter>
+
+train_logger: !new:speechbrain.utils.train_logger.FileTrainLogger
+    save_file: !ref <train_log>
