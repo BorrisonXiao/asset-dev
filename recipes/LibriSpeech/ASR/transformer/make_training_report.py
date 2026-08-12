@@ -786,7 +786,7 @@ def pipeline_fig():
 def ar_policy_demo_figure():
     """Theme-aware diagram contrasting the three boundary-policy factorizations."""
     return r'''
-<svg class="chart" viewBox="0 0 1040 520" role="img"
+<svg class="chart" viewBox="0 0 1040 592" role="img"
      aria-labelledby="ar-policy-demo-title ar-policy-demo-desc">
   <title id="ar-policy-demo-title">Three levels of boundary-policy memory</title>
   <desc id="ar-policy-demo-desc">The independent CNN uses only an acoustic score, the
@@ -812,7 +812,7 @@ def ar_policy_demo_figure():
     </style>
   </defs>
 
-  <rect class="ar-row" x="8" y="12" width="1024" height="138" rx="14"/>
+  <rect class="ar-row" x="8" y="12" width="1024" height="146" rx="14"/>
   <text class="ar-title" x="28" y="42">Independent CNN</text>
   <text class="ar-small" x="28" y="64">no generated-label memory</text>
   <rect class="ar-blue" x="214" y="39" width="138" height="62" rx="10"/>
@@ -830,56 +830,56 @@ def ar_policy_demo_figure():
   <rect class="ar-blue" x="850" y="39" width="150" height="62" rx="10"/>
   <text class="ar-label" x="925" y="65" text-anchor="middle">sample b<tspan baseline-shift="sub">t</tspan></text>
   <text class="ar-small" x="925" y="84" text-anchor="middle">cut or continue</text>
-  <path class="ar-dash" d="M925 106 V128 H495"/>
-  <text class="ar-note" x="710" y="129" text-anchor="middle" fill="var(--text-muted)">no feedback into the next decision</text>
+  <text class="ar-note" x="710" y="135" text-anchor="middle" fill="var(--text-muted)">no feedback into the next decision</text>
 
-  <rect class="ar-row" x="8" y="164" width="1024" height="150" rx="14"/>
-  <text class="ar-title" x="28" y="194">CNN + first-order AR</text>
-  <text class="ar-small" x="28" y="216">one-bit memory: only b<tspan baseline-shift="sub">t−1</tspan></text>
-  <rect class="ar-blue" x="214" y="202" width="138" height="62" rx="10"/>
-  <text class="ar-label" x="283" y="228" text-anchor="middle">CNN score a<tspan baseline-shift="sub">t</tspan></text>
-  <text class="ar-small" x="283" y="247" text-anchor="middle">same acoustic head</text>
-  <rect class="ar-orange" x="420" y="202" width="150" height="62" rx="10"/>
-  <text class="ar-label" x="495" y="228" text-anchor="middle">choose δ<tspan baseline-shift="sub">0</tspan> or δ<tspan baseline-shift="sub">1</tspan></text>
-  <text class="ar-small" x="495" y="247" text-anchor="middle">using previous bit</text>
-  <path class="ar-line" d="M352 233 H418"/>
-  <path class="ar-line" d="M570 233 H637"/>
-  <rect class="ar-box" x="639" y="202" width="142" height="62" rx="10"/>
-  <text class="ar-label" x="710" y="228" text-anchor="middle">a<tspan baseline-shift="sub">t</tspan> + δ<tspan baseline-shift="sub">b(t−1)</tspan></text>
-  <text class="ar-small" x="710" y="247" text-anchor="middle">then sigmoid</text>
-  <path class="ar-line" d="M781 233 H848"/>
-  <rect class="ar-orange" x="850" y="202" width="150" height="62" rx="10"/>
-  <text class="ar-label" x="925" y="228" text-anchor="middle">sample b<tspan baseline-shift="sub">t</tspan></text>
-  <text class="ar-small" x="925" y="247" text-anchor="middle">becomes next bit</text>
-  <path class="ar-line" d="M925 267 V291 H495 V266"/>
-  <text class="ar-note" x="710" y="296" text-anchor="middle" fill="var(--pair-sed-asr)">can learn “avoid two cuts in a row”</text>
+  <rect class="ar-row" x="8" y="172" width="1024" height="184" rx="14"/>
+  <text class="ar-title" x="28" y="202">CNN + first-order AR</text>
+  <text class="ar-small" x="28" y="224">one-bit memory: only b<tspan baseline-shift="sub">t−1</tspan></text>
+  <rect class="ar-blue" x="214" y="238" width="138" height="62" rx="10"/>
+  <text class="ar-label" x="283" y="264" text-anchor="middle">CNN score a<tspan baseline-shift="sub">t</tspan></text>
+  <text class="ar-small" x="283" y="283" text-anchor="middle">same acoustic head</text>
+  <rect class="ar-orange" x="420" y="238" width="150" height="62" rx="10"/>
+  <text class="ar-label" x="495" y="264" text-anchor="middle">choose δ<tspan baseline-shift="sub">0</tspan> or δ<tspan baseline-shift="sub">1</tspan></text>
+  <text class="ar-small" x="495" y="283" text-anchor="middle">using previous bit</text>
+  <path class="ar-line" d="M352 269 H418"/>
+  <path class="ar-line" d="M570 269 H637"/>
+  <rect class="ar-box" x="639" y="238" width="142" height="62" rx="10"/>
+  <text class="ar-label" x="710" y="264" text-anchor="middle">a<tspan baseline-shift="sub">t</tspan> + δ<tspan baseline-shift="sub">b(t−1)</tspan></text>
+  <text class="ar-small" x="710" y="283" text-anchor="middle">then sigmoid</text>
+  <path class="ar-line" d="M781 269 H848"/>
+  <rect class="ar-orange" x="850" y="238" width="150" height="62" rx="10"/>
+  <text class="ar-label" x="925" y="264" text-anchor="middle">sample b<tspan baseline-shift="sub">t</tspan></text>
+  <text class="ar-small" x="925" y="283" text-anchor="middle">becomes next bit</text>
+  <path class="ar-line" d="M925 304 V321 H495 V306"/>
+  <text class="ar-note" x="710" y="345" text-anchor="middle" fill="var(--pair-sed-asr)">can learn “avoid two cuts in a row”</text>
 
-  <rect class="ar-row" x="8" y="328" width="1024" height="178" rx="14"/>
-  <text class="ar-title" x="28" y="358">Full-prefix Transformer AR</text>
-  <text class="ar-small" x="28" y="380">learned summary of every earlier shifted boundary input</text>
-  <rect class="ar-purple" x="190" y="370" width="114" height="67" rx="10"/>
-  <text class="ar-label" x="247" y="395" text-anchor="middle">z<tspan baseline-shift="sub">0</tspan></text>
-  <text class="ar-small" x="247" y="416" text-anchor="middle">x<tspan baseline-shift="sub">0</tspan> + BOS</text>
-  <rect class="ar-purple" x="326" y="370" width="114" height="67" rx="10"/>
-  <text class="ar-label" x="383" y="395" text-anchor="middle">z<tspan baseline-shift="sub">1</tspan></text>
-  <text class="ar-small" x="383" y="416" text-anchor="middle">x<tspan baseline-shift="sub">1</tspan> + b<tspan baseline-shift="sub">0</tspan></text>
-  <text class="ar-title" x="466" y="408">…</text>
-  <rect class="ar-purple" x="504" y="370" width="114" height="67" rx="10"/>
-  <text class="ar-label" x="561" y="395" text-anchor="middle">z<tspan baseline-shift="sub">t</tspan></text>
-  <text class="ar-small" x="561" y="416" text-anchor="middle">x<tspan baseline-shift="sub">t</tspan> + b<tspan baseline-shift="sub">t−1</tspan></text>
-  <path class="ar-line" d="M304 404 H324"/>
-  <path class="ar-line" d="M440 404 H462"/>
-  <path class="ar-line" d="M480 404 H502"/>
-  <path class="ar-line" d="M618 404 H674"/>
-  <rect class="ar-box" x="676" y="370" width="158" height="67" rx="10"/>
-  <text class="ar-label" x="755" y="395" text-anchor="middle">4 causal layers</text>
-  <text class="ar-small" x="755" y="416" text-anchor="middle">attention over z<tspan baseline-shift="sub">0:t</tspan></text>
-  <path class="ar-line" d="M834 404 H874"/>
-  <rect class="ar-purple" x="876" y="370" width="124" height="67" rx="10"/>
-  <text class="ar-label" x="938" y="395" text-anchor="middle">sample b<tspan baseline-shift="sub">t</tspan></text>
-  <text class="ar-small" x="938" y="416" text-anchor="middle">cache state</text>
-  <path class="ar-line" d="M938 440 V475 H561 V440"/>
-  <text class="ar-note" x="720" y="481" text-anchor="middle" fill="var(--pair-sed-speaker)">can model run length, rhythm, and audio-dependent history</text>
+  <rect class="ar-row" x="8" y="370" width="1024" height="208" rx="14"/>
+  <text class="ar-title" x="28" y="400">Full-prefix Transformer AR</text>
+  <text class="ar-small" x="28" y="422">learned summary of every earlier shifted boundary input</text>
+  <rect class="ar-purple" x="190" y="440" width="114" height="67" rx="10"/>
+  <text class="ar-label" x="247" y="465" text-anchor="middle">z<tspan baseline-shift="sub">0</tspan></text>
+  <text class="ar-small" x="247" y="486" text-anchor="middle">x<tspan baseline-shift="sub">0</tspan> + BOS</text>
+  <rect class="ar-purple" x="326" y="440" width="114" height="67" rx="10"/>
+  <text class="ar-label" x="383" y="465" text-anchor="middle">z<tspan baseline-shift="sub">1</tspan></text>
+  <text class="ar-small" x="383" y="486" text-anchor="middle">x<tspan baseline-shift="sub">1</tspan> + b<tspan baseline-shift="sub">0</tspan></text>
+  <rect class="ar-box" x="456" y="450" width="36" height="47" rx="9"/>
+  <text class="ar-title" x="474" y="480" text-anchor="middle">…</text>
+  <rect class="ar-purple" x="504" y="440" width="114" height="67" rx="10"/>
+  <text class="ar-label" x="561" y="465" text-anchor="middle">z<tspan baseline-shift="sub">t</tspan></text>
+  <text class="ar-small" x="561" y="486" text-anchor="middle">x<tspan baseline-shift="sub">t</tspan> + b<tspan baseline-shift="sub">t−1</tspan></text>
+  <path class="ar-line" d="M304 474 H324"/>
+  <path class="ar-line" d="M440 474 H454"/>
+  <path class="ar-line" d="M492 474 H502"/>
+  <path class="ar-line" d="M618 474 H674"/>
+  <rect class="ar-box" x="676" y="440" width="158" height="67" rx="10"/>
+  <text class="ar-label" x="755" y="465" text-anchor="middle">4 causal layers</text>
+  <text class="ar-small" x="755" y="486" text-anchor="middle">attention over z<tspan baseline-shift="sub">0:t</tspan></text>
+  <path class="ar-line" d="M834 474 H874"/>
+  <rect class="ar-purple" x="876" y="440" width="124" height="67" rx="10"/>
+  <text class="ar-label" x="938" y="465" text-anchor="middle">sample b<tspan baseline-shift="sub">t</tspan></text>
+  <text class="ar-small" x="938" y="486" text-anchor="middle">cache state</text>
+  <path class="ar-line" d="M938 511 V533 H561 V513"/>
+  <text class="ar-note" x="720" y="562" text-anchor="middle" fill="var(--pair-sed-speaker)">can model run length, rhythm, and audio-dependent history</text>
 </svg>'''
 
 
