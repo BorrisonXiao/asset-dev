@@ -31,14 +31,21 @@ import json
 import os
 import sys
 import time
+from contextlib import contextmanager, nullcontext
 
 import torch
 import torch.nn.functional as F
-from hyperpyyaml import load_hyperpyyaml
-from segment_pooling import (
-    lengths_to_padding_mask,
-    padding_mask_to_lengths,
+from bilevel import (
+    capture_rng_state,
+    decoder_batch_view,
+    replay_rng_state,
+    reward_rank_diagnostics,
+    support_query_slices,
+    temporary_sgd_update,
+    unique_trainable_parameters,
 )
+from hyperpyyaml import load_hyperpyyaml
+from segment_pooling import lengths_to_padding_mask, padding_mask_to_lengths
 from segmenter import (
     boundary_bce_loss,
     boundary_prf,
@@ -48,6 +55,7 @@ from segmenter import (
     rate_loss,
     sampled_rate_penalty,
 )
+from torch.nn.attention import SDPBackend, sdpa_kernel
 from train_speechllm import (  # reuse the base recipe's plumbing
     ASR,
     dataio_prepare,
@@ -139,10 +147,18 @@ class SegmenterASR(ASR):
         Runs under the caller's grad context (grad on for the decoder-CE path, wrapped in
         ``no_grad`` by the caller for the reward samples).
         """
-        tokens_bos, tokens_bos_lens = batch.tokens_bos
         seg_feats, seg_pad = self.modules.segmenter.pool(
             feats, pad_mask, boundary
         )
+        return self._run_decoder_from_segments(
+            seg_feats, seg_pad, batch, want_hyps=want_hyps
+        )
+
+    def _run_decoder_from_segments(
+        self, seg_feats, seg_pad, batch, want_hyps=False
+    ):
+        """Run projection and LLM from an already pooled acoustic prefix."""
+        tokens_bos, tokens_bos_lens = batch.tokens_bos
         seg_lens = padding_mask_to_lengths(seg_pad)
         projected = self.modules.proj(seg_feats)
         txt_embds = self.txt_embedding(tokens_bos)
@@ -302,6 +318,270 @@ class SegmenterASR(ASR):
                     )
         # err order is [s0:b0..bB-1, s1:b0..bB-1, ...] -> (K, B) -> (B, K).
         return (-err).reshape(K, Bsz).t().contiguous()
+
+    def _bilevel_mode(self):
+        """Resolve and validate the opt-in support/query reward mode."""
+        mode = str(getattr(self.hparams, "bilevel_mode", "off")).lower()
+        allowed = {
+            "off",
+            "heldout",
+            "decoder_lookahead",
+            "decoder_pooler_lookahead",
+        }
+        if mode not in allowed:
+            raise ValueError(
+                f"Unknown bilevel_mode={mode!r}; expected one of {sorted(allowed)}"
+            )
+        return mode
+
+    def _bilevel_inner_parameters(self, mode):
+        """Parameters changed by the temporary inner step, never optimizer state."""
+        # Use the same module objects as ``_run_decoder``.  This also remains
+        # correct if SpeechBrain wraps trainable modules for DP/DDP.
+        modules = [self.modules.proj, self.modules.llm]
+        if mode == "decoder_pooler_lookahead":
+            modules.append(self.modules.segmenter.pooler)
+        parameters = unique_trainable_parameters(*modules)
+        if not parameters:
+            raise RuntimeError(f"No trainable inner parameters for {mode}")
+        return parameters
+
+    def _bilevel_sdpa_context(self):
+        """Use one stable attention kernel for paired reward comparisons."""
+        if bool(getattr(self.hparams, "bilevel_deterministic_sdpa", True)):
+            return sdpa_kernel(SDPBackend.MATH)
+        return nullcontext()
+
+    def _bilevel_pooler_context(self, mode):
+        """Avoid nondeterministic cuDNN BiGRU kernels in paired pooler rewards."""
+        if mode == "decoder_pooler_lookahead":
+            return torch.backends.cudnn.flags(enabled=False)
+        return nullcontext()
+
+    @contextmanager
+    def _bilevel_forward_context(self, mode, gradients):
+        """Apply the same numerical settings to each paired forward."""
+        grad_context = torch.enable_grad() if gradients else torch.no_grad()
+        with grad_context:
+            with self.training_ctx:
+                with self._bilevel_sdpa_context():
+                    with self._bilevel_pooler_context(mode):
+                        yield
+
+    def _bilevel_lookahead_rewards(
+        self,
+        support_feats,
+        support_pad,
+        support_boundaries,
+        support_batch,
+        query_feats,
+        query_pad,
+        query_boundaries,
+        query_batch,
+        mode,
+    ):
+        """Query ``-NLL`` after one reversible support-set decoder update.
+
+        This is a first-order, score-function bilevel approximation: gradients do
+        not pass through the hard boundaries or the temporary inner update.  The
+        actual model and optimizer state are restored before the outer GRPO/CE
+        backward pass.
+        """
+        if getattr(self.hparams, "segmenter_reward", "nll") != "nll":
+            raise ValueError(
+                "The first bilevel pilot supports segmenter_reward=nll only. "
+                "CER/WER lookahead would multiply an already expensive decode."
+            )
+        if len(support_boundaries) != len(query_boundaries):
+            raise ValueError(
+                "Support and query rollout groups must use the same K"
+            )
+
+        parameters = self._bilevel_inner_parameters(mode)
+        inner_lr = float(getattr(self.hparams, "bilevel_inner_lr", 1.0e-3))
+        max_norm = float(
+            getattr(self.hparams, "bilevel_inner_max_grad_norm", 1.0)
+        )
+        measure_after = bool(
+            getattr(self.hparams, "bilevel_measure_support_after", False)
+        )
+        current_query_rewards = []
+        query_rewards = []
+        support_before = []
+        support_after = []
+        grad_norms = []
+        grad_scales = []
+        update_norms = []
+        parameter_tensors = []
+        gradient_tensors = []
+        nonzero_gradient_tensors = []
+        gradient_max_abs = []
+
+        for support_boundary, query_boundary in zip(
+            support_boundaries, query_boundaries
+        ):
+            support_segments = None
+            query_segments = None
+            if mode == "decoder_lookahead":
+                # The pooler is fixed in this arm.  Reuse its exact outputs so
+                # paired rewards isolate decoder adaptation rather than cuDNN
+                # BiGRU variation across repeated forwards.
+                with torch.no_grad(), self.training_ctx:
+                    support_segments = self.modules.segmenter.pool(
+                        support_feats, support_pad, support_boundary
+                    )
+                    query_segments = self.modules.segmenter.pool(
+                        query_feats, query_pad, query_boundary
+                    )
+            support_rng_state = capture_rng_state(self.device)
+            with self._bilevel_forward_context(mode, gradients=True):
+                support_dec = (
+                    self._run_decoder_from_segments(
+                        *support_segments, support_batch
+                    )
+                    if support_segments is not None
+                    else self._run_decoder(
+                        support_feats,
+                        support_pad,
+                        support_boundary,
+                        support_batch,
+                    )
+                )
+                support_loss = self._decoder_ce(
+                    support_dec["llm_logits"], support_batch
+                )
+                gradients = torch.autograd.grad(
+                    support_loss,
+                    parameters,
+                    allow_unused=True,
+                )
+
+            # Pair current and adapted query forwards lane-by-lane.  A wide K*B
+            # current forward has different BF16 accumulation behavior and can
+            # change rankings even when the temporary learning rate is zero.
+            query_rng_state = capture_rng_state(self.device)
+            with self._bilevel_forward_context(mode, gradients=False):
+                current_query_dec = (
+                    self._run_decoder_from_segments(
+                        *query_segments, query_batch
+                    )
+                    if query_segments is not None
+                    else self._run_decoder(
+                        query_feats,
+                        query_pad,
+                        query_boundary,
+                        query_batch,
+                    )
+                )
+                current_query_rewards.append(
+                    -self._utterance_nll(
+                        current_query_dec["llm_logits"], query_batch
+                    )
+                )
+
+            with temporary_sgd_update(
+                parameters,
+                gradients,
+                learning_rate=inner_lr,
+                max_grad_norm=max_norm,
+            ) as update_stats:
+                with replay_rng_state(query_rng_state, self.device):
+                    with self._bilevel_forward_context(mode, gradients=False):
+                        query_dec = (
+                            self._run_decoder_from_segments(
+                                *query_segments, query_batch
+                            )
+                            if query_segments is not None
+                            else self._run_decoder(
+                                query_feats,
+                                query_pad,
+                                query_boundary,
+                                query_batch,
+                            )
+                        )
+                        query_rewards.append(
+                            -self._utterance_nll(
+                                query_dec["llm_logits"], query_batch
+                            )
+                        )
+                if measure_after:
+                    # Match the grad-enabled support forward used to obtain the
+                    # gradient.  SDPA may select a different BF16 kernel under
+                    # no-grad and hide a small update in kernel-level variation.
+                    with replay_rng_state(support_rng_state, self.device):
+                        with self._bilevel_forward_context(
+                            mode, gradients=True
+                        ):
+                            adapted_support = (
+                                self._run_decoder_from_segments(
+                                    *support_segments, support_batch
+                                )
+                                if support_segments is not None
+                                else self._run_decoder(
+                                    support_feats,
+                                    support_pad,
+                                    support_boundary,
+                                    support_batch,
+                                )
+                            )
+                            support_after.append(
+                                self._decoder_ce(
+                                    adapted_support["llm_logits"],
+                                    support_batch,
+                                ).detach()
+                            )
+
+            support_before.append(support_loss.detach())
+            grad_norms.append(update_stats["grad_norm"])
+            grad_scales.append(update_stats["grad_scale"])
+            update_norms.append(update_stats["update_norm"])
+            parameter_tensors.append(update_stats["parameter_tensors"])
+            gradient_tensors.append(update_stats["gradient_tensors"])
+            nonzero_gradient_tensors.append(
+                update_stats["nonzero_gradient_tensors"]
+            )
+            gradient_max_abs.append(update_stats["gradient_max_abs"])
+
+        diagnostics = {
+            "inner_support_ce": float(torch.stack(support_before).mean()),
+            "inner_grad_norm": sum(grad_norms) / len(grad_norms),
+            "inner_grad_scale": sum(grad_scales) / len(grad_scales),
+            "inner_update_norm": sum(update_norms) / len(update_norms),
+            "inner_parameter_tensors": sum(parameter_tensors)
+            / len(parameter_tensors),
+            "inner_gradient_tensors": sum(gradient_tensors)
+            / len(gradient_tensors),
+            "inner_nonzero_gradient_tensors": sum(nonzero_gradient_tensors)
+            / len(nonzero_gradient_tensors),
+            "inner_gradient_max_abs": sum(gradient_max_abs)
+            / len(gradient_max_abs),
+        }
+        if support_after:
+            diagnostics["inner_support_ce_after"] = float(
+                torch.stack(support_after).mean()
+            )
+        return (
+            torch.stack(current_query_rewards, dim=1),
+            torch.stack(query_rewards, dim=1),
+            diagnostics,
+        )
+
+    def _write_bilevel_diagnostics(self, mode, diagnostics):
+        """Append full-precision per-batch pilot diagnostics on the main process."""
+        path = getattr(self.hparams, "bilevel_diagnostics_file", None)
+        if not path or not if_main_process():
+            return
+        parent = os.path.dirname(path)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+        record = {
+            "mode": mode,
+            "epoch": int(self.current_epoch),
+            "minibatch_step": int(self.step),
+            **{name: float(value) for name, value in diagnostics.items()},
+        }
+        with open(path, "a", encoding="utf-8") as stream:
+            stream.write(json.dumps(record, sort_keys=True) + "\n")
 
     def _target_tokens(self, llm_logits, batch):
         """Text targets aligned to ``llm_logits`` (audio positions -> ignore_index)."""
@@ -684,10 +964,21 @@ class SegmenterASR(ASR):
             self.hparams.segmenter_mode == "joint"
             and self.current_epoch > int(self.hparams.warmup_epochs)
         )
+        bilevel_mode = self._bilevel_mode()
         update_mode = getattr(self.hparams, "rl_update_mode", "auto")
         full_ar = bool(getattr(self.modules.segmenter, "is_full_ar", False))
         if update_mode == "auto":
             update_mode = "combined_on_policy" if full_ar else "on_policy"
+        if is_rl and bilevel_mode != "off":
+            if not full_ar or update_mode != "combined_on_policy":
+                raise ValueError(
+                    "The bilevel pilot requires the optimized full-prefix "
+                    "Transformer-AR path (segmenter_backbone=transformer_ar, "
+                    "rl_update_mode=combined_on_policy)."
+                )
+            return self._fit_batch_full_ar_bilevel_on_policy(
+                batch, bilevel_mode
+            )
         if not is_rl or update_mode == "on_policy":
             return super().fit_batch(batch)
         if update_mode == "combined_on_policy":
@@ -707,6 +998,245 @@ class SegmenterASR(ASR):
                 "Use combined_on_policy, not batched_on_policy, for transformer_ar"
             )
         return self._fit_batch_batched_on_policy(batch)
+
+    def _fit_batch_full_ar_bilevel_on_policy(self, batch, mode):
+        """Support/query GRPO with an optional one-step inner adaptation.
+
+        ``heldout`` scores query rollouts under the current decoder.  The two
+        lookahead modes make one temporary support-set SGD step per rollout lane,
+        score the corresponding query lane, then restore the model exactly.  The
+        real decoder update is CE on the support half; the query half is reserved
+        for the outer reward.
+        """
+        should_step = (self.step % self.grad_accumulation_factor) == 0
+        self.on_fit_batch_start(batch, should_step=should_step)
+        batch = batch.to(self.device)
+        K = int(self.hparams.grpo_k)
+        support_slice, query_slice = support_query_slices(
+            batch.batchsize,
+            float(getattr(self.hparams, "bilevel_support_fraction", 0.5)),
+        )
+        support_batch = decoder_batch_view(batch, support_slice)
+        query_batch = decoder_batch_view(batch, query_slice)
+        freeze_dec = bool(
+            getattr(self.hparams, "freeze_decoder_in_joint", False)
+        )
+
+        schedule_logs = getattr(self, "_bilevel_schedule_logs", 0)
+        if schedule_logs < self.grad_accumulation_factor:
+            logger.info(
+                "Bilevel Transformer-AR update: mode=%s minibatch_step=%d "
+                "optimizer_step=%s K=%d support=%d query=%d inner_lr=%g",
+                mode,
+                self.step,
+                should_step,
+                K,
+                support_slice.stop - support_slice.start,
+                query_slice.stop - query_slice.start,
+                float(getattr(self.hparams, "bilevel_inner_lr", 1.0e-3)),
+            )
+            self._bilevel_schedule_logs = schedule_logs + 1
+
+        # Exit the no-grad autocast scope before the inner forward.  Otherwise
+        # autocast may reuse decoder-weight casts created under ``no_grad`` and
+        # silently disconnect projection/LoRA parameters from the inner graph.
+        with torch.no_grad(), self.training_ctx:
+            feats, segmenter_feats, feat_lens = self._encoder_features(batch)
+            T = feats.size(1)
+            pad_mask = lengths_to_padding_mask(feat_lens, T)
+            group = self.modules.segmenter.sample_boundary_group(
+                segmenter_feats, pad_mask, num_samples=K
+            )
+            argmax_b = group.greedy.boundaries
+            sampled = list(group.sampled_boundaries)
+
+            support_feats = feats[support_slice]
+            support_segmenter_feats = segmenter_feats[support_slice]
+            support_pad = pad_mask[support_slice]
+            support_argmax = argmax_b[support_slice]
+            support_sampled = [item[support_slice] for item in sampled]
+
+            query_feats = feats[query_slice]
+            query_segmenter_feats = segmenter_feats[query_slice]
+            query_pad = pad_mask[query_slice]
+            query_sampled = [item[query_slice] for item in sampled]
+
+            current_quality = None
+            if mode == "heldout":
+                current_quality = self._rollout_rewards(
+                    query_feats,
+                    query_pad,
+                    query_sampled,
+                    query_batch,
+                    "nll",
+                )
+            rate_penalties, sampled_rhos = self._sampled_rate_terms(
+                query_sampled, query_pad
+            )
+            support_rate_penalties = None
+            support_sampled_rhos = None
+            if mode != "heldout":
+                support_rate_penalties, support_sampled_rhos = (
+                    self._sampled_rate_terms(support_sampled, support_pad)
+                )
+
+        inner_diagnostics = {}
+        if mode == "heldout":
+            quality_rewards = current_quality
+        else:
+            current_quality, quality_rewards, inner_diagnostics = (
+                self._bilevel_lookahead_rewards(
+                    support_feats,
+                    support_pad,
+                    support_sampled,
+                    support_batch,
+                    query_feats,
+                    query_pad,
+                    query_sampled,
+                    query_batch,
+                    mode,
+                )
+            )
+
+        current_rewards = current_quality - rate_penalties
+        rewards = quality_rewards - rate_penalties
+        rank_diagnostics = reward_rank_diagnostics(current_rewards, rewards)
+        self._write_bilevel_diagnostics(
+            mode,
+            {
+                "support_examples": support_feats.size(0),
+                "query_examples": query_feats.size(0),
+                "current_reward": float(current_rewards.mean()),
+                "adapted_reward": float(rewards.mean()),
+                **rank_diagnostics,
+                **inner_diagnostics,
+            },
+        )
+        query_advantage = group_advantage(
+            rewards,
+            normalize_std=bool(self.hparams.grpo_normalize_std),
+        )
+        support_advantage = None
+        if mode != "heldout":
+            # Each support rollout affects mean query quality after the
+            # temporary decoder step.  Its own boundary-frequency cost remains
+            # per utterance; a query utterance's cost must not be assigned to a
+            # support action.
+            support_rewards = (
+                quality_rewards.mean(dim=0, keepdim=True)
+                - support_rate_penalties
+            )
+            support_advantage = group_advantage(
+                support_rewards,
+                normalize_std=bool(self.hparams.grpo_normalize_std),
+            )
+
+        with self.no_sync(not should_step):
+            with self.training_ctx:
+                pg_query, entropy_query = self._full_ar_pg_entropy(
+                    query_segmenter_feats,
+                    query_pad,
+                    query_sampled,
+                    query_advantage,
+                )
+                if support_advantage is None:
+                    pg_support = pg_query * 0.0
+                    entropy = entropy_query
+                else:
+                    pg_support, entropy_support = self._full_ar_pg_entropy(
+                        support_segmenter_feats,
+                        support_pad,
+                        support_sampled,
+                        support_advantage,
+                    )
+                    support_weight = float(
+                        getattr(
+                            self.hparams,
+                            "bilevel_support_pg_weight",
+                            1.0,
+                        )
+                    )
+                    entropy = 0.5 * (entropy_query + entropy_support)
+                pg = pg_query + (
+                    0.0
+                    if support_advantage is None
+                    else support_weight * pg_support
+                )
+                beta_h = self._entropy_coeff()
+                total = float(self.hparams.pg_weight) * pg - beta_h * entropy
+                if not freeze_dec:
+                    dec = self._run_decoder(
+                        support_feats,
+                        support_pad,
+                        support_argmax,
+                        support_batch,
+                    )
+                    dec_ce = self._decoder_ce(dec["llm_logits"], support_batch)
+                    total = total + dec_ce
+                else:
+                    dec_ce = torch.zeros((), device=self.device)
+            scaled = self.scaler.scale(total / self.grad_accumulation_factor)
+            self.check_loss_isfinite(scaled)
+            scaled.backward()
+
+        if should_step:
+            self.optimizers_step()
+
+        self._track_rho_from_boundary(argmax_b, pad_mask)
+        self._log_train(
+            dec_ce=dec_ce,
+            pg=pg,
+            pg_query=pg_query,
+            pg_support=pg_support,
+            rate=0.0,
+            entropy=entropy,
+            beta_h=beta_h,
+            reward=rewards.mean(),
+            quality_reward=quality_rewards.mean(),
+            sampled_rate_penalty=(
+                rate_penalties.mean()
+                if support_rate_penalties is None
+                else 0.5
+                * (rate_penalties.mean() + support_rate_penalties.mean())
+            ),
+            exp_rho=(
+                sampled_rhos.mean()
+                if support_sampled_rhos is None
+                else 0.5 * (sampled_rhos.mean() + support_sampled_rhos.mean())
+            ),
+            bilevel_current_reward=current_rewards.mean(),
+            bilevel_adapted_reward=rewards.mean(),
+            bilevel_reward_delta=rank_diagnostics["reward_delta"],
+            bilevel_reward_delta_abs=rank_diagnostics["reward_delta_abs"],
+            bilevel_top_rollout_flip=rank_diagnostics["top_rollout_flip"],
+            bilevel_rank_correlation=rank_diagnostics["rank_correlation"],
+            bilevel_inner_support_ce=inner_diagnostics.get(
+                "inner_support_ce", 0.0
+            ),
+            bilevel_inner_support_ce_after=inner_diagnostics.get(
+                "inner_support_ce_after", 0.0
+            ),
+            bilevel_inner_grad_norm=inner_diagnostics.get(
+                "inner_grad_norm", 0.0
+            ),
+            bilevel_inner_grad_scale=inner_diagnostics.get(
+                "inner_grad_scale", 0.0
+            ),
+            bilevel_inner_update_norm=inner_diagnostics.get(
+                "inner_update_norm", 0.0
+            ),
+            bilevel_inner_gradient_tensors=inner_diagnostics.get(
+                "inner_gradient_tensors", 0.0
+            ),
+            bilevel_inner_nonzero_gradient_tensors=inner_diagnostics.get(
+                "inner_nonzero_gradient_tensors", 0.0
+            ),
+            bilevel_inner_gradient_max_abs=inner_diagnostics.get(
+                "inner_gradient_max_abs", 0.0
+            ),
+        )
+        self.on_fit_batch_end(batch, {}, total, should_step=should_step)
+        return total.detach().cpu()
 
     def _fit_batch_full_ar_combined_on_policy(self, batch):
         """One exact on-policy update with grouped policy and reward batches.
@@ -769,16 +1299,12 @@ class SegmenterASR(ASR):
                 beta_h = self._entropy_coeff()
                 total = float(self.hparams.pg_weight) * pg - beta_h * entropy
                 if not freeze_dec:
-                    dec = self._run_decoder(
-                        feats, pad_mask, argmax_b, batch
-                    )
+                    dec = self._run_decoder(feats, pad_mask, argmax_b, batch)
                     dec_ce = self._decoder_ce(dec["llm_logits"], batch)
                     total = total + dec_ce
                 else:
                     dec_ce = torch.zeros((), device=self.device)
-            scaled = self.scaler.scale(
-                total / self.grad_accumulation_factor
-            )
+            scaled = self.scaler.scale(total / self.grad_accumulation_factor)
             self.check_loss_isfinite(scaled)
             scaled.backward()
 
@@ -1085,6 +1611,33 @@ class SegmenterASR(ASR):
             if self.hparams.segmenter_mode == "joint"
             else 0.0,
         )
+        bilevel_mode = self._bilevel_mode()
+        if bilevel_mode != "off":
+            if int(self.hparams.grpo_k) != 4:
+                raise ValueError(
+                    "The controlled bilevel pilot keeps grpo_k fixed at 4."
+                )
+            logger.info(
+                "Bilevel pilot enabled: mode=%s support_fraction=%g "
+                "inner_lr=%g inner_max_grad_norm=%g support_pg_weight=%g",
+                bilevel_mode,
+                float(getattr(self.hparams, "bilevel_support_fraction", 0.5)),
+                float(getattr(self.hparams, "bilevel_inner_lr", 1.0e-3)),
+                float(
+                    getattr(
+                        self.hparams,
+                        "bilevel_inner_max_grad_norm",
+                        1.0,
+                    )
+                ),
+                float(
+                    getattr(
+                        self.hparams,
+                        "bilevel_support_pg_weight",
+                        1.0,
+                    )
+                ),
+            )
 
     def init_optimizers(self):
         """Single AdamW with per-group LRs (segmenter vs decoder). Mirrors the base

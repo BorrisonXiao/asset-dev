@@ -82,6 +82,21 @@ warmup_epochs: 1                 # decoder-only warmup epochs before joint RL
 # Every mode remains one-update on-policy GRPO.
 rl_update_mode: auto              # auto: combined for transformer_ar, on_policy otherwise
 
+# --- optional first-order bilevel pilot (off preserves the established path) ---
+# heldout: decoder CE uses the support half; current-decoder rollout NLL is measured
+#          on a disjoint query half.
+# decoder_lookahead: one reversible support-set SGD step on proj+LoRA before scoring
+#                    each corresponding query rollout.
+# decoder_pooler_lookahead: same, also temporarily adapts the order-aware pooler.
+bilevel_mode: "off"               # off | heldout | decoder_lookahead | decoder_pooler_lookahead
+bilevel_support_fraction: 0.5
+bilevel_inner_lr: 0.01            # calibrated temporary SGD step; optimizer state untouched
+bilevel_inner_max_grad_norm: 1.0
+bilevel_support_pg_weight: 1.0    # support actions receive the mean query return after lookahead
+bilevel_measure_support_after: False  # extra K support forwards; diagnostic only
+bilevel_diagnostics_file: null    # optional full-precision per-batch JSONL
+bilevel_deterministic_sdpa: True  # paired rewards use the same stable math kernel
+
 # --- joint: rate objective (KEPT = band; free inside [rho_lo,rho_hi], penalize outside) ---
 rate_mode: band                  # pin | captax | band  (null -> derive from rate_two_sided)
 rate_two_sided: False            # legacy flag (used only when rate_mode is null)

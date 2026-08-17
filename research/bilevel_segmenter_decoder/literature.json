@@ -1,0 +1,148 @@
+{
+  "instruction": "Determine whether bilevel optimization applies to the joint segmenter-decoder problem and identify practical ideas that can be tested without abandoning discrete RL.",
+  "date": "2026-08-11",
+  "scope": "The segmenter is the upper-level policy; the projection and LoRA decoder are the inner learner that adapts to its boundary distribution.",
+  "sub_questions": [
+    "What is the exact inner/outer formulation?",
+    "Can hard boundary sampling retain policy gradient in a bilevel loop?",
+    "Which approximation is practical for a LoRA-adapted LLM?",
+    "What failure modes make continuous boundary relaxations risky?"
+  ],
+  "papers": [
+    {
+      "id": "p1",
+      "title": "Bilevel Programming for Hyperparameter Optimization and Meta-Learning",
+      "authors": "Luca Franceschi, Paolo Frasconi, Saverio Salzo, Riccardo Grazzi, Massimiliano Pontil",
+      "year": 2018,
+      "venue": "ICML",
+      "arxiv_id": null,
+      "doi": null,
+      "problem": "Differentiate an outer objective through an inner learning process.",
+      "method": "Makes approximate inner optimization dynamics part of the bilevel problem.",
+      "results": "Provides convergence conditions and empirical meta-learning evidence.",
+      "relevance": "Formal basis for treating the decoder as the inner learner.",
+      "status": "verified"
+    },
+    {
+      "id": "p2",
+      "title": "Truncated Back-propagation for Bilevel Optimization",
+      "authors": "Amirreza Shaban, Ching-An Cheng, Nathan Hatch, Byron Boots",
+      "year": 2019,
+      "venue": "AISTATS",
+      "arxiv_id": null,
+      "doi": null,
+      "problem": "Exact unrolling is expensive.",
+      "method": "Backpropagates through only the latest few inner optimization steps.",
+      "results": "Few-step gradients often approached exact-gradient performance with lower memory and about half the compute in their experiments.",
+      "relevance": "Supports one-step decoder lookahead as a first diagnostic.",
+      "status": "verified"
+    },
+    {
+      "id": "p3",
+      "title": "Optimizing Millions of Hyperparameters by Implicit Differentiation",
+      "authors": "Jonathan Lorraine, Paul Vicol, David Duvenaud",
+      "year": 2020,
+      "venue": "AISTATS",
+      "arxiv_id": "1911.02590",
+      "doi": null,
+      "problem": "Scale hypergradients to large parameter spaces.",
+      "method": "Combines the implicit function theorem with inverse-Hessian approximations.",
+      "results": "Reports only a few-times overhead over standard training for large hyperparameter networks.",
+      "relevance": "Possible later method, but risky for our non-convex decoder.",
+      "status": "verified"
+    },
+    {
+      "id": "p4",
+      "title": "DARTS: Differentiable Architecture Search",
+      "authors": "Hanxiao Liu, Karen Simonyan, Yiming Yang",
+      "year": 2019,
+      "venue": "ICLR",
+      "arxiv_id": "1806.09055",
+      "doi": null,
+      "problem": "Optimize discrete architecture choices efficiently.",
+      "method": "Uses a continuous relaxation and bilevel train/validation optimization.",
+      "results": "Reports competitive architectures at far lower search cost than prior discrete search.",
+      "relevance": "A soft-boundary template, but not deployment-equivalent to hard pooling.",
+      "status": "verified"
+    },
+    {
+      "id": "p5",
+      "title": "Understanding and Robustifying Differentiable Architecture Search",
+      "authors": "Arber Zela, Thomas Elsken, Tonmoy Saikia, Yassine Marrakchi, Thomas Brox, Frank Hutter",
+      "year": 2020,
+      "venue": "ICLR",
+      "arxiv_id": null,
+      "doi": null,
+      "problem": "DARTS can collapse or generalize poorly.",
+      "method": "Relates failures to validation-loss curvature and tests regularization.",
+      "results": "Finds degenerate solutions across multiple search spaces and domains.",
+      "relevance": "Warns against assuming a soft segmentation proxy will discretize well.",
+      "status": "verified"
+    },
+    {
+      "id": "p6",
+      "title": "Learning to Reweight Examples for Robust Deep Learning",
+      "authors": "Mengye Ren, Wenyuan Zeng, Bin Yang, Raquel Urtasun",
+      "year": 2018,
+      "venue": "ICML",
+      "arxiv_id": null,
+      "doi": null,
+      "problem": "Learn training weights that improve clean validation performance.",
+      "method": "Uses validation loss after a one-step model update to meta-learn example weights.",
+      "results": "Improves robustness under class imbalance and label corruption.",
+      "relevance": "Precedent for support/query separation and one-step decoder adaptation.",
+      "status": "verified"
+    },
+    {
+      "id": "p7",
+      "title": "Probabilistic Bilevel Coreset Selection",
+      "authors": "Xiao Zhou, Renjie Pi, Weizhong Zhang, Yong Lin, Tong Zhang",
+      "year": 2023,
+      "venue": "arXiv preprint",
+      "arxiv_id": "2301.09880",
+      "doi": null,
+      "problem": "Optimize a discrete subset based on performance of a model trained on it.",
+      "method": "Samples Bernoulli masks and applies an unbiased policy-gradient outer update after inner training.",
+      "results": "Reports gains over greedy subset selection, especially with noisy or imbalanced data.",
+      "relevance": "Closest algorithmic analogy for hard boundary selection with a post-adaptation reward.",
+      "status": "verified"
+    },
+    {
+      "id": "p8",
+      "title": "Bilevel Reinforcement Learning via the Development of Hyper-gradient without Lower-Level Convexity",
+      "authors": "Yan Yang, Bin Gao, Ya-xiang Yuan",
+      "year": 2025,
+      "venue": "AISTATS",
+      "arxiv_id": null,
+      "doi": null,
+      "problem": "Construct bilevel RL hypergradients without convex lower-level assumptions.",
+      "method": "Uses a regularized-RL fixed point to obtain fully first-order hypergradients.",
+      "results": "Provides model-based/model-free algorithms and convergence results.",
+      "relevance": "Confirms bilevel and RL can coexist, though its MDP structure differs from our decoder adaptation.",
+      "status": "verified"
+    }
+  ],
+  "themes": [
+    "Use a held-out outer objective after inner adaptation.",
+    "A few inner steps can be a useful approximation.",
+    "Policy gradient can optimize discrete outer selections without differentiating through the inner learner.",
+    "Continuous relaxations introduce a discretization and collapse risk."
+  ],
+  "gaps": [
+    {
+      "id": "g1",
+      "statement": "No current experiment measures boundary value after decoder adaptation.",
+      "evidence": "The project training code scores sampled boundaries with the current detached decoder."
+    },
+    {
+      "id": "g2",
+      "statement": "Support/query separation has not been tested for segmenter rewards.",
+      "evidence": "Current decoder CE and sampled-boundary rewards come from the same training stream."
+    },
+    {
+      "id": "g3",
+      "statement": "Hard-boundary policy-gradient bilevel training has not been studied in this acoustic-prefix setting.",
+      "evidence": "Probabilistic coreset selection supplies a close method analogy, not a speech result."
+    }
+  ]
+}
