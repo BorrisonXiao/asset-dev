@@ -1,0 +1,232 @@
+{
+  "instruction": "Replace order-invariant segment averaging with an order-aware alternative; investigate RNN/LSTM and recommend options.",
+  "date": "2026-08-13",
+  "scope": "Order-aware, checkpoint-compatible pooling for short segments of frozen contextual speech features.",
+  "sub_questions": [
+    "What temporal information does mean pooling remove?",
+    "Which span encoders are suitable for roughly four-frame segments?",
+    "How can existing mean-pooled decoder checkpoints remain exact warm starts?",
+    "Which controls isolate order information from parameter count and retraining?"
+  ],
+  "papers": [
+    {
+      "id": "p1",
+      "title": "Deep Sets",
+      "authors": "Manzil Zaheer et al.",
+      "year": 2017,
+      "venue": "NeurIPS",
+      "arxiv_id": "1703.06114",
+      "doi": null,
+      "problem": "Neural functions over unordered sets.",
+      "method": "Permutation-invariant functions built around commutative aggregation.",
+      "results": "Provides a characterization and practical architecture for set-invariant functions.",
+      "relevance": "Formal basis for why mean cannot distinguish a reversed fixed-vector sequence.",
+      "status": "verified"
+    },
+    {
+      "id": "p2",
+      "title": "Long Short-Term Memory",
+      "authors": "Sepp Hochreiter and Juergen Schmidhuber",
+      "year": 1997,
+      "venue": "Neural Computation",
+      "arxiv_id": null,
+      "doi": "10.1162/neco.1997.9.8.1735",
+      "problem": "Decaying error flow in recurrent sequence learning.",
+      "method": "Gated recurrent memory cells.",
+      "results": "Improved learning on synthetic long-lag tasks.",
+      "relevance": "Foundation for an LSTM span encoder, though long memory is not needed for four-frame spans.",
+      "status": "verified"
+    },
+    {
+      "id": "p3",
+      "title": "Learning Phrase Representations using RNN Encoder-Decoder for Statistical Machine Translation",
+      "authors": "Kyunghyun Cho et al.",
+      "year": 2014,
+      "venue": "EMNLP",
+      "arxiv_id": "1406.1078",
+      "doi": "10.3115/v1/D14-1179",
+      "problem": "Fixed-vector representation of variable-length phrases.",
+      "method": "Introduces a gated recurrent unit in an encoder-decoder.",
+      "results": "Learned phrase representations improved the SMT setup studied.",
+      "relevance": "Supports GRU as the lighter recurrent prototype.",
+      "status": "verified"
+    },
+    {
+      "id": "p4",
+      "title": "Segmental Recurrent Neural Networks",
+      "authors": "Lingpeng Kong, Chris Dyer, Noah A. Smith",
+      "year": 2016,
+      "venue": "ICLR",
+      "arxiv_id": "1511.06018",
+      "doi": null,
+      "problem": "Joint modeling of sequence segmentations and segment labels.",
+      "method": "Bidirectional RNN encodings of the constituent tokens in each segment with a semi-Markov model.",
+      "results": "Reported gains on handwriting recognition and Chinese segmentation/POS tasks.",
+      "relevance": "Closest general precedent for an order-aware segment embedding.",
+      "status": "verified"
+    },
+    {
+      "id": "p5",
+      "title": "Segmental Recurrent Neural Networks for End-to-End Speech Recognition",
+      "authors": "Liang Lu, Lingpeng Kong, Chris Dyer, Noah A. Smith, Steve Renals",
+      "year": 2016,
+      "venue": "Interspeech",
+      "arxiv_id": "1603.00223",
+      "doi": "10.21437/Interspeech.2016-40",
+      "problem": "End-to-end acoustic modeling with latent segments.",
+      "method": "RNN feature extraction integrated with a segmental CRF.",
+      "results": "Reported 17.3 percent TIMIT PER in first-pass decoding.",
+      "relevance": "Direct speech precedent for recurrent segment features.",
+      "status": "verified"
+    },
+    {
+      "id": "p6",
+      "title": "Why and when should you pool? Analyzing Pooling in Recurrent Architectures",
+      "authors": "Pratyush Maini, Keshav Kolluru, Danish Pruthi, Mausam",
+      "year": 2020,
+      "venue": "Findings of EMNLP",
+      "arxiv_id": null,
+      "doi": "10.18653/v1/2020.findings-emnlp.410",
+      "problem": "Understanding pooled versus terminal recurrent representations.",
+      "method": "Gradient-flow and positional-bias analyses across text classification tasks.",
+      "results": "Pooling aided early gradient flow; terminal BiLSTMs were biased toward sequence endpoints.",
+      "relevance": "Supports retaining mean as a residual base instead of a pure final-state replacement.",
+      "status": "verified"
+    },
+    {
+      "id": "p7",
+      "title": "A Cross-Task Analysis of Text Span Representations",
+      "authors": "Shubham Toshniwal et al.",
+      "year": 2020,
+      "venue": "RepL4NLP",
+      "arxiv_id": null,
+      "doi": "10.18653/v1/2020.repl4nlp-1.20",
+      "problem": "Choosing a representation for arbitrary spans.",
+      "method": "Six span representations, eight pretrained encoders, and six tasks.",
+      "results": "The best representation varied by task; the choice mattered more with fixed encoders.",
+      "relevance": "The frozen SSL setting needs a controlled ablation rather than an assumed winner.",
+      "status": "verified"
+    },
+    {
+      "id": "p8",
+      "title": "Named Entity Recognition as Structured Span Prediction",
+      "authors": "Urchade Zaratiana, Nadi Tomeh, Pierre Holat, Thierry Charnois",
+      "year": 2022,
+      "venue": "UM-IoS",
+      "arxiv_id": null,
+      "doi": "10.18653/v1/2022.umios-1.1",
+      "problem": "Span representation and structured decoding for NER.",
+      "method": "Compares endpoints, max pooling, convolution, and other span features.",
+      "results": "Endpoint representations were robust across tested models and datasets.",
+      "relevance": "Motivates a cheap ordered endpoint residual.",
+      "status": "verified"
+    },
+    {
+      "id": "p9",
+      "title": "Attention Is All You Need",
+      "authors": "Ashish Vaswani et al.",
+      "year": 2017,
+      "venue": "NeurIPS",
+      "arxiv_id": "1706.03762",
+      "doi": null,
+      "problem": "Parallel sequence transduction without recurrence.",
+      "method": "Self-attention with explicit positional encodings.",
+      "results": "Strong machine translation quality with greater training parallelism.",
+      "relevance": "Shows that a tiny attention pooler needs within-segment position information.",
+      "status": "verified"
+    },
+    {
+      "id": "p10",
+      "title": "Set Transformer: A Framework for Attention-based Permutation-Invariant Neural Networks",
+      "authors": "Juho Lee et al.",
+      "year": 2019,
+      "venue": "ICML",
+      "arxiv_id": "1810.00825",
+      "doi": null,
+      "problem": "Attention over unordered sets.",
+      "method": "Permutation-equivariant attention blocks and invariant pooling by multihead attention.",
+      "results": "Competitive set-modeling results with an inducing-point linear-complexity variant.",
+      "relevance": "Negative control: attention without position can still ignore order.",
+      "status": "verified"
+    },
+    {
+      "id": "p11",
+      "title": "Attentive Statistics Pooling for Deep Speaker Embedding",
+      "authors": "Koji Okabe, Takafumi Koshinaka, Koichi Shinoda",
+      "year": 2018,
+      "venue": "Interspeech",
+      "arxiv_id": null,
+      "doi": null,
+      "problem": "Pooling frame features into speaker embeddings.",
+      "method": "Attention-weighted means and standard deviations.",
+      "results": "Reported relative EER reductions of 7.5 and 8.1 percent on two evaluations.",
+      "relevance": "Shows learned statistics can help, but content-only weighted statistics remain order-invariant.",
+      "status": "verified"
+    },
+    {
+      "id": "p12",
+      "title": "Convolutional Sequence to Sequence Learning",
+      "authors": "Jonas Gehring et al.",
+      "year": 2017,
+      "venue": "ICML",
+      "arxiv_id": "1705.03122",
+      "doi": null,
+      "problem": "Parallel sequence modeling as an alternative to recurrent networks.",
+      "method": "Gated temporal convolutional encoder-decoder.",
+      "results": "Reported substantially faster training and improved MT quality over its deep LSTM comparison.",
+      "relevance": "Supports a parallel temporal-convolution fallback if RNN packing is slow.",
+      "status": "verified"
+    },
+    {
+      "id": "p13",
+      "title": "wav2vec 2.0: A Framework for Self-Supervised Learning of Speech Representations",
+      "authors": "Alexei Baevski, Yuhao Zhou, Abdelrahman Mohamed, Michael Auli",
+      "year": 2020,
+      "venue": "NeurIPS",
+      "arxiv_id": "2006.11477",
+      "doi": null,
+      "problem": "Self-supervised contextual speech representation learning.",
+      "method": "Contrastive learning over masked latent speech with a context network.",
+      "results": "Strong low-resource LibriSpeech ASR results.",
+      "relevance": "The vectors being pooled already carry contextual information.",
+      "status": "verified"
+    },
+    {
+      "id": "p14",
+      "title": "WavLM: Large-Scale Self-Supervised Pre-Training for Full Stack Speech Processing",
+      "authors": "Sanyuan Chen et al.",
+      "year": 2022,
+      "venue": "IEEE Journal of Selected Topics in Signal Processing",
+      "arxiv_id": "2110.13900",
+      "doi": null,
+      "problem": "Universal contextual speech representations.",
+      "method": "Masked prediction and denoising with a Transformer using gated relative position bias.",
+      "results": "Reported broad gains across SUPERB and representative speech tasks.",
+      "relevance": "The decoder-side input already mixes temporal context and position before pooling.",
+      "status": "verified"
+    }
+  ],
+  "themes": [
+    "Commutative pooling cannot itself represent within-segment order.",
+    "Recurrent segment embeddings are established, including in speech.",
+    "A mean-plus-zero-initialized residual preserves checkpoint behavior and pooling optimization benefits.",
+    "Short contextual spans favor endpoints or a small BiGRU before an LSTM or Transformer."
+  ],
+  "gaps": [
+    {
+      "id": "g1",
+      "statement": "No retained work tests order-aware pooling for four-frame segments of frozen WavLM features feeding an autoregressive text decoder.",
+      "evidence": "p4 and p5 use recurrent segment encoders in different segmental models; p13 and p14 establish contextual speech inputs but not this pooling comparison."
+    },
+    {
+      "id": "g2",
+      "statement": "It is unknown whether gains come from order, extra parameters, or decoder retraining.",
+      "evidence": "p7 finds task-dependent representation effects; a within-segment shuffle control is absent from this project."
+    },
+    {
+      "id": "g3",
+      "statement": "Order-aware pooling may interact with learned boundary error by emphasizing inaccurate endpoints.",
+      "evidence": "p8 supports endpoints in clean text spans, while the project uses predicted acoustic boundaries."
+    }
+  ]
+}

@@ -25,7 +25,7 @@ __set_seed: !apply:speechbrain.utils.seed_everything [!ref <seed>]
 ####################### Experiment Configuration ###########################
 
 experiment_name: speechllm_fixed_pooling
-output_folder: !ref /saltpool0/scratch/rogertseng/speechllm/speechbrain/results/<experiment_name>/<boundary_source>/<seed>
+output_folder: !ref results/<experiment_name>/<boundary_source>/<seed>
 output_wer_folder: !ref <output_folder>/wer_results
 save_folder: !ref <output_folder>/save
 train_log: !ref <output_folder>/train_log.txt
@@ -34,15 +34,30 @@ ckpt_interval_minutes: 15
 
 ####################### Segmentation Configuration #########################
 
-boundary_source: fixed_rate  # 'fixed_rate' | 'alignment'
+boundary_source: alignment  # 'fixed_rate' | 'alignment'
 # k=5 matches the 5x rate of the ConcatDownsampler in speechllm_e2e.yaml for
 # an equal-compression comparison (the segmenter warmstart default is k=4).
 fixed_rate_k: 5
-boundary_target_dir: null    # required for boundary_source: alignment
+# word-level boundaries derived from CTC forced alignment (as opposed to the
+# MFA-TextGrid-derived word/phone/syllable levels also available as sibling
+# dirs) -- see prepare_boundary_targets.py on origin/forced_alignment for how
+# these were built.
+boundary_target_dir: /home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/datasets/wavlm_boundaries/word_ctc
+
+# Blank/separator-token ablation (only used when boundary_source: alignment).
+#   keep    : standard word_ctc -- separator/"blank" tokens fed to the decoder (baseline)
+#   drop    : discard separator tokens before the decoder (co-worker's "remove blank")
+#   zero    : keep separator positions, zero their embeddings
+#   const   : keep separator positions, replace with a learned vector (needs blank_const)
+#   shuffle : keep separator positions, permute their embeddings within each utterance
+# Non-keep modes require separator_target_dir (ctc_boundary_align's word_ctc_sep:
+# per-frame {0,1} is_separator, one label per encoder frame).
+blank_mode: keep
+separator_target_dir: /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/boundary_targets/word_ctc_sep
 
 ####################### Data Configuration #################################
 
-data_folder: /saltpool0/data/tseng/LibriSpeech  # PLACEHOLDER, e.g., /path/to/LibriSpeech
+data_folder: /home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/datasets/LibriSpeech
 train_splits: ["train-clean-100", "train-clean-360", "train-other-500"]
 dev_splits: ["dev-clean"]
 test_splits: ["test-clean", "test-other", "dev-other"]
@@ -66,9 +81,13 @@ ssl_device: cuda
 ssl_output_norm: True
 use_feats: False
 # LLM Configuration
-llm_path: google/gemma-3-1b-it # PLACEHOLDER
-llm_emb_size: 1152
-llm_save_path: !ref <save_folder>
+# meta-llama/Llama-3.2-1B-Instruct is gated on the Hub and this account's own
+# HF token isn't authorized for it, but a snapshot is already downloaded to
+# the shared team cache -- point cache_dir there (HF_HUB_OFFLINE=1 at run
+# time keeps it from ever hitting the network / gate check).
+llm_path: meta-llama/Llama-3.2-1B-Instruct
+llm_emb_size: 2048
+llm_save_path: /home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub
 
 ####################### Training Hyperparameters ###########################
 
@@ -122,7 +141,15 @@ dynamic_batch_sampler_valid:
 
 ####################### DataLoader Configuration ##########################
 ignore_index: -100
-test_batch_size: 1
+# Eval/decoding batch size. Batched greedy decoding is supported by the searcher
+# (per-sequence EOS + growing attention mask). Test/valid data are sorted
+# ascending by duration, so a batch groups near-equal-length utterances and the
+# audio padding (hence any RoPE position shift) stays small. Measured effect on
+# exp-001 dev-clean: bs=16 -> 6.49 vs bs=1 -> 6.36 (+0.13% abs; from padding
+# positions + bf16 batched-matmul nondeterminism). PROTOCOL: compare conditions
+# at the SAME batch size (e.g. all ablations vs a bs=16 keep baseline), so this
+# ~0.1% offset is common-mode. ~16x faster eval. Raise if VRAM allows (1B LLM/80GB).
+test_batch_size: 16
 
 # Dataloader options
 train_dataloader_opts:
@@ -159,10 +186,18 @@ test_dataloader_opts:
 ####################### Model Architecture Parameters #######################
 
 # Output & Decoding Parameters
-bos_index: 2 # 0
-eos_index: 1 # 0
-pad_token: 0 # 128256
+bos_index: 128000
+eos_index: 128001
+pad_token: 128004
 prompt: "Transcribe speech to text."
+
+# Greedy-decode length budget: max_decode_steps = max_decode_ratio * (audio-token
+# prefix length). NOTE: this couples the decode budget to the NUMBER OF AUDIO
+# TOKENS, so blank_mode:drop (which halves the audio tokens) also halves the
+# budget and truncates long utterances -- a confound when comparing keep vs drop.
+# Overridable so drop can be re-decoded with an ample budget.
+min_decode_ratio: 0.0
+max_decode_ratio: 1.0
 
 ####################### Model Components ####################################
 
@@ -186,6 +221,12 @@ proj: !new:speechbrain.lobes.models.VanillaNN.VanillaNN
     activation: !ref <activation>
     dnn_blocks: !ref <dnn_layers>
     dnn_neurons: !ref <dnn_neurons>
+
+# Learned replacement vector for blank_mode:const (applied pre-proj, so every
+# separator token becomes identical after proj). Dead/unused param for the other
+# blank_modes -- harmless (gets no gradient, stays at init).
+blank_const_module: !new:blank_modules.LearnedVector
+    dim: !ref <ssl_feat_dims>
 
 
 backbone_llm: !new:speechbrain.integrations.huggingface.llama.LLaMA
@@ -214,8 +255,8 @@ feat_downsampler: !new:torch.nn.Identity
 searcher: !new:speechbrain.decoders.seq2seq.S2SHuggingFaceLLMGreedySearcher
     llm_model: !ref <llm>
     temperature: 0.0
-    min_decode_ratio: 0.0
-    max_decode_ratio: 1.0
+    min_decode_ratio: !ref <min_decode_ratio>
+    max_decode_ratio: !ref <max_decode_ratio>
     bos_index: !ref <bos_index>
     eos_index: !ref <eos_index>
 
@@ -226,9 +267,10 @@ modules:
     proj: !ref <proj>
     normalize: !ref <normalize>
     searcher: !ref <searcher>
+    blank_const_module: !ref <blank_const_module>
 
 model: !new:torch.nn.ModuleList
-    - [!ref <llm>, !ref <proj>]
+    - [!ref <llm>, !ref <proj>, !ref <blank_const_module>]
 
 ####################### Optimizers & Schedulers ############################
 
@@ -259,6 +301,7 @@ checkpointer: !new:speechbrain.utils.checkpoints.Checkpointer
         ssl: !ref <ssl>
         llm: !ref <llm>
         proj: !ref <proj>
+        blank_const_module: !ref <blank_const_module>
         lr_annealing_ssl: !ref <lr_annealing_ssl>
         counter: !ref <epoch_counter>
         normalize: !ref <normalize>

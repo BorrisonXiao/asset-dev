@@ -154,6 +154,30 @@ dmypy.json
 
 # Log folders
 **/log/
+**/slurm_logs/
+
+# Local experiment outputs and model weights
+**/wandb/
+**/checkpoints/
+*.ckpt
+*.pt
+*.pth
+*.safetensors
+
+# Generated local report/publication artifacts
+.publish_staging/
+training_report.html
+artifacts/segmenter/controlled_boundary_accuracy.json
+artifacts/segmenter/*/
+artifacts/segmenter/on_policy_prefix_distillation.html
+artifacts/segmenter/transformer_ar_combined_rollout.html
+reports/jsalt26_report/
+reports/*.json
+
+# Personal session-continuity notes and memory (not for the shared repo)
+HANDOFF.md
+CLAUDE.md
+docs/project_notes/
 
 # Mac OS
 .DS_Store

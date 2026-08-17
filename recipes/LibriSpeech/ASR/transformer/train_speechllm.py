@@ -46,10 +46,12 @@ from hyperpyyaml import load_hyperpyyaml
 
 import speechbrain as sb
 from segment_pooling import (
+    apply_blank_mode,
     fixed_rate_boundary_targets,
     lengths_to_padding_mask,
     mean_pool_segments,
     padding_mask_to_lengths,
+    segment_separator_mask,
 )
 from speechbrain.integrations.hdf5.cached_item import CachedHDF5DynamicItem
 from speechbrain.utils.distributed import if_main_process, run_on_main
@@ -208,6 +210,26 @@ class ASR(sb.core.Brain):
             audio_down_feats, seg_pad_mask = mean_pool_segments(
                 audio_feats, pad_mask, boundary
             )
+            # Optional blank/separator-token ablation: drop or replace the CTC
+            # separator/"blank" tokens before the decoder (no-op when 'keep').
+            blank_mode = getattr(self.hparams, "blank_mode", "keep") or "keep"
+            if blank_mode != "keep":
+                sep_frame, _ = batch.separator_target
+                if sep_frame.size(1) != boundary.size(1):
+                    raise ValueError(
+                        f"separator_target has {sep_frame.size(1)} frames but "
+                        f"boundary has {boundary.size(1)}; they must align."
+                    )
+                sep_seg = segment_separator_mask(
+                    sep_frame.long(), boundary, pad_mask
+                )
+                audio_down_feats, seg_pad_mask = apply_blank_mode(
+                    audio_down_feats,
+                    seg_pad_mask,
+                    sep_seg,
+                    blank_mode,
+                    const_vec=getattr(self, "blank_const", None),
+                )
             audio_down_lens = padding_mask_to_lengths(seg_pad_mask)
         else:
             # R^L*D -> R^(L/R)*(D*R)
@@ -489,6 +511,18 @@ def dataio_prepare(hparams, tokenizer):
             "one label per encoder frame (1 = frame starts a new segment)."
         )
 
+    # Blank/separator-token ablations (blank_mode != 'keep') need a per-frame
+    # is_separator channel (`separator_target_dir`, from ctc_boundary_align's
+    # word_ctc_sep) so the recipe can identify the separator/"blank" tokens.
+    blank_mode = hparams.get("blank_mode", "keep") or "keep"
+    needs_separator = needs_boundary_target and blank_mode != "keep"
+    if needs_separator and not hparams.get("separator_target_dir"):
+        raise ValueError(
+            f"blank_mode='{blank_mode}' requires `separator_target_dir`: a "
+            "directory of per-utterance `<id>.pt` files, each a 1-D {0,1} "
+            "tensor with one is_separator label per encoder frame."
+        )
+
     # Token indices and prompt setup
     bos_index = hparams["bos_index"]
     eos_index = hparams["eos_index"]
@@ -580,6 +614,18 @@ def dataio_prepare(hparams, tokenizer):
 
         extra_items.append(boundary_pipeline)
 
+    if needs_separator:
+        separator_dir = hparams["separator_target_dir"]
+
+        @sb.utils.data_pipeline.takes("id")
+        @sb.utils.data_pipeline.provides("separator_target")
+        def separator_pipeline(utt_id):
+            """Load per-frame {0,1} is_separator labels for one utterance."""
+            path = os.path.join(separator_dir, f"{utt_id}.pt")
+            return torch.load(path).view(-1).long()
+
+        extra_items.append(separator_pipeline)
+
     # Define dynamic items based on mode
     # Note: build_dynamic_items is defined outside the if/else to avoid scope issues
     def build_dynamic_items():
@@ -644,6 +690,8 @@ def dataio_prepare(hparams, tokenizer):
         ]
     if needs_boundary_target:
         output_keys.append("boundary_target")
+    if needs_separator:
+        output_keys.append("separator_target")
 
     def _create_dataset(csv_path, sorting="ascending"):
         """Create a dataset from CSV file with optional sorting.
@@ -775,6 +823,10 @@ if __name__ == "__main__":
     asr_brain.txt_embedding = (
         asr_brain.raw_modules.llm.model.get_input_embeddings()
     )
+    # Expose the learned const vector (used only by blank_mode: const) so
+    # compute_forward's apply_blank_mode(const_vec=self.blank_const) can reach it.
+    if hasattr(asr_brain.raw_modules, "blank_const_module"):
+        asr_brain.blank_const = asr_brain.raw_modules.blank_const_module.vec
     # adding objects to trainer:
     train_dataloader_opts = hparams["train_dataloader_opts"]
     valid_dataloader_opts = hparams["valid_dataloader_opts"]

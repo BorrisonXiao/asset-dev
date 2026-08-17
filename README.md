@@ -1,12 +1,31 @@
-# SpeechLLM
+# ASSET
+
+**Adaptive Speech Segmentation via Reinforcement Learning**
+
+ASSET learns variable-rate, hard speech-segment boundaries from downstream
+transcription feedback. It pools the encoder frames within each segment and
+passes the resulting lower-frequency audio sequence to an LLM-based ASR
+decoder. The current experiments cover WavLM and wav2vec2 features, CNN and
+local-history Transformer segmenters, autoregressive boundary policies, and
+order-aware BiGRU residual pooling on LibriSpeech-100h.
+
+The main training entry point and configuration are:
+
+- `recipes/LibriSpeech/ASR/transformer/train_speechllm_with_segmenter.py`
+- `recipes/LibriSpeech/ASR/transformer/hparams/speechllm_segmenter.yaml`
+
+Experiment outputs, datasets, logs, and model weights are intentionally not
+versioned in this repository.
+
+## Base SpeechLLM setup
 
 ### Installation
 
 Tested with Python 3.11, but >3.9 should work
 
 ```bash
-git clone git@github.com:JSALT2026-OmniEnc/speechllm.git
-cd speechllm
+git clone git@github.com:BorrisonXiao/asset-dev.git
+cd asset-dev
 # Pytorch versions I used
 # pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu118
 pip install -r requirements.txt 

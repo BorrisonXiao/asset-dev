@@ -28,6 +28,17 @@ DATA = "/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/datase
 SSL_CACHE = "/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/ssl_cache"
 RES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
 _NUM = r"[-+0-9.eE]+"
+FRAME_HZ = 50.0
+
+
+def rate_hz(rho):
+    """Convert the internal frame-retention fraction to audio-token frequency."""
+    return FRAME_HZ * float(rho)
+
+
+def rate_hz_stats(stats):
+    """Convert a ``(mean, sample_sd)`` retention-fraction pair to Hz."""
+    return rate_hz(stats[0]), rate_hz(stats[1])
 
 
 # --------------------------- log parsing ---------------------------
@@ -115,6 +126,11 @@ def series(rows, key, warmup=0):
     """[(epoch - warmup, value)] so x=1 is the first RL epoch, x<=0 is warmup."""
     return [(int(r["epoch"]) - warmup, r[key]) for r in rows
             if key in r and r[key] == r[key]]
+
+
+def frequency_series(rows, key, warmup=0):
+    """Convert an internal frame fraction series into reader-facing tokens/second."""
+    return [(x, rate_hz(value)) for x, value in series(rows, key, warmup)]
 
 
 def multiseed_audit_section(segmenter_root):
@@ -533,18 +549,18 @@ def frontier_fig(base, models, no_down, encoder_name, aligned=()):
             ax = axes[row_idx, metric_idx]
             value_idx = 2 if metric_idx == 0 else 4
             sd_idx = value_idx + 1
-            rhos = [r[1] for r in b]
+            frequencies = [rate_hz(r[1]) for r in b]
             vals = [r[value_idx] for r in b]
             sds = [r[sd_idx] for r in b]
-            ax.plot(rhos, vals, "-o", color="#7b858c", lw=1.55, ms=4.8,
+            ax.plot(frequencies, vals, "-o", color="#7b858c", lw=1.55, ms=4.8,
                     label="Fixed-rate pooling", zorder=3)
             if any(sd > 0 for sd in sds):
-                ax.errorbar(rhos, vals, yerr=sds, fmt="none", ecolor="#7b858c",
+                ax.errorbar(frequencies, vals, yerr=sds, fmt="none", ecolor="#7b858c",
                             elinewidth=1.0, capsize=2.5, alpha=0.8, zorder=2)
             if row_idx == 0:
                 for fixed in b:
                     ax.annotate("k=%d" % fixed[0],
-                                (fixed[1], fixed[value_idx]),
+                                (rate_hz(fixed[1]), fixed[value_idx]),
                                 textcoords="offset points", xytext=(0, 7),
                                 fontsize=7.5, color="#68737a", ha="center")
 
@@ -552,13 +568,13 @@ def frontier_fig(base, models, no_down, encoder_name, aligned=()):
                      color, marker) in aligned:
                     value, sd = ((clean, clean_sd) if metric_idx == 0
                                  else (other, other_sd))
-                    ax.errorbar([rho], [value], yerr=[sd], fmt=marker, ms=8.2,
+                    ax.errorbar([rate_hz(rho)], [value], yerr=[sd], fmt=marker, ms=8.2,
                                 color=color, ecolor=color, capsize=3, zorder=5,
                                 mec="white", mew=0.7, label=name)
 
             for name, rho, clean, clean_sd, other, other_sd, color, marker in row_models:
                 value, sd = (clean, clean_sd) if metric_idx == 0 else (other, other_sd)
-                ax.errorbar([rho], [value], yerr=[sd], fmt=marker, ms=8.2,
+                ax.errorbar([rate_hz(rho)], [value], yerr=[sd], fmt=marker, ms=8.2,
                             color=color, ecolor=color, capsize=3, zorder=5,
                             mec="white", mew=0.7, label=name)
 
@@ -573,9 +589,9 @@ def frontier_fig(base, models, no_down, encoder_name, aligned=()):
 
             if row_idx == 0:
                 ax.set_title(split, fontsize=13, fontweight="bold")
-            ax.set_xlim(0.11, 0.35)
+            ax.set_xlim(5.5, 17.5)
             if row_idx == len(row_specs) - 1:
-                ax.set_xlabel("kept ratio ρ  (← more compression)")
+                ax.set_xlabel("Audio-token frequency (Hz)  (← more compression)")
             if metric_idx == 0:
                 ax.set_ylabel("%s\nWER (%%)" % row_label)
             ax.grid(axis="y", alpha=0.25, lw=0.6)
@@ -791,7 +807,7 @@ def ar_policy_demo_figure():
   <title id="ar-policy-demo-title">Three levels of boundary-policy memory</title>
   <desc id="ar-policy-demo-desc">The independent CNN uses only an acoustic score, the
   first-order CNN adds a two-way bias selected by the previous boundary, and the
-  full-prefix Transformer attends over all earlier audio and shifted boundary inputs.</desc>
+  local-history Transformer attends over the latest 64 audio and shifted-boundary states.</desc>
   <defs>
     <marker id="ar-arrow" viewBox="0 0 10 10" refX="9" refY="5"
             markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -804,6 +820,7 @@ def ar_policy_demo_figure():
       .ar-orange{fill:var(--pair-sed-asr);fill-opacity:.11;stroke:var(--pair-sed-asr);stroke-width:1.5}
       .ar-purple{fill:var(--pair-sed-speaker);fill-opacity:.11;stroke:var(--pair-sed-speaker);stroke-width:1.5}
       .ar-line{stroke:var(--text-muted);stroke-width:1.5;fill:none;marker-end:url(#ar-arrow)}
+      .ar-feedback{stroke:var(--text-muted);stroke-width:1.5;fill:none}
       .ar-dash{stroke:var(--text-muted);stroke-width:1.25;stroke-dasharray:5 5;fill:none}
       .ar-title{font-size:16px;font-weight:700;fill:var(--text-primary)}
       .ar-label{font-size:13px;fill:var(--text-primary)}
@@ -850,27 +867,28 @@ def ar_policy_demo_figure():
   <rect class="ar-orange" x="850" y="238" width="150" height="62" rx="10"/>
   <text class="ar-label" x="925" y="264" text-anchor="middle">sample b<tspan baseline-shift="sub">t</tspan></text>
   <text class="ar-small" x="925" y="283" text-anchor="middle">becomes next bit</text>
-  <path class="ar-line" d="M925 304 V321 H495 V306"/>
+  <path class="ar-feedback" d="M925 304 V323 H495"/>
+  <path class="ar-line" d="M495 323 V302"/>
   <text class="ar-note" x="710" y="345" text-anchor="middle" fill="var(--pair-sed-asr)">can learn “avoid two cuts in a row”</text>
 
   <rect class="ar-row" x="8" y="370" width="1024" height="208" rx="14"/>
-  <text class="ar-title" x="28" y="400">Full-prefix Transformer AR</text>
-  <text class="ar-small" x="28" y="422">learned summary of every earlier shifted boundary input</text>
+  <text class="ar-title" x="28" y="400">Local-history Transformer AR</text>
+  <text class="ar-small" x="28" y="422">learned summary of the latest 64 shifted-boundary states</text>
   <rect class="ar-purple" x="190" y="440" width="114" height="67" rx="10"/>
   <text class="ar-label" x="247" y="465" text-anchor="middle">z<tspan baseline-shift="sub">0</tspan></text>
   <text class="ar-small" x="247" y="486" text-anchor="middle">x<tspan baseline-shift="sub">0</tspan> + BOS</text>
   <rect class="ar-purple" x="326" y="440" width="114" height="67" rx="10"/>
   <text class="ar-label" x="383" y="465" text-anchor="middle">z<tspan baseline-shift="sub">1</tspan></text>
   <text class="ar-small" x="383" y="486" text-anchor="middle">x<tspan baseline-shift="sub">1</tspan> + b<tspan baseline-shift="sub">0</tspan></text>
-  <rect class="ar-box" x="456" y="450" width="36" height="47" rx="9"/>
-  <text class="ar-title" x="474" y="480" text-anchor="middle">…</text>
-  <rect class="ar-purple" x="504" y="440" width="114" height="67" rx="10"/>
-  <text class="ar-label" x="561" y="465" text-anchor="middle">z<tspan baseline-shift="sub">t</tspan></text>
-  <text class="ar-small" x="561" y="486" text-anchor="middle">x<tspan baseline-shift="sub">t</tspan> + b<tspan baseline-shift="sub">t−1</tspan></text>
+  <rect class="ar-box" x="470" y="450" width="36" height="47" rx="9"/>
+  <text class="ar-title" x="488" y="480" text-anchor="middle">…</text>
+  <rect class="ar-purple" x="532" y="440" width="114" height="67" rx="10"/>
+  <text class="ar-label" x="589" y="465" text-anchor="middle">z<tspan baseline-shift="sub">t</tspan></text>
+  <text class="ar-small" x="589" y="486" text-anchor="middle">x<tspan baseline-shift="sub">t</tspan> + b<tspan baseline-shift="sub">t−1</tspan></text>
   <path class="ar-line" d="M304 474 H324"/>
-  <path class="ar-line" d="M440 474 H454"/>
-  <path class="ar-line" d="M492 474 H502"/>
-  <path class="ar-line" d="M618 474 H674"/>
+  <path class="ar-line" d="M440 474 H468"/>
+  <path class="ar-line" d="M506 474 H530"/>
+  <path class="ar-line" d="M646 474 H674"/>
   <rect class="ar-box" x="676" y="440" width="158" height="67" rx="10"/>
   <text class="ar-label" x="755" y="465" text-anchor="middle">4 causal layers</text>
   <text class="ar-small" x="755" y="486" text-anchor="middle">attention over z<tspan baseline-shift="sub">0:t</tspan></text>
@@ -878,13 +896,14 @@ def ar_policy_demo_figure():
   <rect class="ar-purple" x="876" y="440" width="124" height="67" rx="10"/>
   <text class="ar-label" x="938" y="465" text-anchor="middle">sample b<tspan baseline-shift="sub">t</tspan></text>
   <text class="ar-small" x="938" y="486" text-anchor="middle">cache state</text>
-  <path class="ar-line" d="M938 511 V533 H561 V513"/>
+  <path class="ar-feedback" d="M938 511 V533 H589"/>
+  <path class="ar-line" d="M589 533 V509"/>
   <text class="ar-note" x="720" y="562" text-anchor="middle" fill="var(--pair-sed-speaker)">can model run length, rhythm, and audio-dependent history</text>
 </svg>'''
 
 
 def ar_modeling_demo():
-    """Browser-readable worked explanation of CNN and full-prefix Transformer AR."""
+    """Browser-readable worked explanation of CNN and local-history Transformer AR."""
     comparison = (
         '<div class="demo-table-scroll"><table><thead><tr><th>policy</th>'
         '<th>direct boundary memory</th>'
@@ -895,9 +914,9 @@ def ar_modeling_demo():
         '<tr><td>CNN · first-order AR</td><td>only the previous bit</td>'
         '<td>selects one of two global logit offsets</td>'
         '<td>three-seed WER result</td></tr>'
-        '<tr><td>Transformer · full-prefix AR</td><td>all earlier bits, through causal states</td>'
+        '<tr><td>Transformer · local-history AR</td><td>64-state window per causal layer</td>'
         '<td>attention learns an audio- and history-dependent adjustment</td>'
-        '<td>implemented; separate production study</td></tr>'
+        '<td>three-seed WER and pooling study</td></tr>'
         '</tbody></table></div>'
         '<p class="cap">The acoustic input is WavLM in all three descriptions. “Causal” refers '
         'to boundary-label history; WavLM itself is bidirectional, so none of these rows is a '
@@ -941,15 +960,16 @@ a_t &= \operatorname{CNN}(x)_{t}, \\
     )
 
     transformer = (
-        '<p>The full-prefix Transformer replaces the two offsets with a small decoder-only '
+        '<p>The local-history Transformer replaces the two offsets with a small decoder-only '
         'network. At frame \(t\), it adds the current projected WavLM vector, a positional '
         'encoding, and an embedding of the <i>previous</i> boundary. Causal attention then '
-        'summarizes every earlier input state.</p>'
+        'attends over a 64-state window in each of four layers. Stacking the layers can relay '
+        'older information indirectly, but this is not unrestricted global attention.</p>'
         + hk.equation(r'''
 \begin{aligned}
 z_t &= W_x x_t + E(\widetilde b_{t-1}) + P_t,
 & \widetilde b_{-1}&=\operatorname{BOS}, \\
-h_t &= \operatorname{CausalTransformer}(z_{0:t}), \\
+h_t &= \operatorname{LocalCausalTransformer}_{64}(z_{0:t}), \\
 \Pr(b_t=1\mid x,b_{<t}) &= \sigma(w^{\top}h_t),
 & b_0&=0.
 \end{aligned}''')
@@ -971,7 +991,7 @@ h_t &= \operatorname{CausalTransformer}(z_{0:t}), \\
         '<span class="bit zero">0</span><span class="bit zero">0</span>'
         '<span class="bit zero">0</span></div></div></div>'
         '<p>Both histories end in 0. The first-order CNN therefore applies exactly the same '
-        '\(\delta_0\) adjustment to the next frame. The full-prefix Transformer can tell that '
+        '\(\delta_0\) adjustment to the next frame. The local-history Transformer can tell that '
         'History A cut recently while History B has gone several frames without a cut. It can '
         'learn “wait after a cut,” “cut after a long run,” or make either rule depend on the audio.</p>'
     )
@@ -994,7 +1014,8 @@ h_t &= \operatorname{CausalTransformer}(z_{0:t}), \\
         + '<p>For batch item \(b\), rollout \(k\), and frame \(t\), \(A_{b,k}\) is the '
         'group-relative advantage among the sampled segmentations. Sampling is discrete, so it '
         'runs without gradients; the parallel re-score supplies the gradient through the exact '
-        'same conditional policy. For the full-prefix model, the realized kept-ratio penalty is '
+        'same conditional policy. For the Transformer model, the realized audio-frequency '
+        'penalty is '
         'part of each rollout reward because exact marginals over all possible histories would '
         'be exponentially expensive.</p>'
     )
@@ -1002,22 +1023,111 @@ h_t &= \operatorname{CausalTransformer}(z_{0:t}), \\
     return (
         hk.finding('<b>Key distinction.</b> “AR” describes the boundary-label distribution, '
                    'not the acoustic encoder. The CNN version is a one-step Markov correction; '
-                   'the Transformer version is a learned full-prefix controller.', ok=True)
+                   'the Transformer version is a learned local-history controller.', ok=True)
         + hk.card(comparison, title="What each policy remembers")
         + hk.card('<div class="demo-figure-scroll">' + ar_policy_demo_figure() + '</div>'
                   + '<p class="cap">The independent policy has no label feedback. The CNN '
-                    'first-order policy feeds back one bit through two offsets. The full-prefix '
-                    'Transformer feeds back the sampled bit as the next input and retains all '
-                    'earlier states in causal attention.</p>',
+                    'first-order policy feeds back one bit through two offsets. The local-history '
+                    'Transformer feeds back the sampled bit as the next input and attends over '
+                    'the latest 64 states in each causal layer.</p>',
                   title="One acoustic stream, three boundary policies")
         + hk.card(worked_pooling, title="Start with the object being predicted")
         + '<div class="grid2">'
         + hk.card(cnn, title="CNN first-order AR: a learned spacing bias")
         + hk.card(transformer, title="Transformer AR: a learned history model")
         + '</div>'
-        + hk.card(history_example, title="Why full-prefix memory is more expressive")
+        + hk.card(history_example, title="Why local history is more expressive")
         + hk.card(training, title="How the Transformer AR trains without backpropagating through samples")
     )
+
+
+def bigru_pooling_diagram():
+    """Theme-aware diagram of mean-plus-BiGRU residual segment pooling."""
+    return r'''
+<svg class="chart" viewBox="0 0 1080 610" role="img"
+     aria-labelledby="bigru-pooling-title bigru-pooling-desc">
+  <title id="bigru-pooling-title">BiGRU residual pooling</title>
+  <desc id="bigru-pooling-desc">A segment's ordered WavLM frames feed a mean branch and a bidirectional GRU branch. A zero-initialized projection turns the GRU state into a correction that is added to the mean. The lower panel shows mean-equivalent initialization, two adaptation epochs, and joint reinforcement learning.</desc>
+  <defs>
+    <marker id="bg-arrow" viewBox="0 0 10 10" refX="8" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--text-muted)"/>
+    </marker>
+  </defs>
+  <style>
+    .bg-panel{fill:var(--surface-2);stroke:var(--border-strong);stroke-width:1.4}
+    .bg-box{fill:var(--surface-1);stroke:var(--border-strong);stroke-width:1.4}
+    .bg-blue{fill:color-mix(in srgb,var(--pair-sed-asr) 13%,var(--surface-1));stroke:var(--pair-sed-asr);stroke-width:1.7}
+    .bg-orange{fill:color-mix(in srgb,#b96f20 13%,var(--surface-1));stroke:#b96f20;stroke-width:1.7}
+    .bg-green{fill:color-mix(in srgb,#27865d 13%,var(--surface-1));stroke:#27865d;stroke-width:1.7}
+    .bg-line{fill:none;stroke:var(--text-muted);stroke-width:1.8;marker-end:url(#bg-arrow)}
+    .bg-title{fill:var(--text);font:700 20px ui-sans-serif,system-ui,sans-serif}
+    .bg-label{fill:var(--text);font:650 15px ui-sans-serif,system-ui,sans-serif}
+    .bg-small{fill:var(--text-secondary);font:13px ui-sans-serif,system-ui,sans-serif}
+    .bg-mono{fill:var(--text);font:600 15px ui-monospace,"SFMono-Regular",monospace}
+  </style>
+
+  <rect class="bg-panel" x="10" y="10" width="1060" height="390" rx="16"/>
+  <text class="bg-title" x="34" y="44">One predicted segment</text>
+  <text class="bg-small" x="34" y="67">The boundary policy fixes the interval; pooling decides how its ordered frames become one audio token.</text>
+
+  <rect class="bg-blue" x="35" y="105" width="78" height="58" rx="10"/>
+  <rect class="bg-blue" x="126" y="105" width="78" height="58" rx="10"/>
+  <rect class="bg-blue" x="217" y="105" width="78" height="58" rx="10"/>
+  <rect class="bg-blue" x="308" y="105" width="78" height="58" rx="10"/>
+  <text class="bg-mono" x="74" y="140" text-anchor="middle">x₀</text>
+  <text class="bg-mono" x="165" y="140" text-anchor="middle">x₁</text>
+  <text class="bg-mono" x="256" y="140" text-anchor="middle">x₂</text>
+  <text class="bg-mono" x="347" y="140" text-anchor="middle">x₃</text>
+  <text class="bg-small" x="210" y="187" text-anchor="middle">WavLM frames in time order</text>
+
+  <path class="bg-line" d="M386 132 H450 V111 H506"/>
+  <path class="bg-line" d="M386 142 H450 V253 H506"/>
+
+  <rect class="bg-box" x="508" y="82" width="190" height="82" rx="12"/>
+  <text class="bg-label" x="603" y="111" text-anchor="middle">Mean branch</text>
+  <text class="bg-mono" x="603" y="140" text-anchor="middle">m = mean(x₀…x₃)</text>
+  <text class="bg-small" x="603" y="180" text-anchor="middle">Order-insensitive baseline</text>
+
+  <rect class="bg-orange" x="508" y="218" width="190" height="96" rx="12"/>
+  <text class="bg-label" x="603" y="246" text-anchor="middle">Order branch</text>
+  <text class="bg-mono" x="603" y="272" text-anchor="middle">BiGRU(x₀…x₃)</text>
+  <text class="bg-small" x="603" y="296" text-anchor="middle">final forward + backward states</text>
+
+  <path class="bg-line" d="M698 266 H740"/>
+  <rect class="bg-orange" x="742" y="218" width="150" height="96" rx="12"/>
+  <text class="bg-label" x="817" y="246" text-anchor="middle">Projection</text>
+  <text class="bg-mono" x="817" y="273" text-anchor="middle">Δ = Wh + b</text>
+  <text class="bg-small" x="817" y="297" text-anchor="middle">learned correction</text>
+
+  <path class="bg-line" d="M698 123 H924 V176"/>
+  <path class="bg-line" d="M892 266 H924 V220"/>
+  <circle class="bg-green" cx="924" cy="198" r="25"/>
+  <text class="bg-title" x="924" y="205" text-anchor="middle">+</text>
+  <path class="bg-line" d="M949 198 H992"/>
+  <rect class="bg-green" x="994" y="158" width="60" height="80" rx="12"/>
+  <text class="bg-label" x="1024" y="190" text-anchor="middle">audio</text>
+  <text class="bg-label" x="1024" y="210" text-anchor="middle">token</text>
+  <text class="bg-mono" x="924" y="350" text-anchor="middle">z = m + Δ</text>
+  <text class="bg-small" x="924" y="373" text-anchor="middle">Mean plus an order-sensitive residual</text>
+
+  <rect class="bg-panel" x="10" y="420" width="1060" height="180" rx="16"/>
+  <text class="bg-title" x="34" y="455">How the run starts and learns</text>
+  <rect class="bg-box" x="34" y="478" width="290" height="92" rx="12"/>
+  <text class="bg-label" x="179" y="504" text-anchor="middle">Initialization</text>
+  <text class="bg-mono" x="179" y="531" text-anchor="middle">W = 0, b = 0  ⇒  Δ = 0</text>
+  <text class="bg-small" x="179" y="554" text-anchor="middle">Exactly the same output as mean pooling</text>
+  <path class="bg-line" d="M324 524 H372"/>
+  <rect class="bg-blue" x="374" y="478" width="306" height="92" rx="12"/>
+  <text class="bg-label" x="527" y="504" text-anchor="middle">Epochs 1–2 · adaptation</text>
+  <text class="bg-small" x="527" y="530" text-anchor="middle">Fixed predicted boundaries</text>
+  <text class="bg-small" x="527" y="551" text-anchor="middle">CE updates BiGRU, projection, and LoRA decoder</text>
+  <path class="bg-line" d="M680 524 H728"/>
+  <rect class="bg-green" x="730" y="478" width="306" height="92" rx="12"/>
+  <text class="bg-label" x="883" y="504" text-anchor="middle">Epochs 3–12 · joint RL</text>
+  <text class="bg-small" x="883" y="530" text-anchor="middle">CE keeps adapting pooler + decoder</text>
+  <text class="bg-small" x="883" y="551" text-anchor="middle">GRPO additionally updates boundary policy</text>
+</svg>'''
 
 
 def sample_utts(csv_path, n=3, dmin=2.5, dmax=5.0):
@@ -1371,6 +1481,69 @@ def build(args):
     long_ar_other = mean_sd([row["other"] for row in long_ar
                              if row["other"] is not None])
 
+    # Production full-prefix Transformer-AR study.  Both arms use WavLM for
+    # boundary prediction and decoder-side features, the best char decoder,
+    # local attention (window 64), combined K=4 rollouts, and the same
+    # two-warmup + ten-joint-RL schedule.  The only intended change is the
+    # within-segment representation: plain mean versus a zero-initialized
+    # order-aware BiGRU residual added to that mean.
+    fullprefix_roots = {
+        "mean": os.path.join(
+            SW, "fullprefix_transformer_ar_local64_best_char_decoder", "nll_mt"
+        ),
+        "bigru": os.path.join(
+            SW,
+            "fullprefix_transformer_ar_local64_bigru_best_char_decoder",
+            "nll_mt",
+        ),
+    }
+    fullprefix = {}
+    for pooling, root in fullprefix_roots.items():
+        pattern = os.path.join(root, "{seed}")
+        runs = []
+        for seed in seeds:
+            run = pattern.format(seed=seed)
+            clean = split_record(run, "test-clean")
+            other = split_record(run, "test-other")
+            test_rhos = []
+            log_path = os.path.join(run, "train_log.txt")
+            if os.path.exists(log_path):
+                for line in open(log_path, encoding="utf-8", errors="replace"):
+                    match = re.match(
+                        rf"Epoch loaded: \d+ - test .*?rho_mean: ({_NUM})", line
+                    )
+                    if match:
+                        test_rhos.append(float(match.group(1)))
+            runs.append({
+                "seed": seed,
+                "epoch": selected_epoch(log_path),
+                "rho": test_rhos[0] if test_rhos else float("nan"),
+                "clean": clean["wer"] if clean else None,
+                "other": other["wer"] if other else None,
+            })
+        fullprefix[pooling] = {
+            "runs": runs,
+            "rho": family_rho(pattern),
+            "clean": family_stats(pattern, "test-clean"),
+            "other": family_stats(pattern, "test-other"),
+            "dev_other": family_stats(pattern, "dev-other"),
+        }
+
+    fullprefix_clean_wins = sum(
+        bigru["clean"] < mean["clean"]
+        for mean, bigru in zip(
+            fullprefix["mean"]["runs"], fullprefix["bigru"]["runs"]
+        )
+        if mean["clean"] is not None and bigru["clean"] is not None
+    )
+    fullprefix_other_wins = sum(
+        bigru["other"] < mean["other"]
+        for mean, bigru in zip(
+            fullprefix["mean"]["runs"], fullprefix["bigru"]["runs"]
+        )
+        if mean["other"] is not None and bigru["other"] is not None
+    )
+
     # htmlkit defaults to 960 px. This report has several wide comparison tables,
     # so use a wider desktop column while retaining the existing responsive cap.
     body = (
@@ -1422,18 +1595,25 @@ def build(args):
 
     body += hk.section("", body=hk.tiles([
         ("Oracle · WavLM char alignment", "%.2f±%.2f%%" % wavlm_char_clean,
-         "oracle reference · other %.2f±%.2f%% · n=%d" %
-         (wavlm_char_other[0], wavlm_char_other[1], wavlm_char_n)),
+         "oracle reference · %.1f Hz · other %.2f±%.2f%% · n=%d" %
+         (rate_hz(0.292651),
+          wavlm_char_other[0], wavlm_char_other[1], wavlm_char_n)),
         ("WavLM · CNN segmenter · first-order AR",
          "%.2f±%.2f%%" % oracleclose["autoregressive"]["clean"][0],
-         "best char decoder · ρ≈%.3f · other %.2f±%.2f%%" %
-         (oracleclose["autoregressive"]["rho"][0],
+         "best char decoder · %.1f Hz · other %.2f±%.2f%%" %
+         (rate_hz(oracleclose["autoregressive"]["rho"][0]),
           oracleclose["autoregressive"]["other"][0][0],
           oracleclose["autoregressive"]["other"][0][1])),
+        ("WavLM · local-history Transformer AR + BiGRU",
+         "%.2f±%.2f%%" % fullprefix["bigru"]["clean"][0],
+         "best char decoder · %.1f Hz · other %.2f±%.2f%%" %
+         (rate_hz(fullprefix["bigru"]["rho"][0]),
+          fullprefix["bigru"]["other"][0][0],
+          fullprefix["bigru"]["other"][0][1])),
         ("WavLM · fixed k=5", "%.2f±%.2f%%" % wavlm_k5["clean"],
-         "ρ=0.20 · other %.2f±%.2f%%" % wavlm_k5["other"]),
+         "10.0 Hz · other %.2f±%.2f%%" % wavlm_k5["other"]),
         ("WavLM · no downsampling", "%.2f±%.2f%%" % wavlm_no_down["test-clean"],
-         "ρ=1.00 · other %.2f±%.2f%% · 18h02m/run" %
+         "50.0 Hz · other %.2f±%.2f%% · 18h02m/run" %
          wavlm_no_down["test-other"])]))
 
     evidence_rows = [
@@ -1447,12 +1627,12 @@ def build(args):
          "about tied on test-other.",
          "Evidence-backed"),
         ("Does placement matter at matched cost?",
-         "Phone alignment compared with fixed k=5 at a similar kept ratio",
+         "Phone alignment compared with fixed k=5 at a similar audio-token frequency",
          "Phone alignment: %.2f clean, %.2f other. Fixed k=5: %.2f clean, "
          "%.2f other." %
          (wavlm_phone_clean[0], wavlm_phone_other[0],
           wavlm_k5["clean"][0], wavlm_k5["other"][0]),
-         "The locations of the boundaries matter, not just how many frames are kept.",
+         "The locations of the boundaries matter, not just the resulting audio-token frequency.",
          "Evidence-backed"),
         ("Why is learned below the char oracle?",
          "Same decoder, three boundary sources",
@@ -1488,6 +1668,17 @@ def build(args):
           oracleclose["bernoulli"]["other"][0][0]
           - oracleclose["autoregressive"]["other"][0][0]),
          "Evidence-backed"),
+        ("Does order-aware pooling help?",
+         "Local-history Transformer AR with mean pooling compared with BiGRU residual pooling",
+         "Mean: %.2f clean, %.2f other. BiGRU residual: %.2f clean, %.2f other." %
+         (fullprefix["mean"]["clean"][0][0],
+          fullprefix["mean"]["other"][0][0],
+          fullprefix["bigru"]["clean"][0][0],
+          fullprefix["bigru"]["other"][0][0]),
+         "BiGRU lowers clean WER in all three paired seeds. Test-other improves in "
+         "%d/3 seeds, but its variance is too large for a general robustness claim." %
+         fullprefix_other_wins,
+         "Evidence-backed"),
         ("Do more RL epochs help?",
          "Thirty-epoch wav2vec2 Transformer AR continuation",
          "Selected checkpoints: %.2f±%.2f clean, %.2f±%.2f other. Best dev "
@@ -1521,47 +1712,79 @@ def build(args):
                 'problem.</b> WavLM fixed k=5 beats no downsampling by %.2f WER points on '
                 'test-clean while averaging 5h20m instead of 18h02m of A100 wall time per run '
                 '(3.4× faster in this protocol). Phone-aligned pooling improves another %.2f '
-                'points at nearly the same kept ratio. The decoder benefits from a shorter '
+                'points at nearly the same audio-token frequency. The decoder benefits from a shorter '
                 'prefix, but it also cares which frames are averaged together.' %
                 (wavlm_no_down["test-clean"][0] - wavlm_k5["clean"][0],
                  wavlm_k5["clean"][0] - wavlm_phone_clean[0]))
             + hk.finding(
                 '<span class="pill">Evidence-backed</span> <b>Highlighted configuration: '
                 'WavLM features, CNN segmenter, first-order AR, and the best char decoder.</b> '
-                'It reaches %.2f±%.2f / %.2f±%.2f WER at ρ≈%.3f—about %.1f× '
+                'It reaches %.2f±%.2f / %.2f±%.2f WER at %.1f Hz—about %.1f× '
                 'fewer decoder-side audio tokens than no downsampling. It is only %.2f points '
                 'behind oracle char boundaries on clean, but %.2f points behind on other. '
                 'The main remaining gap is therefore harder-speech robustness, not the need '
                 'for wav2vec2 features at inference.' %
                 (oracleclose["autoregressive"]["clean"][0]
                  + oracleclose["autoregressive"]["other"][0]
-                 + (oracleclose["autoregressive"]["rho"][0],
+                 + (rate_hz(oracleclose["autoregressive"]["rho"][0]),
                     1.0 / oracleclose["autoregressive"]["rho"][0],
                     oracleclose["autoregressive"]["clean"][0][0]
                     - wavlm_char_clean[0],
                     oracleclose["autoregressive"]["other"][0][0]
                     - wavlm_char_other[0])))
+            + hk.finding(
+                '<span class="pill">Evidence-backed</span> <b>Local-history Transformer AR '
+                'with BiGRU residual pooling improves the matched mean-pooling arm on '
+                'test-clean, but is not a general replacement for the CNN first-order system.</b> '
+                'It reaches %.2f±%.2f clean and %.2f±%.2f other at %.1f Hz. Relative to the '
+                'matched local-history mean-pooling arm, clean WER falls in %d/3 seeds and by '
+                '%.2f points on average. Test-other improves in only %d/3 seeds and has '
+                '%.2f-point sample SD, so the supported conclusion is a clean-speech gain; '
+                'harder-speech robustness remains unresolved.' %
+                (fullprefix["bigru"]["clean"][0]
+                 + fullprefix["bigru"]["other"][0]
+                 + (rate_hz(fullprefix["bigru"]["rho"][0]), fullprefix_clean_wins,
+                    fullprefix["mean"]["clean"][0][0]
+                    - fullprefix["bigru"]["clean"][0][0],
+                    fullprefix_other_wins,
+                    fullprefix["bigru"]["other"][0][1])))
         ),
     )
 
     wavlm_learned_rows = ""
     for backbone, variant, reward, decoder in wavlm_specs:
         result = wavlm_results[backbone.lower(), variant]
+        frequency = rate_hz_stats(result["rho"])
         wavlm_learned_rows += (
-            '<tr%s><td>%s</td><td>%s</td><td>%s</td><td>%.3f ± %.3f</td>'
+            '<tr%s><td>%s</td><td>%s</td><td>%s</td><td>mean</td>'
+            '<td>%.1f ± %.1f Hz</td>'
             '<td>%.2f ± %.2f%%</td><td>%.2f ± %.2f%%</td></tr>'
-            % ("", backbone, reward, decoder, result["rho"][0], result["rho"][1],
+            % ("", backbone, reward, decoder, frequency[0], frequency[1],
                result["clean"][0], result["clean"][1],
                result["other"][0], result["other"][1])
         )
     wavlm_learned_rows += (
         '<tr style="background:var(--band)"><td><b>CNN</b></td>'
         '<td><b>NLL · first-order AR</b></td><td><b>best char decoder</b></td>'
-        '<td><b>%.3f ± %.3f</b></td><td><b>%.2f ± %.2f%%</b></td>'
+        '<td><b>mean</b></td>'
+        '<td><b>%.1f ± %.1f Hz</b></td><td><b>%.2f ± %.2f%%</b></td>'
         '<td><b>%.2f ± %.2f%%</b></td></tr>' %
-        (oracleclose["autoregressive"]["rho"]
+        (rate_hz_stats(oracleclose["autoregressive"]["rho"])
          + oracleclose["autoregressive"]["clean"][0]
          + oracleclose["autoregressive"]["other"][0]))
+    wavlm_learned_rows += (
+        '<tr><td>local-history Transformer AR</td><td>NLL · combined on-policy</td>'
+        '<td>best char decoder</td><td>mean</td><td>%.1f ± %.1f Hz</td>'
+        '<td>%.2f ± %.2f%%</td><td>%.2f ± %.2f%%</td></tr>' %
+        (rate_hz_stats(fullprefix["mean"]["rho"]) + fullprefix["mean"]["clean"][0]
+         + fullprefix["mean"]["other"][0]))
+    wavlm_learned_rows += (
+        '<tr style="background:var(--band)"><td><b>local-history Transformer AR</b></td>'
+        '<td><b>NLL · combined on-policy</b></td><td><b>best char decoder</b></td>'
+        '<td><b>BiGRU residual</b></td><td><b>%.1f ± %.1f Hz</b></td>'
+        '<td><b>%.2f ± %.2f%%</b></td><td><b>%.2f ± %.2f%%</b></td></tr>' %
+        (rate_hz_stats(fullprefix["bigru"]["rho"]) + fullprefix["bigru"]["clean"][0]
+         + fullprefix["bigru"]["other"][0]))
 
     wavlm_baseline_rows = ""
     for row in wavlm_fixed:
@@ -1576,25 +1799,25 @@ def build(args):
         )
         clean_cell = "<b>%s</b>" % clean_text if k == 5 else clean_text
         wavlm_baseline_rows += (
-            "<tr><td>fixed k=%d</td><td>%.3f</td><td>%s</td><td>%s</td><td>%s</td>"
+            "<tr><td>fixed k=%d</td><td>%.1f Hz</td><td>%s</td><td>%s</td><td>%s</td>"
             '<td><span class="pill">n=%d</span></td></tr>'
-            % (k, rho, dev_clean_text, clean_cell, other_text, n)
+            % (k, rate_hz(rho), dev_clean_text, clean_cell, other_text, n)
         )
     wavlm_baseline_rows += (
-        '<tr><td>phone alignment</td><td>0.210</td>'
+        '<tr><td>phone alignment</td><td>10.5 Hz</td>'
         '<td>%.2f ± %.2f%%</td><td>%.2f ± %.2f%%</td>'
         '<td>%.2f ± %.2f%%</td><td><span class="pill">n=%d</span></td></tr>'
         % (wavlm_phone_dev + wavlm_phone_clean + wavlm_phone_other
            + (wavlm_phone_n,))
     )
     wavlm_baseline_rows += (
-        '<tr style="background:var(--band)"><td><b>char alignment</b></td><td>0.293</td>'
+        '<tr style="background:var(--band)"><td><b>char alignment</b></td><td>14.7 Hz</td>'
         '<td><b>%.2f ± %.2f%%</b></td><td><b>%.2f ± %.2f%%</b></td>'
         '<td><b>%.2f ± %.2f%%</b></td><td><span class="pill">n=%d</span></td></tr>'
         % (wavlm_char_dev + wavlm_char_clean + wavlm_char_other + (wavlm_char_n,))
     )
     wavlm_baseline_rows += (
-        '<tr><td>No downsampling</td><td>1.000</td>'
+        '<tr><td>No downsampling</td><td>50.0 Hz</td>'
         '<td>%.2f ± %.2f%%</td><td>%.2f ± %.2f%%</td>'
         '<td>%.2f ± %.2f%%</td>'
         '<td><span class="pill">n=3</span></td></tr>'
@@ -1673,13 +1896,15 @@ def build(args):
             +
             hk.card(
                 "<table><thead><tr><th>boundary backbone</th><th>reward</th>"
-                "<th>decoder</th><th>test-clean ρ</th><th>test-clean WER</th>"
+                "<th>decoder</th><th>pooling</th><th>test-clean audio-token frequency</th>"
+                "<th>test-clean WER</th>"
                 "<th>test-other WER</th></tr></thead><tbody>%s</tbody></table>"
-                '<p class="cap">The highlighted row uses WavLM features, a CNN segmenter, '
-                'first-order AR, and the best char decoder. It predicts boundaries from WavLM '
-                'at runtime and uses wav2vec2 only '
-                'to create its cold-start char targets. All learned rows are three-seed means.'
-                '</p>' % wavlm_learned_rows,
+                '<p class="cap">The highlighted rows identify two configurations rather than '
+                'claiming one universal winner: CNN first-order AR with mean pooling, and '
+                'local-history Transformer AR with a BiGRU residual pooler. Both predict '
+                'boundaries from WavLM at runtime and use wav2vec2 only to create cold-start '
+                'char targets. All learned rows are three-seed means ± sample SD.</p>'
+                % wavlm_learned_rows,
                 title="Learned downsampling")
             + hk.card(
                 "<table><thead><tr><th>boundary backbone</th><th>objective</th>"
@@ -1691,7 +1916,8 @@ def build(args):
                 % wavlm_checkpoint_rows,
                 title="RL checkpoint selection")
             + hk.card(
-                "<table><thead><tr><th>baseline</th><th>ρ</th><th>dev-clean WER</th>"
+                "<table><thead><tr><th>baseline</th><th>audio-token frequency</th>"
+                "<th>dev-clean WER</th>"
                 "<th>test-clean WER</th><th>test-other WER</th>"
                 "<th>seeds complete</th></tr></thead>"
                 "<tbody>%s</tbody></table>"
@@ -1727,9 +1953,9 @@ def build(args):
                    wavlm_selected_warmup))
             + hk.finding(
                 "<b>Alignment controls separate count from placement.</b> Phone boundaries are "
-                "the closest oracle to k=5 in cost (ρ=0.210 vs. 0.201) and improve WER from "
+                "the closest oracle to k=5 in cost (10.5 Hz vs. 10.0 Hz) and improve WER from "
                 "%.2f±%.2f to %.2f±%.2f clean and %.2f±%.2f to %.2f±%.2f other. Char "
-                "boundaries retain more frames (ρ=0.293) but are stronger still at "
+                "boundaries operate at 14.7 Hz but are stronger still at "
                 "%.2f±%.2f / %.2f±%.2f. Thus the fixed-rate gain combines smoothing with "
                 "token-budget regularization, while another sizeable gain is available from "
                 "content-aware placement. Learned policies should be compared to both k=5 "
@@ -1746,26 +1972,31 @@ def build(args):
         return "%.2f ± %.2f%%%s" % (stats_[0], stats_[1], suffix)
 
     setup_rows = [
-        ("Char/phone alignment", "not used", "saved alignment labels", "WavLM",
+        ("Char/phone alignment", "not used", "saved alignment labels", "WavLM", "mean",
          "from scratch", "fixed boundaries; no RL"),
-        ("Fixed k=5", "not used", "every fifth frame", "WavLM",
+        ("Fixed k=5", "not used", "every fifth frame", "WavLM", "mean",
          "from scratch", "fixed boundaries; no RL"),
         ("CNN segmenter on wav2vec2 → pool WavLM", "wav2vec2", "CNN segmenter",
-         "WavLM", "best char decoder or from scratch",
+         "WavLM", "mean", "best char decoder or from scratch",
          "decoder warm-up, then Bernoulli RL"),
         ("CNN segmenter on WavLM → pool WavLM", "WavLM", "CNN segmenter",
-         "WavLM", "best char decoder",
+         "WavLM", "mean", "best char decoder",
          "2 decoder-warm-up epochs, then 10 Bernoulli or first-order AR RL epochs"),
         ("Transformer segmenter on WavLM → pool WavLM", "WavLM",
-         "Transformer segmenter", "WavLM", "shared warm-up",
+         "Transformer segmenter", "WavLM", "mean", "shared warm-up",
          "NLL RL with decoder co-training"),
-        ("No downsampling", "not used", "keep every frame", "WavLM",
+        ("Local-history Transformer AR on WavLM → pool WavLM", "WavLM",
+         "local-history Transformer AR, 64-state window", "WavLM",
+         "mean or BiGRU residual", "best char decoder",
+         "2 decoder/pooler-adaptation epochs, then 10 combined-on-policy RL epochs; K=4"),
+        ("No downsampling", "not used", "keep every frame", "WavLM", "none",
          "from scratch", "no boundary model or RL"),
     ]
     setup_table = (
         "<table><thead><tr><th>name used below</th><th>segmenter input</th>"
         "<th>how boundaries are chosen</th><th>features pooled for decoder</th>"
-        "<th>decoder start</th><th>training after initialization</th>"
+        "<th>within-segment pooling</th><th>decoder start</th>"
+        "<th>training after initialization</th>"
         "</tr></thead><tbody>"
         + "".join("<tr>%s</tr>" % "".join("<td>%s</td>" % cell for cell in row)
                   for row in setup_rows)
@@ -1774,55 +2005,56 @@ def build(args):
 
     controlled_rows = [
         ("Char-aligned baseline", "saved char alignment", "from scratch",
-         "fixed boundaries", 0.293,
+         "fixed boundaries", rate_hz(0.293),
          "%.2f ± %.2f%%" % wavlm_char_clean,
          "%.2f ± %.2f%%" % wavlm_char_other, "3"),
         ("Phone-aligned baseline", "saved phone alignment", "from scratch",
-         "fixed boundaries", 0.210,
+         "fixed boundaries", rate_hz(0.210),
          "%.2f ± %.2f%%" % wavlm_phone_clean,
          "%.2f ± %.2f%%" % wavlm_phone_other, "3"),
         ("Fixed k=5 baseline", "every fifth frame", "from scratch",
-         "fixed boundaries", 0.200,
+         "fixed boundaries", rate_hz(0.200),
          "%.2f ± %.2f%%" % wavlm_k5["clean"],
          "%.2f ± %.2f%%" % wavlm_k5["other"], "3"),
         ("CNN segmenter on wav2vec2 → pool WavLM", "CNN segmenter",
          "best char decoder", "Bernoulli RL",
-         hybrid["oracle_char_decoder"]["rho"][0],
+         rate_hz(hybrid["oracle_char_decoder"]["rho"][0]),
          result_text(hybrid["oracle_char_decoder"]["clean"]),
          result_text(hybrid["oracle_char_decoder"]["other"]), "3"),
         ("CNN segmenter on wav2vec2 → pool WavLM", "CNN segmenter", "from scratch",
          "Bernoulli RL",
-         hybrid["scratch_decoder"]["rho"][0],
+         rate_hz(hybrid["scratch_decoder"]["rho"][0]),
          result_text(hybrid["scratch_decoder"]["clean"]),
          result_text(hybrid["scratch_decoder"]["other"]), "3"),
         ("CNN segmenter on WavLM → pool WavLM", "CNN segmenter",
          "best char decoder", "Bernoulli RL",
-         oracleclose["bernoulli"]["rho"][0],
+         rate_hz(oracleclose["bernoulli"]["rho"][0]),
          result_text(oracleclose["bernoulli"]["clean"]),
          result_text(oracleclose["bernoulli"]["other"]),
          str(oracleclose["bernoulli"]["clean"][1])),
         ("CNN segmenter on WavLM → pool WavLM", "CNN segmenter",
          "best char decoder", "first-order AR RL",
-         oracleclose["autoregressive"]["rho"][0],
+         rate_hz(oracleclose["autoregressive"]["rho"][0]),
          result_text(oracleclose["autoregressive"]["clean"]),
          result_text(oracleclose["autoregressive"]["other"]),
          str(oracleclose["autoregressive"]["clean"][1])),
         ("Transformer segmenter on WavLM → pool WavLM", "Transformer segmenter",
          "shared warm-up", "NLL RL",
-         wavlm_tf_mt["rho"][0], "%.2f ± %.2f%%" % wavlm_tf_mt["clean"],
+         rate_hz(wavlm_tf_mt["rho"][0]), "%.2f ± %.2f%%" % wavlm_tf_mt["clean"],
          "%.2f ± %.2f%%" % wavlm_tf_mt["other"], "3"),
         ("No-downsampling baseline", "keep every frame", "from scratch",
-         "no RL", 1.000,
+         "no RL", rate_hz(1.000),
          "%.2f ± %.2f%%" % wavlm_no_down["test-clean"],
          "%.2f ± %.2f%%" % wavlm_no_down["test-other"], "3"),
     ]
     controlled_table = (
         "<table><thead><tr><th>system</th><th>how boundaries are chosen</th>"
-        "<th>decoder start</th><th>training policy</th><th>ρ</th>"
+        "<th>decoder start</th><th>training policy</th>"
+        "<th>audio-token frequency</th>"
         "<th>test-clean</th><th>test-other</th><th>seeds</th></tr></thead><tbody>"
         + "".join(
             '<tr%s><td>%s</td><td>%s</td><td>%s</td><td>%s</td>'
-            '<td>%.3f</td><td>%s</td><td>%s</td><td>%s</td></tr>' %
+            '<td>%.1f Hz</td><td>%s</td><td>%s</td><td>%s</td></tr>' %
             ((' style="background:var(--band)"' if
               row[0] == "CNN segmenter on WavLM → pool WavLM"
               and row[3] == "first-order AR RL" else ""),
@@ -1933,14 +2165,17 @@ def build(args):
                   'frames averaged between those boundaries and then passed to the LLM. '
                   'The wav2vec2→WavLM setup therefore gives wav2vec2 features to the segmenter '
                   'only to choose boundary '
-                  'positions; the decoder still receives pooled WavLM features.</p>',
+                  'positions; the decoder still receives pooled WavLM features. '
+                  '<b>BiGRU residual</b> means the frame mean plus an order-sensitive BiGRU '
+                  'summary. Its residual projection starts at zero, so training begins from '
+                  'the exact mean-pooling representation.</p>',
                 title="Experiment setup — what each system name means")
             +
             hk.card(
                 controlled_table
                 + '<p class="cap">Every row gives WER as a three-seed mean ± sample SD. '
-                  'The kept ratio ρ is the '
-                  'fraction of 50-Hz frames passed to the decoder after pooling. The '
+                  'Audio-token frequency is the average number of pooled audio tokens passed '
+                  'to the decoder per second; lower Hz means stronger compression. The '
                   'highlighted row uses WavLM features, a CNN segmenter, first-order AR, and '
                   'the best char decoder.</p>',
                 title="WavLM results by boundary source and decoder start")
@@ -2047,7 +2282,7 @@ def build(args):
         "3 · Same experiments with wav2vec2 and WavLM",
         lead="The same six learned-policy conditions were repeated with each frozen speech "
              "encoder. Negative Δ means WavLM has lower WER. Sections 1 and 9 show WER "
-             "against the kept-frame ratio for each encoder.",
+             "against audio-token frequency for each encoder.",
         body=(
             hk.card(
                 '<table><thead><tr><th rowspan="2">boundary backbone</th>'
@@ -2095,36 +2330,64 @@ def build(args):
             state = "%d/30 epochs" % row["epochs"]
             test_text = "—"
         long_ar_rows += (
-            "<tr><td>%d</td><td>%s</td><td>e%d · %.2f</td><td>%.3f</td>"
+            "<tr><td>%d</td><td>%s</td><td>e%d · %.2f</td><td>%.1f Hz</td>"
             "<td>%.2f</td><td>%.3f</td><td>%s</td></tr>" %
             (row["seed"], state, row["best_epoch"], row["best_dev"],
-             row["best_rho"], row["latest_dev"], row["latest_gap"], test_text)
+             rate_hz(row["best_rho"]), row["latest_dev"], row["latest_gap"], test_text)
         )
+
+    fullprefix_rows = ""
+    for pooling, label in (("mean", "mean pooling"),
+                           ("bigru", "BiGRU residual pooling")):
+        for run in fullprefix[pooling]["runs"]:
+            fullprefix_rows += (
+                "<tr><td>%s</td><td>%d</td><td>%s</td><td>%.1f Hz</td>"
+                "<td>%.2f</td><td>%.2f</td></tr>" %
+                (label, run["seed"],
+                 "epoch %d" % run["epoch"] if run["epoch"] else "—",
+                 rate_hz(run["rho"]), run["clean"], run["other"])
+            )
+        fullprefix_rows += (
+            '<tr style="background:var(--band)"><td><b>%s</b></td>'
+            '<td><b>mean ± SD</b></td><td>—</td><td><b>%.1f ± %.1f Hz</b></td>'
+            '<td><b>%.2f ± %.2f</b></td><td><b>%.2f ± %.2f</b></td></tr>' %
+            ((label,) + rate_hz_stats(fullprefix[pooling]["rho"])
+             + fullprefix[pooling]["clean"][0]
+             + fullprefix[pooling]["other"][0])
+        )
+    fullprefix_plot_rows = [
+        ("mean pooling", *fullprefix["mean"]["clean"][0],
+         *fullprefix["mean"]["other"][0], 3, "#75579b"),
+        ("BiGRU residual pooling", *fullprefix["bigru"]["clean"][0],
+         *fullprefix["bigru"]["other"][0], 3, "#b96f20"),
+    ]
+
     body += hk.section(
-        "4 · Does previous boundary history help?",
+        "4 · Do boundary history and order-aware pooling help?",
         lead="The first-order AR version uses the previous sampled boundary when deciding the "
-             "current frame. It is distinct from the now-implemented full-prefix Transformer "
-             "AR policy, which can summarize the complete earlier boundary history.",
+             "current frame. The local-history Transformer AR policy summarizes the latest "
+             "64 boundary states through local causal attention. The completed WavLM study also tests "
+             "whether preserving frame order inside each predicted segment changes the result.",
         body=(
             '<div class="grid2">'
             + hk.card(
-                '<table><thead><tr><th>policy</th><th>ρ</th><th>test-clean</th>'
+                '<table><thead><tr><th>policy</th><th>audio-token frequency</th><th>test-clean</th>'
                 '<th>test-other</th><th>seeds</th></tr></thead><tbody>'
-                '<tr><td>independent Bernoulli</td><td>%.3f</td><td>%s</td><td>%s</td>'
+                '<tr><td>independent Bernoulli</td><td>%.1f Hz</td><td>%s</td><td>%s</td>'
                 '<td>3</td></tr><tr style="background:var(--band)"><td>first-order AR</td>'
-                '<td>%.3f</td><td>%s</td><td>%s</td><td>3</td></tr></tbody></table>'
+                '<td>%.1f Hz</td><td>%s</td><td>%s</td><td>3</td></tr></tbody></table>'
                 '<p class="cap">Best char segmenter + best char decoder, WavLM CNN: identical '
                 'decoder, two adaptation epochs, ten RL epochs, and rate band.</p>' %
-                (oracleclose["bernoulli"]["rho"][0],
+                (rate_hz(oracleclose["bernoulli"]["rho"][0]),
                  result_text(oracleclose["bernoulli"]["clean"]),
                  result_text(oracleclose["bernoulli"]["other"]),
-                 oracleclose["autoregressive"]["rho"][0],
+                 rate_hz(oracleclose["autoregressive"]["rho"][0]),
                  result_text(oracleclose["autoregressive"]["clean"]),
                  result_text(oracleclose["autoregressive"]["other"])),
                 title="Matched three-seed policy comparison")
             + hk.card(
                 '<table><thead><tr><th>seed</th><th>job/result status</th>'
-                '<th>best dev WER</th><th>ρ at best</th><th>latest dev</th>'
+                '<th>best dev WER</th><th>frequency at best</th><th>latest dev</th>'
                 '<th>latest AR gap</th><th>test clean / other</th></tr></thead>'
                 '<tbody>%s</tbody></table>'
                 '<p class="cap">Jobs 60853–60855; snapshot is read from train logs when this '
@@ -2132,6 +2395,81 @@ def build(args):
                 'discourages adjacent boundaries.</p>' % long_ar_rows,
                 title="Long-horizon wav2vec2 Transformer continuation")
             + '</div>'
+            + hk.card(
+                bigru_pooling_diagram()
+                + '<p class="cap">For each predicted segment, the unchanged mean branch gives '
+                  'the order-insensitive baseline. A one-layer BiGRU reads the same frames in '
+                  'time order; its final forward and backward states are projected into a '
+                  'correction and added to the mean. Zero-initializing that projection makes '
+                  'the initial audio token exactly equal to mean pooling.</p>',
+                title="BiGRU residual pooling: preserve order without discarding the mean")
+            + hk.card(
+                '<table><thead><tr><th>component</th><th>setup</th><th>when it learns</th>'
+                '<th>role</th></tr></thead><tbody>'
+                '<tr><td>WavLM features</td><td>frozen, 1024-d, 50 Hz</td><td>never updated</td>'
+                '<td>ordered frame sequence</td></tr>'
+                '<tr><td>boundary policy</td><td>local-history Transformer AR; 4 layers; '
+                '64-state causal window</td><td>fixed in epochs 1–2; GRPO in epochs 3–12</td>'
+                '<td>chooses segment intervals</td></tr>'
+                '<tr><td>mean branch</td><td>parameter-free segment mean</td><td>not applicable</td>'
+                '<td>stable base representation</td></tr>'
+                '<tr><td>BiGRU branch</td><td>1 layer; 128 hidden units per direction</td>'
+                '<td>CE in epochs 1–12</td><td>summarizes within-segment order</td></tr>'
+                '<tr><td>residual projection</td><td>256→1024; weight and bias start at zero</td>'
+                '<td>CE in epochs 1–12</td><td>maps the BiGRU summary to a correction</td></tr>'
+                '<tr><td>decoder</td><td>best oracle-char decoder; LoRA adaptation</td>'
+                '<td>CE in epochs 1–12</td><td>scores the pooled audio tokens</td></tr>'
+                '</tbody></table>'
+                '<p class="cap">The supervised char cold-start initializes only the boundary '
+                'policy; it does not pretrain the BiGRU. The first two epochs therefore adapt '
+                'the new pooler and decoder while predicted boundaries stay fixed. Joint RL '
+                'starts in epoch 3, after the BiGRU path has learned to depart gradually from '
+                'its exact mean-pooling initialization.</p>',
+                title="BiGRU pooling setup and training schedule")
+            + hk.card(
+                '<table><thead><tr><th>within-segment pooling</th><th>seed</th>'
+                '<th>selected checkpoint</th><th>test-clean audio-token frequency</th>'
+                '<th>test-clean WER</th><th>test-other WER</th></tr></thead>'
+                '<tbody>%s</tbody></table>'
+                '<p class="cap">Matched WavLM local-history Transformer AR runs: causal '
+                'window 64, combined on-policy K=4 sampling, best char decoder, '
+                'two decoder/pooler-adaptation epochs, and ten joint-RL epochs. The BiGRU residual '
+                'projection starts at zero, so both arms begin from the same mean-pooled '
+                'decoder input. ± is sample SD over seeds 3407/3408/3409.</p>'
+                % fullprefix_rows,
+                title="Local-history Transformer AR — order-aware pooling study")
+            + hk.card(
+                controlled_wer_fig(fullprefix_plot_rows)
+                + '<p class="cap">The plot shows the aggregate rows from the table above. '
+                  'Error bars are sample SD across the same three seeds; lower WER is better.'
+                  '</p>',
+                title="Mean pooling compared with BiGRU residual pooling")
+            + hk.finding(
+                '<span class="pill">Evidence-backed</span> <b>BiGRU residual pooling improves '
+                'test-clean for all three paired seeds.</b> Local-history Transformer AR changes '
+                'from %.2f±%.2f to %.2f±%.2f clean WER, a %.2f-point mean reduction. The '
+                'audio-token frequency also shifts only modestly (%.1f→%.1f Hz), so this is '
+                'not explained by a large compression change.' %
+                (fullprefix["mean"]["clean"][0] + fullprefix["bigru"]["clean"][0]
+                 + (fullprefix["mean"]["clean"][0][0]
+                    - fullprefix["bigru"]["clean"][0][0],
+                    rate_hz(fullprefix["mean"]["rho"][0]),
+                    rate_hz(fullprefix["bigru"]["rho"][0]))))
+            + hk.finding(
+                '<span class="pill">Evidence-backed</span> <b>The harder-speech result is '
+                'mixed.</b> Test-other changes from %.2f±%.2f to %.2f±%.2f; BiGRU improves '
+                'only %d/3 paired seeds. Seed 3408 reaches 11.00 despite 5.04 on test-clean, '
+                'so the three-seed mean does not support a general robustness claim.' %
+                (fullprefix["mean"]["other"][0] + fullprefix["bigru"]["other"][0]
+                 + (fullprefix_other_wins,)))
+            + hk.finding(
+                '<span class="pill">Interpretation</span> <b>This is a system-level pooling '
+                'result, not yet proof of a direct order mechanism.</b> The pooler is the only '
+                'intended architectural change and starts as exact mean pooling, but it is '
+                'jointly trained with the segmenter and decoder. It can therefore help by '
+                'encoding within-segment order, by changing the RL reward landscape and final '
+                'boundaries, or both. A fixed-boundary pooler swap and a boundary-agreement '
+                'audit would separate those explanations.')
             + hk.finding(
                 '<span class="pill">Evidence-backed</span> <b>The first-order dependency learns '
                 'a spacing prior, but task WER is best early.</b> Across the three '
@@ -2149,8 +2487,9 @@ def build(args):
                 '<span class="pill">Evidence-backed</span> <b>First-order AR improves WavLM '
                 'test-clean in all three paired seeds.</b> Mean WER changes by −%.2f clean and '
                 '−%.2f other versus Bernoulli. The other-speech result is not consistent by seed, '
-                'so the supported claim is the clean improvement. This first-order result is not '
-                'evidence about the separately implemented full-prefix Transformer policy.' %
+                'so the supported claim is the clean improvement. The local-history pooling study '
+                'above changes a different factor; it should not be used to attribute the CNN '
+                'gain to longer boundary memory.' %
                 (oracleclose["bernoulli"]["clean"][0][0]
                  - oracleclose["autoregressive"]["clean"][0][0],
                  oracleclose["bernoulli"]["other"][0][0]
@@ -2159,7 +2498,7 @@ def build(args):
     )
 
     body += '<div id="ar-policy-demo">' + hk.section(
-        "4b · Demo — CNN first-order AR and Transformer full-prefix AR",
+        "4b · Demo — CNN first-order AR and local-history Transformer AR",
         lead="Both policies make one cut/continue decision per WavLM frame. The difference is "
              "how much of the generated boundary history can change the next decision.",
         body=ar_modeling_demo(),
@@ -2176,7 +2515,7 @@ def build(args):
                 pipeline_fig()
                 + '<p class="cap">The segmenter\'s predicted boundaries <i>are</i> the dynamic '
                 'downsampling: more boundaries → more, shorter audio tokens reaching the '
-                'decoder; fewer boundaries → a lower kept-ratio ρ and higher compression. '
+                'decoder; fewer boundaries → a lower audio-token frequency and higher compression. '
                 'Source for this '
                 'figure: <span class="mono">make_pipeline_figure.py</span> (also emits an '
                 'editable <span class="mono">.drawio</span>).</p>',
@@ -2211,7 +2550,7 @@ def build(args):
                 "<tr><td>warmup</td><td>frozen (cold-start init)</td><td>trained</td>"
                 "<td>CE on the argmax segmentation</td></tr>"
                 "<tr><td>joint RL</td><td>trained (GRPO)</td><td>trained or frozen (ablated)</td>"
-                "<td>−NLL / −CER reward + rate-band [0.10, 0.30] objective</td></tr>"
+                "<td>−NLL / −CER reward + 5–15 Hz frequency-band objective</td></tr>"
                 "</tbody></table>"
                 '<p class="cap">GRPO: K sampled segmentations per utterance, group-relative '
                 '(std-normalized) advantage, γ=1 (bandit — every frame in an utterance shares '
@@ -2222,16 +2561,16 @@ def build(args):
 
     coll_chart = hk.card(
         hk.svg_line([("collapsed (transformer, entropy on, warmup 2)", hk.C["red"],
-                      series(coll, "train rho_mean", 2)),
+                      frequency_series(coll, "train rho_mean", 2)),
                      ("fixed (CNN, entropy off, warmup 6)", hk.C["green"],
-                      series(nll, "train rho_mean", 6))],
-                    ylabel="argmax kept-ratio ρ", ymin=0, ymax=0.35, vline=1)
-        + hk.legend([("collapsed → 0", hk.C["red"]), ("fixed: holds ~0.28", hk.C["green"]),
+                      frequency_series(nll, "train rho_mean", 6))],
+                    ylabel="argmax audio-token frequency (Hz)", ymin=0, ymax=17.5, vline=1)
+        + hk.legend([("collapsed → 0 Hz", hk.C["red"]), ("fixed: holds ~14 Hz", hk.C["green"]),
                      ("RL start", hk.C["muted"])])
-        + '<p class="cap">x = epochs since RL begins (≤0 = warmup). Old run crashes to ρ≈0.005 '
-          'in one RL epoch; fixed run holds ρ≈0.28. (Backbone also differs here — transformer '
+        + '<p class="cap">x = epochs since RL begins (≤0 = warmup). Old run crashes to about '
+          '0.25 Hz in one RL epoch; fixed run holds about 14 Hz. (Backbone also differs here — transformer '
           'vs CNN — see the analysis below for a same-backbone comparison.)</p>',
-        title="Kept-ratio ρ once RL turns on")
+        title="Audio-token frequency once RL turns on")
     body += hk.section(
         "6 · Historical failure — collapse and the fix",
         lead="Teacher-forced NLL from an undertrained decoder plus a per-frame entropy bonus "
@@ -2239,7 +2578,7 @@ def build(args):
              "boundaries, the decoder saw ~1 token, WER hit 100%.",
         body=hk.finding("<b>Diagnosis.</b> Entropy pushed every p→0.5 (the rate loss constrains "
                         "only the <i>sum</i>, not sharpness) → uniform p, empty argmax. And "
-                        "teacher-forced NLL under-rewards audio → RL pushed ρ down. "
+                        "teacher-forced NLL under-rewards audio → RL pushed audio-token frequency down. "
                         "<b>Fix:</b> drop the entropy bonus + warm the decoder longer (2→6 epochs).")
              + coll_chart)
 
@@ -2252,22 +2591,22 @@ def build(args):
         body=(
             hk.finding(
                 "<b>Failure #1 (original run): a true absorbing state, not entropy-smearing.</b> "
-                "At epoch 3 <i>both</i> the argmax ρ and the expected ρ crash together, to "
-                "≈0.003 and ≈0.002 — not to a moderate shared value. The instrumented GRPO trace "
+                "At epoch 3 <i>both</i> the argmax and expected audio-token frequencies crash "
+                "together, to about 0.15 and 0.10 Hz — not to a moderate shared value. The instrumented GRPO trace "
                 "(<span class=\"mono\">grpo_trace.py</span>) makes the mechanism exact: for every "
                 "traced utterance the collapsed policy has mean-p = 0.000 and per-frame entropy = "
                 "0.0000, so all K=8 sampled segmentations are <i>bit-for-bit identical</i> — same "
-                "ρ, same reward, reward std = 0.0000, advantage = +0.000 for every sample. GRPO's "
+                "audio-token frequency, same reward, reward std = 0.0000, advantage = +0.000 for every sample. GRPO's "
                 "group-relative advantage has zero within-group variance to learn from once every "
                 "sample in the group is the same point — the gradient isn't small, it is exactly "
                 "zero, everywhere. (Compare the healthy cold-start trace: mean-p 0.05–0.23, "
-                "entropy 0.06–0.16, reward std 0.22–2.60, per-sample ρ spread up to 2×.) That's "
-                "the absorbing state, and it explains why ρ stayed pinned at exactly 1.90e-3 for "
+                "entropy 0.06–0.16, reward std 0.22–2.60, per-sample frequency spread up to 2×.) That's "
+                "the absorbing state, and it explains why frequency stayed pinned near 0.10 Hz for "
                 "epochs 4 through 10 with no further movement.")
             + '<div class="grid2">'
             + hk.card(
                 "<table><thead><tr><th>trace</th><th>mean p</th><th>entropy</th>"
-                "<th>reward std (K=8)</th><th>sample ρ spread</th></tr></thead><tbody>"
+                "<th>reward std (K=8)</th><th>sample frequency spread</th></tr></thead><tbody>"
                 "<tr><td>cold-start (healthy)</td><td>0.05–0.23</td><td>0.06–0.16</td>"
                 "<td>0.22–2.60</td><td>up to 2×</td></tr>"
                 "<tr style=\"background:var(--band)\"><td>collapsed (original run)</td>"
@@ -2277,23 +2616,25 @@ def build(args):
                 'per trace; ranges are min–max across them.</p>',
                 title="Smoking gun: the GRPO trace")
             + hk.card(
-                "<table><thead><tr><th>run (rate mode)</th><th>epoch</th><th>argmax ρ</th>"
-                "<th>expected ρ</th></tr></thead><tbody>"
-                "<tr><td>jointB (cap+tax+floor)</td><td>3</td><td>0.005</td><td>0.184</td></tr>"
-                "<tr><td>jointB (cap+tax+floor)</td><td>5</td><td>0.002</td><td>0.077</td></tr>"
-                "<tr><td>jointC (band [0.1,0.3])</td><td>3</td><td>0.009</td><td>0.273</td></tr>"
-                "<tr><td>jointC (band [0.1,0.3])</td><td>4</td><td>0.003</td><td>0.218</td></tr>"
+                "<table><thead><tr><th>run (frequency mode)</th><th>epoch</th>"
+                "<th>argmax frequency</th><th>expected frequency</th></tr></thead><tbody>"
+                "<tr><td>jointB (cap+tax+floor)</td><td>3</td><td>0.25 Hz</td><td>9.2 Hz</td></tr>"
+                "<tr><td>jointB (cap+tax+floor)</td><td>5</td><td>0.10 Hz</td><td>3.9 Hz</td></tr>"
+                "<tr><td>jointC (band 5–15 Hz)</td><td>3</td><td>0.45 Hz</td><td>13.7 Hz</td></tr>"
+                "<tr><td>jointC (band 5–15 Hz)</td><td>4</td><td>0.15 Hz</td><td>10.9 Hz</td></tr>"
                 "</tbody></table>"
-                '<p class="cap">Both CNN, entropy still on (floor 0.05→0.01). Expected ρ stays '
-                'healthy — the floor/band mechanism works — while argmax ρ still collapses.</p>',
+                '<p class="cap">Both CNN, entropy still on (probability floor 0.05→0.01). Expected '
+                'audio-token frequency stays healthy — the floor/band mechanism works — while '
+                'argmax frequency still collapses.</p>',
                 title="Failure #2: argmax dies, expected survives")
             + '</div>'
             + hk.finding(
                 "<b>Failure #2 (A/B/C retry): a different collapse, caused by entropy, not the "
                 "rate objective.</b> Adding a floor (jointB) or a free band (jointC) worked "
-                "exactly as designed — the <i>expected</i> ρ (Σp/T, the differentiable proxy) "
+                "exactly as designed — the <i>expected</i> audio-token frequency "
+                "(50·Σp/T Hz, the differentiable proxy) "
                 "never crashes to zero, it stays right where the rate objective wants it. But "
-                "the <i>argmax</i> ρ — what the decoder actually receives — collapses anyway, "
+                "the <i>argmax</i> audio-token frequency — what the decoder actually receives — collapses anyway, "
                 "within one or two epochs, in <b>both</b> rate objectives (a soft floor and a "
                 "hard free-band are structurally different, yet produce the identical divergence "
                 "signature). That commonality points at the one thing neither rate objective "
@@ -2308,7 +2649,7 @@ def build(args):
                 "the mechanism above is specific to jointB or jointC's rate objective.)")
             + hk.finding(
                 "<b>A separate, third observation: the reward pointed the wrong way.</b> Within "
-                "jointB's own run, as expected ρ fell 0.184→0.119→0.077 across epochs 3–5, the "
+                "jointB's own run, as expected frequency fell 9.2→6.0→3.9 Hz across epochs 3–5, the "
                 "teacher-forced NLL reward <i>improved</i> (−3.01→−2.93→−2.84) — the gradient the "
                 "segmenter received was actively rewarding fewer audio tokens. Consistent with an "
                 "undertrained (2-epoch) decoder leaning on its text prior rather than the audio: "
@@ -2334,11 +2675,12 @@ def build(args):
     def multi(key, ylabel, ylog=False, ymin=None, ymax=None):
         return hk.svg_line([(k, c, series(rows[k], key, w)) for k, (p, c, w) in abl.items()],
                            ylabel=ylabel, ylog=ylog, ymin=ymin, ymax=ymax, vline=1)
-    res = [("nll_frozen", "CNN", "−NLL", "frozen", "0.29", "7.55", "11.86", "7h40m"),
-           ("nll_mt", "CNN", "−NLL", "co-trained", "0.26", "<b>6.93</b>", "<b>11.11</b>", "7h17m"),
-           ("cer_mt_opt&dagger;", "CNN", "−CER", "co-trained", "0.30", "7.53", "11.81", "15h38m")]
+    res = [("nll_frozen", "CNN", "−NLL", "frozen", "14.5 Hz", "7.55", "11.86", "7h40m"),
+           ("nll_mt", "CNN", "−NLL", "co-trained", "13.0 Hz", "<b>6.93</b>", "<b>11.11</b>", "7h17m"),
+           ("cer_mt_opt&dagger;", "CNN", "−CER", "co-trained", "15.0 Hz", "7.53", "11.81", "15h38m")]
     res_tbl = hk.card(
-        "<table><thead><tr><th>version</th><th>arch</th><th>reward</th><th>decoder</th><th>ρ</th>"
+        "<table><thead><tr><th>version</th><th>arch</th><th>reward</th><th>decoder</th>"
+        "<th>audio-token frequency</th>"
         "<th>test-clean</th><th>test-other</th><th>wall-time</th></tr></thead><tbody>"
         + "".join("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>"
                   "<td>%s</td><td>%s</td></tr>" % r for r in res) + "</tbody></table>"
@@ -2389,7 +2731,12 @@ def build(args):
            + hk.legend([(k, c) for k, (p, c, w) in abl.items()]) + '<div class="grid2">'
            + hk.card(multi("train dec_ce", "cross-entropy", ylog=True), "Decoder CE (train)")
            + hk.card(multi("valid WER", "WER (%)", ylog=True), "Valid WER")
-           + hk.card(multi("train rho_mean", "ρ", ymin=0, ymax=0.35), "Kept-ratio ρ (argmax)")
+           + hk.card(
+               hk.svg_line(
+                   [(k, c, frequency_series(rows[k], "train rho_mean", w))
+                    for k, (p, c, w) in abl.items()],
+                   ylabel="audio-token frequency (Hz)", ymin=0, ymax=17.5, vline=1),
+               "Argmax audio-token frequency")
            + hk.card(multi("train reward", "reward"), "Reward (−NLL / −CER)") + '</div>'
            + hk.finding(
                "<b>cer_mt_opt (2026-08-04): joint RL never beat its own warmup.</b> Valid "
@@ -2401,8 +2748,8 @@ def build(args):
                "CER-reward result &mdash; contrast nll_mt, whose joint phase improved valid WER "
                "almost every epoch over the identical 4-epoch budget (6.53 &rarr; 6.29 &rarr; "
                "6.03 &rarr; 5.62, ticking back up slightly to 5.78 at epoch 10). The blue curves "
-               "above show a likely reason: train &rho;_std during cer_mt_opt's joint phase "
-               "(0.079&ndash;0.083) runs roughly double nll_mt's (0.037&ndash;0.040) &mdash; the "
+               "above show a likely reason: the train audio-frequency SD during cer_mt_opt's "
+               "joint phase (4.0&ndash;4.2 Hz) runs roughly double nll_mt's (1.9&ndash;2.0 Hz) &mdash; the "
                "free-running CER reward (K genuinely different decoded hypotheses per step) is a "
                "visibly noisier training signal than teacher-forced NLL, and 4 epochs wasn't "
                "enough for it to settle. The later corrected on-policy sweep resolves this: CNN "
@@ -2412,11 +2759,11 @@ def build(args):
                "<b>Completed Transformer result · stable training, negative backbone result.</b> "
                "The best Transformer arm is NLL co-training at <b>%.2f±%.2f clean / "
                "%.2f±%.2f other</b>, versus CNN's <b>%.2f±%.2f / %.2f±%.2f</b> at a similar "
-               "keep ratio (%.3f vs %.3f on test-clean). Transformer CER selected epoch 7 in "
+               "audio-token frequency (%.1f vs %.1f Hz on test-clean). Transformer CER selected epoch 7 in "
                "all three seeds and degraded afterward; the model trained, but it did not beat "
                "the smaller CNN boundary policy."
                % (tf_mt_clean + tf_mt_other + mt_clean + mt_other
-                  + (tf_mt_rho[0], mt_rho[0]))))
+                  + (rate_hz(tf_mt_rho[0]), rate_hz(mt_rho[0])))))
     body += hk.section(
         "7 · Reward and multi-task ablations — full training dynamics",
         lead="The corrected three-seed, exact-shared-warm-up NLL replication is the headline "
@@ -2482,10 +2829,10 @@ def build(args):
     for row in tbl_rows:
         label, rho, clean, other, color = row[:5]
         clean_sd, other_sd = row[5:]
-        trows += '<tr%s><td>%s</td><td>%.3f</td><td>%s</td><td>%s</td></tr>' % (
+        trows += '<tr%s><td>%s</td><td>%.1f Hz</td><td>%s</td><td>%s</td></tr>' % (
             ' style="background:var(--band)"' if color else "",
             (label + ' <span class="pill">ours</span>') if color else label,
-            rho, frontier_cell(clean, clean_sd, bool(color)),
+            rate_hz(rho), frontier_cell(clean, clean_sd, bool(color)),
             frontier_cell(other, other_sd, bool(color)))
 
     w2v_plot_base = [(k, rho, c, 0.0, o, 0.0) for k, rho, c, o in base]
@@ -2505,10 +2852,11 @@ def build(args):
                        'policy backbones. Fixed-rate points are single-seed; learned points and '
                        'the No-downsampling reference report three-seed mean ± sample SD.</p>',
                      title="WER vs. compression — wav2vec2")
-            + hk.card("<table><thead><tr><th>rate</th><th>ρ (kept)</th><th>clean WER</th>"
+            + hk.card("<table><thead><tr><th>rate</th><th>audio-token frequency</th><th>clean WER</th>"
                      "<th>other WER</th></tr></thead><tbody>%s</tbody></table>"
                      '<p class="cap">All WER columns use test-clean/test-other. Rows tagged '
-                     '<span class="pill">ours</span> are trained segmenters at their own ρ; '
+                     '<span class="pill">ours</span> are trained segmenters at their measured '
+                     'audio-token frequency; '
                      'trained and No-downsampling rows report three-seed mean ± sample SD.</p>'
                      % trows))
 
