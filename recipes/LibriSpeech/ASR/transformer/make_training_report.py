@@ -1770,30 +1770,163 @@ def build(args):
         cnn_mean_pattern, cnn_bigru_pattern, "test-other"
     )
 
+    # Corrected batch-invariant evaluation.  The old checkpoint-time WER used
+    # right-padded decoder prefixes and is retained only in the training logs.
+    # Headline system comparisons below must come from this isolated artifact
+    # tree.  A seed enters an aggregate only after all three requested splits
+    # (test-clean, test-other, dev-other) are complete.
+    artifact_root = os.path.abspath(os.path.join(
+        os.path.dirname(__file__), "../../../..", "artifacts", "segmenter"
+    ))
+    corrected_eval_root = os.path.join(
+        artifact_root,
+        "inference_eval_batch_invariant_leftpack_durationcap_v1",
+        "learned_wavlm",
+    )
+    corrected_splits = ("test-clean", "test-other", "dev-other")
+    corrected_candidates = {
+        "cnn_mean": {
+            3407: ["cnn_ar_mean/seed3407/batch8"],
+            3408: [
+                "cnn_ar_mean/seed3408/batch8",
+                "cnn_ar_mean/seed3408/batch8_retry_off_ga129_20260821",
+            ],
+            3409: ["cnn_ar_mean/seed3409/batch8"],
+        },
+        "cnn_bigru": {
+            3407: ["cnn_ar_bigru/seed3407/batch8"],
+            3408: ["cnn_ar_bigru/seed3408/batch8"],
+            3409: [
+                "cnn_ar_bigru/seed3409/batch8",
+                "cnn_ar_bigru/seed3409/batch8_retry_off_ga129_20260821",
+            ],
+        },
+        "transformer_mean": {
+            seed: ["transformer_ar_local64_mean/seed%d/batch8" % seed]
+            for seed in seeds
+        },
+        "transformer_bigru": {
+            seed: ["transformer_ar_local64_bigru/seed%d/batch8" % seed]
+            for seed in seeds
+        },
+    }
+
+    def corrected_run(candidate_paths):
+        """Return the most complete corrected-evaluation candidate."""
+        best = None
+        for order, relative in enumerate(candidate_paths):
+            run_dir = os.path.join(corrected_eval_root, relative)
+            split_rows = {
+                split: parse_wer_file(os.path.join(
+                    run_dir, "wer_results", "wer_%s.txt" % split
+                ))
+                for split in corrected_splits
+            }
+            benchmarks = {
+                row.get("split"): row
+                for row in parse_jsonl(os.path.join(run_dir, "benchmark.jsonl"))
+                if row.get("decoding_protocol")
+                == "batch_invariant_left_packed_duration_cap_v1"
+            }
+            score = (sum(value is not None for value in split_rows.values()), order)
+            candidate = {
+                "path": run_dir,
+                "splits": split_rows,
+                "benchmarks": benchmarks,
+                "complete": all(split_rows.values())
+                          and all(split in benchmarks for split in corrected_splits),
+                "score": score,
+            }
+            if best is None or candidate["score"] > best["score"]:
+                best = candidate
+        return best
+
+    corrected = {}
+    for key, seed_candidates in corrected_candidates.items():
+        runs = []
+        for seed, candidates in seed_candidates.items():
+            run = corrected_run(candidates)
+            run["seed"] = seed
+            runs.append(run)
+        complete = [run for run in runs if run["complete"]]
+        corrected[key] = {
+            "runs": runs,
+            "n": len(complete),
+            "clean": (mean_sd([
+                run["splits"]["test-clean"]["wer"] for run in complete
+            ]), len(complete)),
+            "other": (mean_sd([
+                run["splits"]["test-other"]["wer"] for run in complete
+            ]), len(complete)),
+            "dev_other": (mean_sd([
+                run["splits"]["dev-other"]["wer"] for run in complete
+            ]), len(complete)),
+            "frequency": mean_sd([
+                run["benchmarks"]["test-clean"]["token_frequency_hz"]["global"]
+                for run in complete
+            ]),
+            "rtf": mean_sd([
+                run["benchmarks"]["test-clean"]["forward_rtf"]
+                for run in complete
+            ]),
+        }
+
+    def corrected_paired_wins(mean_key, bigru_key, split):
+        mean_runs = {
+            run["seed"]: run for run in corrected[mean_key]["runs"]
+            if run["complete"]
+        }
+        bigru_runs = {
+            run["seed"]: run for run in corrected[bigru_key]["runs"]
+            if run["complete"]
+        }
+        paired = sorted(set(mean_runs) & set(bigru_runs))
+        wins = sum(
+            bigru_runs[seed]["splits"][split]["wer"]
+            < mean_runs[seed]["splits"][split]["wer"]
+            for seed in paired
+        )
+        return wins, len(paired)
+
+    fullprefix_clean_wins, fullprefix_clean_pairs = corrected_paired_wins(
+        "transformer_mean", "transformer_bigru", "test-clean"
+    )
+    fullprefix_other_wins, fullprefix_other_pairs = corrected_paired_wins(
+        "transformer_mean", "transformer_bigru", "test-other"
+    )
+    cnn_bigru_clean_wins, cnn_bigru_clean_pairs = corrected_paired_wins(
+        "cnn_mean", "cnn_bigru", "test-clean"
+    )
+    cnn_bigru_other_wins, cnn_bigru_other_pairs = corrected_paired_wins(
+        "cnn_mean", "cnn_bigru", "test-other"
+    )
+
     pooling_2x2 = [
         {
             "family": "CNN", "segmenter": "CNN first-order AR", "pooling": "mean",
-            "rho": oracleclose["autoregressive"]["rho"],
-            "clean": oracleclose["autoregressive"]["clean"],
-            "other": oracleclose["autoregressive"]["other"],
+            "frequency": corrected["cnn_mean"]["frequency"],
+            "clean": corrected["cnn_mean"]["clean"],
+            "other": corrected["cnn_mean"]["other"],
             "color": "#b96f20",
         },
         {
             "family": "CNN", "segmenter": "CNN first-order AR", "pooling": "BiGRU residual",
-            "rho": cnn_bigru["rho"], "clean": cnn_bigru["clean"],
-            "other": cnn_bigru["other"], "color": "#e2a24c",
+            "frequency": corrected["cnn_bigru"]["frequency"],
+            "clean": corrected["cnn_bigru"]["clean"],
+            "other": corrected["cnn_bigru"]["other"], "color": "#e2a24c",
         },
         {
             "family": "Transformer", "segmenter": "Transformer AR · local history 64",
-            "pooling": "mean", "rho": fullprefix["mean"]["rho"],
-            "clean": fullprefix["mean"]["clean"],
-            "other": fullprefix["mean"]["other"], "color": "#75579b",
+            "pooling": "mean", "frequency": corrected["transformer_mean"]["frequency"],
+            "clean": corrected["transformer_mean"]["clean"],
+            "other": corrected["transformer_mean"]["other"], "color": "#75579b",
         },
         {
             "family": "Transformer", "segmenter": "Transformer AR · local history 64",
-            "pooling": "BiGRU residual", "rho": fullprefix["bigru"]["rho"],
-            "clean": fullprefix["bigru"]["clean"],
-            "other": fullprefix["bigru"]["other"], "color": "#27865d",
+            "pooling": "BiGRU residual",
+            "frequency": corrected["transformer_bigru"]["frequency"],
+            "clean": corrected["transformer_bigru"]["clean"],
+            "other": corrected["transformer_bigru"]["other"], "color": "#27865d",
         },
     ]
 
@@ -1801,9 +1934,6 @@ def build(args):
     # BF16, and the same generation settings. Aggregate only test-clean and
     # test-other so every row covers the same audio and the k=3 batch-4 timing is
     # still comparable despite its later dev-other allocator-fragmentation OOM.
-    artifact_root = os.path.abspath(os.path.join(
-        os.path.dirname(__file__), "../../../..", "artifacts", "segmenter"
-    ))
     learned_bench_root = os.path.join(artifact_root, "inference_benchmark_2x2")
     baseline_bench_root = os.path.join(
         artifact_root, "inference_benchmark_baselines"
@@ -1912,17 +2042,17 @@ def build(args):
          (rate_hz(0.292651),
           wavlm_char_other[0], wavlm_char_other[1], wavlm_char_n)),
         ("WavLM · CNN segmenter · first-order AR",
-         "%.2f±%.2f%%" % oracleclose["autoregressive"]["clean"][0],
-         "best char decoder · %.1f Hz · other %.2f±%.2f%%" %
-         (rate_hz(oracleclose["autoregressive"]["rho"][0]),
-          oracleclose["autoregressive"]["other"][0][0],
-          oracleclose["autoregressive"]["other"][0][1])),
+         "%.2f%%" % corrected["cnn_mean"]["clean"][0][0],
+         "n=%d complete · %.1f Hz · other %.2f%%" %
+         (corrected["cnn_mean"]["n"],
+          corrected["cnn_mean"]["frequency"][0],
+          corrected["cnn_mean"]["other"][0][0])),
         ("WavLM · local-history Transformer AR + BiGRU",
-         "%.2f±%.2f%%" % fullprefix["bigru"]["clean"][0],
-         "best char decoder · %.1f Hz · other %.2f±%.2f%%" %
-         (rate_hz(fullprefix["bigru"]["rho"][0]),
-          fullprefix["bigru"]["other"][0][0],
-          fullprefix["bigru"]["other"][0][1])),
+         "%.2f±%.2f%%" % corrected["transformer_bigru"]["clean"][0],
+         "n=3 · %.1f Hz · other %.2f±%.2f%%" %
+         (corrected["transformer_bigru"]["frequency"][0],
+          corrected["transformer_bigru"]["other"][0][0],
+          corrected["transformer_bigru"]["other"][0][1])),
         ("WavLM · fixed k=5", "%.2f±%.2f%%" % wavlm_k5["clean"],
          "10.0 Hz · other %.2f±%.2f%%" % wavlm_k5["other"]),
         ("WavLM · no downsampling", "%.2f±%.2f%%" % wavlm_no_down["test-clean"],
@@ -1982,19 +2112,20 @@ def build(args):
           - oracleclose["autoregressive"]["other"][0][0]),
          "Evidence-backed"),
         ("Does order-aware pooling help?",
-         "Mean versus BiGRU pooling for both CNN AR and Transformer AR",
-         "CNN mean/BiGRU: %.2f/%.2f clean, %.2f/%.2f other. Transformer "
-         "mean/BiGRU: %.2f/%.2f clean, %.2f/%.2f other." %
-         (oracleclose["autoregressive"]["clean"][0][0],
-          cnn_bigru["clean"][0][0],
-          oracleclose["autoregressive"]["other"][0][0],
-          cnn_bigru["other"][0][0],
-          fullprefix["mean"]["clean"][0][0],
-          fullprefix["bigru"]["clean"][0][0],
-          fullprefix["mean"]["other"][0][0],
-          fullprefix["bigru"]["other"][0][0]),
-         "BiGRU helps the Transformer arm but not the CNN arm. The gain is "
-         "architecture-specific rather than a general replacement for mean pooling.",
+         "Mean versus BiGRU pooling",
+         "Transformer mean: %.2f clean, %.2f other (n=3). Transformer BiGRU: "
+         "%.2f clean, %.2f other (n=3). CNN mean: %.2f/%.2f (n=1); CNN BiGRU: "
+         "%.2f/%.2f (n=2)." %
+         (corrected["transformer_mean"]["clean"][0][0],
+          corrected["transformer_mean"]["other"][0][0],
+          corrected["transformer_bigru"]["clean"][0][0],
+          corrected["transformer_bigru"]["other"][0][0],
+          corrected["cnn_mean"]["clean"][0][0],
+          corrected["cnn_mean"]["other"][0][0],
+          corrected["cnn_bigru"]["clean"][0][0],
+          corrected["cnn_bigru"]["other"][0][0]),
+         "Transformer BiGRU improves clean WER in all three paired seeds and other "
+         "WER in two. The CNN comparison remains provisional until its third seeds finish.",
          "Evidence-backed"),
         ("What does learned segmentation cost at inference?",
          "One A100, BF16, identical decoding; seed-3407 selected checkpoints",
@@ -2053,44 +2184,34 @@ def build(args):
                 (wavlm_no_down["test-clean"][0] - wavlm_k5["clean"][0],
                  wavlm_k5["clean"][0] - wavlm_phone_clean[0]))
             + hk.finding(
-                '<span class="pill">Evidence-backed</span> <b>Highlighted configuration: '
-                'WavLM features, CNN segmenter, first-order AR, and the best char decoder.</b> '
-                'It reaches %.2f±%.2f / %.2f±%.2f WER at %.1f Hz—about %.1f× '
-                'fewer decoder-side audio tokens than no downsampling. It is only %.2f points '
-                'behind oracle char boundaries on clean, but %.2f points behind on other. '
-                'The main remaining gap is therefore harder-speech robustness, not the need '
-                'for wav2vec2 features at inference.' %
-                (oracleclose["autoregressive"]["clean"][0]
-                 + oracleclose["autoregressive"]["other"][0]
-                 + (rate_hz(oracleclose["autoregressive"]["rho"][0]),
-                    1.0 / oracleclose["autoregressive"]["rho"][0],
-                    oracleclose["autoregressive"]["clean"][0][0]
-                    - wavlm_char_clean[0],
-                    oracleclose["autoregressive"]["other"][0][0]
-                    - wavlm_char_other[0])))
+                '<span class="pill">Interim</span> <b>WavLM features, '
+                'CNN segmenter, first-order AR, mean pooling, and the best char decoder.</b> '
+                'The one fully completed seed reaches %.2f clean / %.2f other WER '
+                'at %.1f Hz with %.3f test-clean RTF. Two more seeds are running or queued; '
+                'this is not yet a three-seed aggregate.' %
+                (corrected["cnn_mean"]["clean"][0][0],
+                 corrected["cnn_mean"]["other"][0][0],
+                 corrected["cnn_mean"]["frequency"][0],
+                 corrected["cnn_mean"]["rtf"][0]))
             + hk.finding(
                 '<span class="pill">Evidence-backed</span> <b>The local-history '
-                'Transformer AR + BiGRU system has the lowest clean-speech mean among the '
-                'learned systems reported here.</b> '
+                'Transformer AR + BiGRU is complete for all three seeds.</b> '
                 'It reaches %.2f±%.2f clean and %.2f±%.2f other at %.1f Hz. Relative to the '
                 'matched mean-pooling arm, clean WER is %.2f points lower, with improvements '
-                'in %d/3 paired seeds; other WER improves in %d/3. '
-                'Test-other has %.2f-point sample SD, so the clean gain is the clearer result; '
-                'harder-speech robustness remains less certain. The matched CNN control goes '
-                'the other way: mean pooling gives %.2f/%.2f clean/other versus %.2f/%.2f '
-                'with BiGRU. Order-aware pooling is therefore not a general improvement.' %
-                (fullprefix["bigru"]["clean"][0]
-                 + fullprefix["bigru"]["other"][0]
-                 + (rate_hz(fullprefix["bigru"]["rho"][0]),
-                    fullprefix["mean"]["clean"][0][0]
-                    - fullprefix["bigru"]["clean"][0][0],
+                'in %d/%d paired seeds; other WER improves in %d/%d. '
+                'The sample SD is %.2f on test-other. The CNN comparison remains '
+                'incomplete, so an architecture-specific pooling claim must wait for the '
+                'remaining CNN seeds.' %
+                (corrected["transformer_bigru"]["clean"][0]
+                 + corrected["transformer_bigru"]["other"][0]
+                 + (corrected["transformer_bigru"]["frequency"][0],
+                    corrected["transformer_mean"]["clean"][0][0]
+                    - corrected["transformer_bigru"]["clean"][0][0],
                     fullprefix_clean_wins,
+                    fullprefix_clean_pairs,
                     fullprefix_other_wins,
-                    fullprefix["bigru"]["other"][0][1],
-                    oracleclose["autoregressive"]["clean"][0][0],
-                    oracleclose["autoregressive"]["other"][0][0],
-                    cnn_bigru["clean"][0][0],
-                    cnn_bigru["other"][0][0])))
+                    fullprefix_other_pairs,
+                    corrected["transformer_bigru"]["other"][0][1])))
         ),
     )
 
@@ -2151,12 +2272,13 @@ def build(args):
             "family": "CNN policy", "label": "CNN · first-order AR",
             "system": "CNN AR", "configuration": "conditions on previous boundary · mean pooling",
             "decoder": "best char init · co-trained",
-            "frequency": rate_hz(oracleclose["autoregressive"]["rho"][0]),
-            "frequency_sd": rate_hz(oracleclose["autoregressive"]["rho"][1]),
-            "clean": oracleclose["autoregressive"]["clean"][0][0],
-            "clean_sd": oracleclose["autoregressive"]["clean"][0][1],
-            "other": oracleclose["autoregressive"]["other"][0][0],
-            "other_sd": oracleclose["autoregressive"]["other"][0][1],
+            "frequency": corrected["cnn_mean"]["frequency"][0],
+            "frequency_sd": corrected["cnn_mean"]["frequency"][1],
+            "clean": corrected["cnn_mean"]["clean"][0][0],
+            "clean_sd": corrected["cnn_mean"]["clean"][0][1],
+            "other": corrected["cnn_mean"]["other"][0][0],
+            "other_sd": corrected["cnn_mean"]["other"][0][1],
+            "n": corrected["cnn_mean"]["n"],
             "color": "#b96f20", "marker": "D",
         },
         {
@@ -2164,12 +2286,13 @@ def build(args):
             "system": "CNN AR + BiGRU",
             "configuration": "previous boundary · BiGRU residual pooling",
             "decoder": "best char init · co-trained",
-            "frequency": rate_hz(cnn_bigru["rho"][0]),
-            "frequency_sd": rate_hz(cnn_bigru["rho"][1]),
-            "clean": cnn_bigru["clean"][0][0],
-            "clean_sd": cnn_bigru["clean"][0][1],
-            "other": cnn_bigru["other"][0][0],
-            "other_sd": cnn_bigru["other"][0][1],
+            "frequency": corrected["cnn_bigru"]["frequency"][0],
+            "frequency_sd": corrected["cnn_bigru"]["frequency"][1],
+            "clean": corrected["cnn_bigru"]["clean"][0][0],
+            "clean_sd": corrected["cnn_bigru"]["clean"][0][1],
+            "other": corrected["cnn_bigru"]["other"][0][0],
+            "other_sd": corrected["cnn_bigru"]["other"][0][1],
+            "n": corrected["cnn_bigru"]["n"],
             "color": "#e2a24c", "marker": "D",
         },
         {
@@ -2187,12 +2310,13 @@ def build(args):
             "family": "Transformer policy", "label": "Transformer AR · mean",
             "system": "Transformer AR", "configuration": "causal history 64 · mean pooling",
             "decoder": "best char init · co-trained",
-            "frequency": rate_hz(fullprefix["mean"]["rho"][0]),
-            "frequency_sd": rate_hz(fullprefix["mean"]["rho"][1]),
-            "clean": fullprefix["mean"]["clean"][0][0],
-            "clean_sd": fullprefix["mean"]["clean"][0][1],
-            "other": fullprefix["mean"]["other"][0][0],
-            "other_sd": fullprefix["mean"]["other"][0][1],
+            "frequency": corrected["transformer_mean"]["frequency"][0],
+            "frequency_sd": corrected["transformer_mean"]["frequency"][1],
+            "clean": corrected["transformer_mean"]["clean"][0][0],
+            "clean_sd": corrected["transformer_mean"]["clean"][0][1],
+            "other": corrected["transformer_mean"]["other"][0][0],
+            "other_sd": corrected["transformer_mean"]["other"][0][1],
+            "n": corrected["transformer_mean"]["n"],
             "color": "#75579b", "marker": "D",
         },
         {
@@ -2200,12 +2324,13 @@ def build(args):
             "system": "Transformer AR + BiGRU",
             "configuration": "causal history 64 · BiGRU residual pooling",
             "decoder": "best char init · co-trained",
-            "frequency": rate_hz(fullprefix["bigru"]["rho"][0]),
-            "frequency_sd": rate_hz(fullprefix["bigru"]["rho"][1]),
-            "clean": fullprefix["bigru"]["clean"][0][0],
-            "clean_sd": fullprefix["bigru"]["clean"][0][1],
-            "other": fullprefix["bigru"]["other"][0][0],
-            "other_sd": fullprefix["bigru"]["other"][0][1],
+            "frequency": corrected["transformer_bigru"]["frequency"][0],
+            "frequency_sd": corrected["transformer_bigru"]["frequency"][1],
+            "clean": corrected["transformer_bigru"]["clean"][0][0],
+            "clean_sd": corrected["transformer_bigru"]["clean"][0][1],
+            "other": corrected["transformer_bigru"]["other"][0][0],
+            "other_sd": corrected["transformer_bigru"]["other"][0][1],
+            "n": corrected["transformer_bigru"]["n"],
             "color": "#27865d", "marker": "D", "highlight": True,
         },
     ])
@@ -2223,14 +2348,24 @@ def build(args):
         frequency = "%.1f Hz" % row["frequency"]
         if row["frequency_sd"] > 0:
             frequency = "%.1f ± %.1f Hz" % (row["frequency"], row["frequency_sd"])
+        n_complete = row.get("n", 3)
+        if n_complete == 1:
+            clean_text = "%.2f%%" % row["clean"]
+            other_text = "%.2f%%" % row["other"]
+        else:
+            clean_text = "%.2f ± %.2f%%" % (row["clean"], row["clean_sd"])
+            other_text = "%.2f ± %.2f%%" % (row["other"], row["other_sd"])
+        if n_complete < 3:
+            clean_text += ' <span class="pill">n=%d</span>' % n_complete
+            other_text += ' <span class="pill">n=%d</span>' % n_complete
         system_overview_table_rows += (
             '<tr%s><td>%s</td><td><%s>%s</%s></td><td>%s</td><td>%s</td>'
-            '<td><%s>%s</%s></td><td><%s>%.2f ± %.2f%%</%s></td>'
-            '<td><%s>%.2f ± %.2f%%</%s></td></tr>'
+            '<td><%s>%s</%s></td><td><%s>%s</%s></td>'
+            '<td><%s>%s</%s></td></tr>'
             % (style, row["family"], emphasis, row["system"], emphasis,
                row["configuration"], row["decoder"], emphasis, frequency, emphasis,
-               emphasis, row["clean"], row["clean_sd"], emphasis,
-               emphasis, row["other"], row["other_sd"], emphasis)
+               emphasis, clean_text, emphasis,
+               emphasis, other_text, emphasis)
         )
         previous_family = row["family"]
 
@@ -2294,15 +2429,17 @@ def build(args):
         lead="The full CNN/Transformer × NLL-frozen/NLL-multitask/CER-multitask grid and "
              "all fixed-pooling, no-downsampling, char-aligned, and phone-aligned controls finished "
              "for seeds 3407/3408/3409. "
-             "All requested test files are complete; fixed k=3 seed 3409 only missed the "
-             "final dev-other decode after an evaluation-time OOM. Values below are corpus "
-            "WER from saved edit counts; ± is sample SD.",
+             "Both local-history Transformer AR rows are complete, while the CNN AR mean and "
+             "BiGRU rows currently have one and two complete seeds. Values are corpus WER from "
+             "saved edit counts; ± is "
+             "sample SD over the completed seeds named in each row.",
         body=(
             hk.card(
                 system_overview_fig(system_overview_rows)
                 + '<p class="cap">Rows are grouped by system family; the three panels show '
                   'test-clean audio-token frequency on a log scale and WER on both test splits. '
-                  'Error bars are sample SD across seeds 3407/3408/3409. Deterministic policies '
+                  'Error bars use completed seeds only; CNN n is reported in the table. '
+                  'Deterministic policies '
                   'have fixed frequency, so only learned-policy frequencies carry error bars. '
                   'Lower frequency means more compression; lower WER is better.</p>',
                 title="Important systems at a glance")
@@ -2320,7 +2457,8 @@ def build(args):
                 '<p class="cap">This is a system inventory, not one fully controlled ablation: '
                 'decoder initialization and training treatment differ across experiment families '
                 'and are therefore shown explicitly. All rows use WavLM-Large runtime features '
-                'and seeds 3407/3408/3409. WER and learned-policy frequency are mean ± sample SD; '
+                'and seeds 3407/3408/3409. Rows show n when fewer than three seeds are complete. '
+                'Learned-policy frequency is mean ± sample SD; '
                 'deterministic boundary rules have fixed frequencies. The highlighted final row '
                 'is the Transformer-AR policy with order-aware BiGRU residual pooling.</p>'
                 % system_overview_table_rows,
@@ -2768,7 +2906,7 @@ def build(args):
             '<td><%s>%.1f ± %.1f Hz</%s></td><td><%s>%.2f ± %.2f</%s></td>'
             '<td><%s>%.2f ± %.2f</%s></td><td>%d</td></tr>' %
             ((style, tag, row["segmenter"], tag, tag, row["pooling"], tag, tag)
-             + rate_hz_stats(row["rho"]) + (tag, tag)
+             + row["frequency"] + (tag, tag)
              + row["clean"][0] + (tag, tag) + row["other"][0]
              + (tag, row["clean"][1]))
         )
@@ -2862,49 +3000,55 @@ def build(args):
                 '<th>test-other WER</th><th>seeds</th></tr></thead>'
                 '<tbody>%s</tbody></table>'
                 '<p class="cap">WavLM features, best char decoder, two adaptation epochs, '
-                'ten joint-RL epochs, K=4, and seeds 3407/3408/3409. Within each segmenter '
+                'ten joint-RL epochs, and K=4. Within each segmenter '
                 'family, the BiGRU residual projection starts at zero, so the two arms begin '
-                'with exactly the same mean-pooled decoder input. Values are mean ± sample SD.</p>'
+                'with exactly the same mean-pooled decoder input. Values are mean ± sample SD '
+                'over fully completed three-split seeds only; CNN rows are provisional.</p>'
                 % pooling_2x2_rows,
                 title="CNN and Transformer AR × mean and BiGRU pooling")
             + hk.card(
                 controlled_wer_fig(pooling_2x2_plot_rows)
-                + '<p class="cap">The plot shows the four aggregate rows from the table '
-                  'above. Error bars are sample SD across the same three seeds; lower WER '
-                  'is better.</p>',
+                + '<p class="cap">The plot shows the aggregate rows from the table '
+                  'above. Error bars are sample SD over completed seeds; the table gives n. '
+                  'CNN rows are provisional (n=1 and n=2), while both Transformer rows use '
+                  'the same three seeds. Lower WER is better.</p>',
                 title="Pooling effect depends on the segmenter architecture")
             + hk.finding(
                 '<span class="pill">Evidence-backed</span> <b>BiGRU residual pooling improves '
-                'the Transformer AR arm on test-clean in %d/3 paired seeds.</b> It changes '
+                'the Transformer AR arm on test-clean in %d/%d paired seeds.</b> It changes '
                 'from %.2f±%.2f to %.2f±%.2f clean WER, a %.2f-point mean reduction. The '
                 'audio-token frequency also shifts only modestly (%.1f→%.1f Hz), so this is '
                 'not explained by a large compression change.' %
-                ((fullprefix_clean_wins,)
-                 + fullprefix["mean"]["clean"][0] + fullprefix["bigru"]["clean"][0]
-                 + (fullprefix["mean"]["clean"][0][0]
-                    - fullprefix["bigru"]["clean"][0][0],
-                    rate_hz(fullprefix["mean"]["rho"][0]),
-                    rate_hz(fullprefix["bigru"]["rho"][0]))))
+                ((fullprefix_clean_wins, fullprefix_clean_pairs)
+                 + corrected["transformer_mean"]["clean"][0]
+                 + corrected["transformer_bigru"]["clean"][0]
+                 + (corrected["transformer_mean"]["clean"][0][0]
+                    - corrected["transformer_bigru"]["clean"][0][0],
+                    corrected["transformer_mean"]["frequency"][0],
+                    corrected["transformer_bigru"]["frequency"][0])))
             + hk.finding(
-                '<span class="pill">Evidence-backed</span> <b>The matched CNN control does '
-                'not improve.</b> BiGRU changes CNN first-order AR from %.2f±%.2f to '
-                '%.2f±%.2f clean and from %.2f±%.2f to %.2f±%.2f other; it wins only %d/3 '
-                'and %d/3 paired seeds. Mean pooling remains the supported CNN choice.' %
-                (oracleclose["autoregressive"]["clean"][0]
-                 + cnn_bigru["clean"][0]
-                 + oracleclose["autoregressive"]["other"][0]
-                 + cnn_bigru["other"][0]
-                 + (cnn_bigru_clean_wins, cnn_bigru_other_wins)))
+                '<span class="pill">Interim</span> <b>The CNN comparison is not '
+                'complete yet.</b> Mean pooling currently has %d complete seed at %.2f clean '
+                '/ %.2f other; BiGRU has %d complete seeds at %.2f±%.2f clean / %.2f±%.2f '
+                'other. Only %d seed is paired, so no pooling conclusion is reported yet.' %
+                (corrected["cnn_mean"]["n"],
+                 corrected["cnn_mean"]["clean"][0][0],
+                 corrected["cnn_mean"]["other"][0][0],
+                 corrected["cnn_bigru"]["n"],
+                 corrected["cnn_bigru"]["clean"][0][0],
+                 corrected["cnn_bigru"]["clean"][0][1],
+                 corrected["cnn_bigru"]["other"][0][0],
+                 corrected["cnn_bigru"]["other"][0][1],
+                 cnn_bigru_clean_pairs))
             + hk.finding(
-                '<span class="pill">Interpretation</span> <b>The pooling effect is tied to '
-                'the segmenter architecture.</b> The Transformer may leave more information '
-                'for the order-sensitive pooler to recover, while the CNN already summarizes '
-                'local acoustic patterns before segmentation. This is still a system-level '
-                'result: a fixed-boundary pooler swap is needed to separate representation '
-                'order from RL-induced boundary changes. On test-other, Transformer mean/BiGRU '
-                'is %.2f±%.2f versus %.2f±%.2f and the BiGRU arm has high seed variance, so '
-                'the clean-speech effect is the stronger claim.' %
-                (fullprefix["mean"]["other"][0] + fullprefix["bigru"]["other"][0]))
+                '<span class="pill">Interpretation</span> <b>The Transformer result '
+                'supports BiGRU pooling, but does not yet prove an architecture interaction.</b> '
+                'Mean/BiGRU is %.2f±%.2f versus %.2f±%.2f on test-other, with BiGRU winning '
+                '%d/%d paired seeds. The pending CNN seeds are required before comparing the '
+                'pooling effect across segmenter architectures.' %
+                (corrected["transformer_mean"]["other"][0]
+                 + corrected["transformer_bigru"]["other"][0]
+                 + (fullprefix_other_wins, fullprefix_other_pairs)))
             + hk.finding(
                 '<span class="pill">Evidence-backed</span> <b>The first-order dependency learns '
                 'a spacing prior, but task WER is best early.</b> Across the three '
