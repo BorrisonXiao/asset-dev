@@ -2113,19 +2113,24 @@ def build(args):
          "Evidence-backed"),
         ("Does order-aware pooling help?",
          "Mean versus BiGRU pooling",
-         "Transformer mean: %.2f clean, %.2f other (n=3). Transformer BiGRU: "
-         "%.2f clean, %.2f other (n=3). CNN mean: %.2f/%.2f (n=1); CNN BiGRU: "
-         "%.2f/%.2f (n=2)." %
+         "Transformer mean: %.2f clean, %.2f other (n=%d). Transformer BiGRU: "
+         "%.2f clean, %.2f other (n=%d). CNN mean: %.2f/%.2f (n=%d); CNN BiGRU: "
+         "%.2f/%.2f (n=%d)." %
          (corrected["transformer_mean"]["clean"][0][0],
           corrected["transformer_mean"]["other"][0][0],
+          corrected["transformer_mean"]["n"],
           corrected["transformer_bigru"]["clean"][0][0],
           corrected["transformer_bigru"]["other"][0][0],
+          corrected["transformer_bigru"]["n"],
           corrected["cnn_mean"]["clean"][0][0],
           corrected["cnn_mean"]["other"][0][0],
+          corrected["cnn_mean"]["n"],
           corrected["cnn_bigru"]["clean"][0][0],
-          corrected["cnn_bigru"]["other"][0][0]),
+          corrected["cnn_bigru"]["other"][0][0],
+          corrected["cnn_bigru"]["n"]),
          "Transformer BiGRU improves clean WER in all three paired seeds and other "
-         "WER in two. The CNN comparison remains provisional until its third seeds finish.",
+         "WER in two. The CNN comparison remains provisional until the remaining mean-pooling "
+         "seed finishes.",
          "Evidence-backed"),
         ("What does learned segmentation cost at inference?",
          "One A100, BF16, identical decoding; seed-3407 selected checkpoints",
@@ -2186,11 +2191,14 @@ def build(args):
             + hk.finding(
                 '<span class="pill">Interim</span> <b>WavLM features, '
                 'CNN segmenter, first-order AR, mean pooling, and the best char decoder.</b> '
-                'The one fully completed seed reaches %.2f clean / %.2f other WER '
-                'at %.1f Hz with %.3f test-clean RTF. Two more seeds are running or queued; '
-                'this is not yet a three-seed aggregate.' %
-                (corrected["cnn_mean"]["clean"][0][0],
+                'The %d completed seeds reach %.2f±%.2f clean / %.2f±%.2f other WER '
+                'at %.1f Hz with %.3f test-clean RTF. One seed is still running, so '
+                'this is not yet the final three-seed aggregate.' %
+                (corrected["cnn_mean"]["n"],
+                 corrected["cnn_mean"]["clean"][0][0],
+                 corrected["cnn_mean"]["clean"][0][1],
                  corrected["cnn_mean"]["other"][0][0],
+                 corrected["cnn_mean"]["other"][0][1],
                  corrected["cnn_mean"]["frequency"][0],
                  corrected["cnn_mean"]["rtf"][0]))
             + hk.finding(
@@ -2201,7 +2209,7 @@ def build(args):
                 'in %d/%d paired seeds; other WER improves in %d/%d. '
                 'The sample SD is %.2f on test-other. The CNN comparison remains '
                 'incomplete, so an architecture-specific pooling claim must wait for the '
-                'remaining CNN seeds.' %
+                'remaining mean-pooling seed.' %
                 (corrected["transformer_bigru"]["clean"][0]
                  + corrected["transformer_bigru"]["other"][0]
                  + (corrected["transformer_bigru"]["frequency"][0],
@@ -3010,8 +3018,9 @@ def build(args):
                 controlled_wer_fig(pooling_2x2_plot_rows)
                 + '<p class="cap">The plot shows the aggregate rows from the table '
                   'above. Error bars are sample SD over completed seeds; the table gives n. '
-                  'CNN rows are provisional (n=1 and n=2), while both Transformer rows use '
-                  'the same three seeds. Lower WER is better.</p>',
+                  'CNN rows use n=%d and n=%d, while both Transformer rows use '
+                  'the same three seeds. Lower WER is better.</p>' %
+                  (corrected["cnn_mean"]["n"], corrected["cnn_bigru"]["n"]),
                 title="Pooling effect depends on the segmenter architecture")
             + hk.finding(
                 '<span class="pill">Evidence-backed</span> <b>BiGRU residual pooling improves '
@@ -3028,12 +3037,15 @@ def build(args):
                     corrected["transformer_bigru"]["frequency"][0])))
             + hk.finding(
                 '<span class="pill">Interim</span> <b>The CNN comparison is not '
-                'complete yet.</b> Mean pooling currently has %d complete seed at %.2f clean '
-                '/ %.2f other; BiGRU has %d complete seeds at %.2f±%.2f clean / %.2f±%.2f '
-                'other. Only %d seed is paired, so no pooling conclusion is reported yet.' %
+                'complete yet.</b> Mean pooling is at n=%d with %.2f±%.2f clean '
+                '/ %.2f±%.2f other; BiGRU is complete at n=%d with %.2f±%.2f clean / '
+                '%.2f±%.2f other. There are %d paired seeds, so no final CNN pooling '
+                'conclusion is reported yet.' %
                 (corrected["cnn_mean"]["n"],
                  corrected["cnn_mean"]["clean"][0][0],
+                 corrected["cnn_mean"]["clean"][0][1],
                  corrected["cnn_mean"]["other"][0][0],
+                 corrected["cnn_mean"]["other"][0][1],
                  corrected["cnn_bigru"]["n"],
                  corrected["cnn_bigru"]["clean"][0][0],
                  corrected["cnn_bigru"]["clean"][0][1],
@@ -3044,7 +3056,7 @@ def build(args):
                 '<span class="pill">Interpretation</span> <b>The Transformer result '
                 'supports BiGRU pooling, but does not yet prove an architecture interaction.</b> '
                 'Mean/BiGRU is %.2f±%.2f versus %.2f±%.2f on test-other, with BiGRU winning '
-                '%d/%d paired seeds. The pending CNN seeds are required before comparing the '
+                '%d/%d paired seeds. The remaining CNN mean-pooling seed is required before comparing the '
                 'pooling effect across segmenter architectures.' %
                 (corrected["transformer_mean"]["other"][0]
                  + corrected["transformer_bigru"]["other"][0]
