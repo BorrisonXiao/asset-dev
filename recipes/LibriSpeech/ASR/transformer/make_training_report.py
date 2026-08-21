@@ -2129,8 +2129,14 @@ def build(args):
           corrected["cnn_bigru"]["other"][0][0],
           corrected["cnn_bigru"]["n"]),
          "Transformer BiGRU improves clean WER in all three paired seeds and other "
-         "WER in two. The CNN comparison remains provisional until the remaining mean-pooling "
-         "seed finishes.",
+         "WER in two. CNN BiGRU wins %d/%d clean seeds but raises mean clean WER by %.2f; "
+         "it improves other WER in %d/%d seeds by %.2f on average." %
+         (cnn_bigru_clean_wins, cnn_bigru_clean_pairs,
+          corrected["cnn_bigru"]["clean"][0][0]
+          - corrected["cnn_mean"]["clean"][0][0],
+          cnn_bigru_other_wins, cnn_bigru_other_pairs,
+          corrected["cnn_mean"]["other"][0][0]
+          - corrected["cnn_bigru"]["other"][0][0]),
          "Evidence-backed"),
         ("What does learned segmentation cost at inference?",
          "One A100, BF16, identical decoding; seed-3407 selected checkpoints",
@@ -2189,13 +2195,11 @@ def build(args):
                 (wavlm_no_down["test-clean"][0] - wavlm_k5["clean"][0],
                  wavlm_k5["clean"][0] - wavlm_phone_clean[0]))
             + hk.finding(
-                '<span class="pill">Interim</span> <b>WavLM features, '
+                '<span class="pill">Evidence-backed</span> <b>WavLM features, '
                 'CNN segmenter, first-order AR, mean pooling, and the best char decoder.</b> '
-                'The %d completed seeds reach %.2f±%.2f clean / %.2f±%.2f other WER '
-                'at %.1f Hz with %.3f test-clean RTF. One seed is still running, so '
-                'this is not yet the final three-seed aggregate.' %
-                (corrected["cnn_mean"]["n"],
-                 corrected["cnn_mean"]["clean"][0][0],
+                'The three seeds reach %.2f±%.2f clean / %.2f±%.2f other WER '
+                'at %.1f Hz with %.3f test-clean RTF.' %
+                (corrected["cnn_mean"]["clean"][0][0],
                  corrected["cnn_mean"]["clean"][0][1],
                  corrected["cnn_mean"]["other"][0][0],
                  corrected["cnn_mean"]["other"][0][1],
@@ -2207,9 +2211,8 @@ def build(args):
                 'It reaches %.2f±%.2f clean and %.2f±%.2f other at %.1f Hz. Relative to the '
                 'matched mean-pooling arm, clean WER is %.2f points lower, with improvements '
                 'in %d/%d paired seeds; other WER improves in %d/%d. '
-                'The sample SD is %.2f on test-other. The CNN comparison remains '
-                'incomplete, so an architecture-specific pooling claim must wait for the '
-                'remaining mean-pooling seed.' %
+                'The sample SD is %.2f on test-other. In the CNN arm, BiGRU changes mean WER '
+                'by %+.2f clean and %+.2f other, so its effect is smaller and mixed.' %
                 (corrected["transformer_bigru"]["clean"][0]
                  + corrected["transformer_bigru"]["other"][0]
                  + (corrected["transformer_bigru"]["frequency"][0],
@@ -2219,7 +2222,11 @@ def build(args):
                     fullprefix_clean_pairs,
                     fullprefix_other_wins,
                     fullprefix_other_pairs,
-                    corrected["transformer_bigru"]["other"][0][1])))
+                    corrected["transformer_bigru"]["other"][0][1],
+                    corrected["cnn_bigru"]["clean"][0][0]
+                    - corrected["cnn_mean"]["clean"][0][0],
+                    corrected["cnn_bigru"]["other"][0][0]
+                    - corrected["cnn_mean"]["other"][0][0])))
         ),
     )
 
@@ -3011,7 +3018,7 @@ def build(args):
                 'ten joint-RL epochs, and K=4. Within each segmenter '
                 'family, the BiGRU residual projection starts at zero, so the two arms begin '
                 'with exactly the same mean-pooled decoder input. Values are mean ± sample SD '
-                'over fully completed three-split seeds only; CNN rows are provisional.</p>'
+                'over three fully completed seeds.</p>'
                 % pooling_2x2_rows,
                 title="CNN and Transformer AR × mean and BiGRU pooling")
             + hk.card(
@@ -3036,31 +3043,40 @@ def build(args):
                     corrected["transformer_mean"]["frequency"][0],
                     corrected["transformer_bigru"]["frequency"][0])))
             + hk.finding(
-                '<span class="pill">Interim</span> <b>The CNN comparison is not '
-                'complete yet.</b> Mean pooling is at n=%d with %.2f±%.2f clean '
-                '/ %.2f±%.2f other; BiGRU is complete at n=%d with %.2f±%.2f clean / '
-                '%.2f±%.2f other. There are %d paired seeds, so no final CNN pooling '
-                'conclusion is reported yet.' %
-                (corrected["cnn_mean"]["n"],
-                 corrected["cnn_mean"]["clean"][0][0],
+                '<span class="pill">Evidence-backed</span> <b>The CNN BiGRU result is mixed.</b> '
+                'Mean pooling is %.2f±%.2f clean / %.2f±%.2f other; '
+                'BiGRU is %.2f±%.2f clean / %.2f±%.2f other. That is a %.2f-point clean '
+                'increase but a %.2f-point other reduction, with seed-level wins in %d/%d '
+                'and %d/%d.' %
+                (corrected["cnn_mean"]["clean"][0][0],
                  corrected["cnn_mean"]["clean"][0][1],
                  corrected["cnn_mean"]["other"][0][0],
                  corrected["cnn_mean"]["other"][0][1],
-                 corrected["cnn_bigru"]["n"],
                  corrected["cnn_bigru"]["clean"][0][0],
                  corrected["cnn_bigru"]["clean"][0][1],
                  corrected["cnn_bigru"]["other"][0][0],
                  corrected["cnn_bigru"]["other"][0][1],
-                 cnn_bigru_clean_pairs))
+                 corrected["cnn_bigru"]["clean"][0][0]
+                 - corrected["cnn_mean"]["clean"][0][0],
+                 corrected["cnn_mean"]["other"][0][0]
+                 - corrected["cnn_bigru"]["other"][0][0],
+                 cnn_bigru_clean_wins, cnn_bigru_clean_pairs,
+                 cnn_bigru_other_wins, cnn_bigru_other_pairs))
             + hk.finding(
-                '<span class="pill">Interpretation</span> <b>The Transformer result '
-                'supports BiGRU pooling, but does not yet prove an architecture interaction.</b> '
-                'Mean/BiGRU is %.2f±%.2f versus %.2f±%.2f on test-other, with BiGRU winning '
-                '%d/%d paired seeds. The remaining CNN mean-pooling seed is required before comparing the '
-                'pooling effect across segmenter architectures.' %
-                (corrected["transformer_mean"]["other"][0]
-                 + corrected["transformer_bigru"]["other"][0]
-                 + (fullprefix_other_wins, fullprefix_other_pairs)))
+                '<span class="pill">Interpretation</span> <b>Order-aware pooling clearly helps '
+                'the Transformer segmenter, while its CNN effect is mixed.</b> Transformer '
+                'BiGRU reduces mean WER by %.2f clean and %.2f other. CNN BiGRU changes mean '
+                'WER by %+.2f clean and %+.2f other. This supports an architecture-dependent '
+                'benefit, although one three-seed comparison is not enough to establish a '
+                'general interaction.' %
+                (corrected["transformer_mean"]["clean"][0][0]
+                 - corrected["transformer_bigru"]["clean"][0][0],
+                 corrected["transformer_mean"]["other"][0][0]
+                 - corrected["transformer_bigru"]["other"][0][0],
+                 corrected["cnn_bigru"]["clean"][0][0]
+                 - corrected["cnn_mean"]["clean"][0][0],
+                 corrected["cnn_bigru"]["other"][0][0]
+                 - corrected["cnn_mean"]["other"][0][0]))
             + hk.finding(
                 '<span class="pill">Evidence-backed</span> <b>The first-order dependency learns '
                 'a spacing prior, but task WER is best early.</b> Across the three '
