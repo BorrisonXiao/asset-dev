@@ -1778,6 +1778,71 @@ def build(args):
     artifact_root = os.path.abspath(os.path.join(
         os.path.dirname(__file__), "../../../..", "artifacts", "segmenter"
     ))
+
+    # Current four-split oracle evaluations. Only seeds with all requested WER
+    # files and benchmark records enter these report aggregates.
+    baseline_eval_root = os.path.join(
+        artifact_root,
+        "inference_eval_batch_invariant_leftpack_durationcap_v1",
+        "baselines_wavlm",
+    )
+    baseline_eval_splits = ("test-clean", "test-other", "dev-clean", "dev-other")
+
+    def current_oracle_family(folder, batch_size):
+        complete = []
+        for seed in seeds:
+            run_dir = os.path.join(
+                baseline_eval_root, folder, "seed%d" % seed,
+                "batch%d" % batch_size,
+            )
+            split_rows = {
+                split: parse_wer_file(os.path.join(
+                    run_dir, "wer_results", "wer_%s.txt" % split
+                ))
+                for split in baseline_eval_splits
+            }
+            benchmarks = {
+                row.get("split"): row
+                for row in parse_jsonl(os.path.join(run_dir, "benchmark.jsonl"))
+                if row.get("decoding_protocol")
+                == "batch_invariant_left_packed_duration_cap_v1"
+            }
+            if (all(split_rows.values())
+                    and all(split in benchmarks for split in baseline_eval_splits)):
+                complete.append({"splits": split_rows, "benchmarks": benchmarks})
+        return {
+            "n": len(complete),
+            "splits": {
+                split: mean_sd([
+                    run["splits"][split]["wer"] for run in complete
+                ])
+                for split in baseline_eval_splits
+            },
+            "frequency": mean_sd([
+                run["benchmarks"]["test-clean"]["token_frequency_hz"]["global"]
+                for run in complete
+            ]),
+            "rtf": mean_sd([
+                run["benchmarks"]["test-clean"]["forward_rtf"]
+                for run in complete
+            ]),
+        }
+
+    current_oracle_phone = current_oracle_family("oracle_phone", 8)
+    current_oracle_char = current_oracle_family("oracle_char", 4)
+    if current_oracle_phone["n"] != 3 or current_oracle_char["n"] != 3:
+        raise RuntimeError("Oracle report rows require three complete seeds")
+    wavlm_phone_clean = current_oracle_phone["splits"]["test-clean"]
+    wavlm_phone_other = current_oracle_phone["splits"]["test-other"]
+    wavlm_phone_dev = current_oracle_phone["splits"]["dev-clean"]
+    wavlm_phone_n = current_oracle_phone["n"]
+    wavlm_phone_frequency = current_oracle_phone["frequency"]
+    wavlm_char_clean = current_oracle_char["splits"]["test-clean"]
+    wavlm_char_other = current_oracle_char["splits"]["test-other"]
+    wavlm_char_dev = current_oracle_char["splits"]["dev-clean"]
+    wavlm_char_n = current_oracle_char["n"]
+    wavlm_char_frequency = current_oracle_char["frequency"]
+
     corrected_eval_root = os.path.join(
         artifact_root,
         "inference_eval_batch_invariant_leftpack_durationcap_v1",
@@ -2039,14 +2104,15 @@ def build(args):
     body += hk.section("", body=hk.tiles([
         ("Oracle · WavLM char alignment", "%.2f±%.2f%%" % wavlm_char_clean,
          "oracle reference · %.1f Hz · other %.2f±%.2f%% · n=%d" %
-         (rate_hz(0.292651),
+         (wavlm_char_frequency[0],
           wavlm_char_other[0], wavlm_char_other[1], wavlm_char_n)),
         ("WavLM · CNN segmenter · first-order AR",
-         "%.2f%%" % corrected["cnn_mean"]["clean"][0][0],
-         "n=%d complete · %.1f Hz · other %.2f%%" %
+         "%.2f±%.2f%%" % corrected["cnn_mean"]["clean"][0],
+         "n=%d · %.1f Hz · other %.2f±%.2f%%" %
          (corrected["cnn_mean"]["n"],
           corrected["cnn_mean"]["frequency"][0],
-          corrected["cnn_mean"]["other"][0][0])),
+          corrected["cnn_mean"]["other"][0][0],
+          corrected["cnn_mean"]["other"][0][1])),
         ("WavLM · local-history Transformer AR + BiGRU",
          "%.2f±%.2f%%" % corrected["transformer_bigru"]["clean"][0],
          "n=3 · %.1f Hz · other %.2f±%.2f%%" %
@@ -2190,43 +2256,12 @@ def build(args):
                 'problem.</b> WavLM fixed k=5 beats no downsampling by %.2f WER points on '
                 'test-clean while averaging 5h20m instead of 18h02m of A100 wall time per run '
                 '(3.4× faster in this protocol). Phone-aligned pooling improves another %.2f '
-                'points at nearly the same audio-token frequency. The decoder benefits from a shorter '
-                'prefix, but it also cares which frames are averaged together.' %
+                'points at nearly the same audio-token frequency. The best learned system is '
+                'close to the phone oracle at a similar frequency, whereas the char oracle remains '
+                'stronger; the remaining gap is about boundary placement and granularity, not '
+                'whether compression is viable.' %
                 (wavlm_no_down["test-clean"][0] - wavlm_k5["clean"][0],
                  wavlm_k5["clean"][0] - wavlm_phone_clean[0]))
-            + hk.finding(
-                '<span class="pill">Evidence-backed</span> <b>WavLM features, '
-                'CNN segmenter, first-order AR, mean pooling, and the best char decoder.</b> '
-                'The three seeds reach %.2f±%.2f clean / %.2f±%.2f other WER '
-                'at %.1f Hz with %.3f test-clean RTF.' %
-                (corrected["cnn_mean"]["clean"][0][0],
-                 corrected["cnn_mean"]["clean"][0][1],
-                 corrected["cnn_mean"]["other"][0][0],
-                 corrected["cnn_mean"]["other"][0][1],
-                 corrected["cnn_mean"]["frequency"][0],
-                 corrected["cnn_mean"]["rtf"][0]))
-            + hk.finding(
-                '<span class="pill">Evidence-backed</span> <b>The local-history '
-                'Transformer AR + BiGRU is complete for all three seeds.</b> '
-                'It reaches %.2f±%.2f clean and %.2f±%.2f other at %.1f Hz. Relative to the '
-                'matched mean-pooling arm, clean WER is %.2f points lower, with improvements '
-                'in %d/%d paired seeds; other WER improves in %d/%d. '
-                'The sample SD is %.2f on test-other. In the CNN arm, BiGRU changes mean WER '
-                'by %+.2f clean and %+.2f other, so its effect is smaller and mixed.' %
-                (corrected["transformer_bigru"]["clean"][0]
-                 + corrected["transformer_bigru"]["other"][0]
-                 + (corrected["transformer_bigru"]["frequency"][0],
-                    corrected["transformer_mean"]["clean"][0][0]
-                    - corrected["transformer_bigru"]["clean"][0][0],
-                    fullprefix_clean_wins,
-                    fullprefix_clean_pairs,
-                    fullprefix_other_wins,
-                    fullprefix_other_pairs,
-                    corrected["transformer_bigru"]["other"][0][1],
-                    corrected["cnn_bigru"]["clean"][0][0]
-                    - corrected["cnn_mean"]["clean"][0][0],
-                    corrected["cnn_bigru"]["other"][0][0]
-                    - corrected["cnn_mean"]["other"][0][0])))
         ),
     )
 
@@ -2258,7 +2293,8 @@ def build(args):
         {
             "family": "Oracle", "label": "Oracle · phone",
             "system": "Phone alignment", "configuration": "phone boundaries · mean pooling",
-            "decoder": "from scratch", "frequency": 10.5, "frequency_sd": 0.0,
+            "decoder": "from scratch", "frequency": wavlm_phone_frequency[0],
+            "frequency_sd": wavlm_phone_frequency[1],
             "clean": wavlm_phone_clean[0], "clean_sd": wavlm_phone_clean[1],
             "other": wavlm_phone_other[0], "other_sd": wavlm_phone_other[1],
             "color": "#138a8a", "marker": "P",
@@ -2266,7 +2302,8 @@ def build(args):
         {
             "family": "Oracle", "label": "Oracle · character",
             "system": "Character alignment", "configuration": "character boundaries · mean pooling",
-            "decoder": "from scratch", "frequency": 14.7, "frequency_sd": 0.0,
+            "decoder": "from scratch", "frequency": wavlm_char_frequency[0],
+            "frequency_sd": wavlm_char_frequency[1],
             "clean": wavlm_char_clean[0], "clean_sd": wavlm_char_clean[1],
             "other": wavlm_char_other[0], "other_sd": wavlm_char_other[1],
             "color": "#1c4e80", "marker": "P",
@@ -2402,17 +2439,19 @@ def build(args):
             % (k, rate_hz(rho), dev_clean_text, clean_cell, other_text, n)
         )
     wavlm_baseline_rows += (
-        '<tr><td>phone alignment</td><td>10.5 Hz</td>'
+        '<tr><td>phone alignment</td><td>%.1f Hz</td>'
         '<td>%.2f ± %.2f%%</td><td>%.2f ± %.2f%%</td>'
         '<td>%.2f ± %.2f%%</td><td><span class="pill">n=%d</span></td></tr>'
-        % (wavlm_phone_dev + wavlm_phone_clean + wavlm_phone_other
+        % ((wavlm_phone_frequency[0],) + wavlm_phone_dev + wavlm_phone_clean
+           + wavlm_phone_other
            + (wavlm_phone_n,))
     )
     wavlm_baseline_rows += (
-        '<tr style="background:var(--band)"><td><b>char alignment</b></td><td>14.7 Hz</td>'
+        '<tr style="background:var(--band)"><td><b>char alignment</b></td><td>%.1f Hz</td>'
         '<td><b>%.2f ± %.2f%%</b></td><td><b>%.2f ± %.2f%%</b></td>'
         '<td><b>%.2f ± %.2f%%</b></td><td><span class="pill">n=%d</span></td></tr>'
-        % (wavlm_char_dev + wavlm_char_clean + wavlm_char_other + (wavlm_char_n,))
+        % ((wavlm_char_frequency[0],) + wavlm_char_dev + wavlm_char_clean
+           + wavlm_char_other + (wavlm_char_n,))
     )
     wavlm_baseline_rows += (
         '<tr><td>No downsampling</td><td>50.0 Hz</td>'
@@ -2525,15 +2564,26 @@ def build(args):
                    wavlm_selected_warmup))
             + hk.finding(
                 "<b>Alignment controls separate count from placement.</b> Phone boundaries are "
-                "the closest oracle to k=5 in cost (10.5 Hz vs. 10.0 Hz) and improve WER from "
+                "the closest oracle to k=5 in cost (%.1f Hz vs. 10.0 Hz) and improve WER from "
                 "%.2f±%.2f to %.2f±%.2f clean and %.2f±%.2f to %.2f±%.2f other. Char "
-                "boundaries operate at 14.7 Hz but are stronger still at "
+                "boundaries operate at %.1f Hz but are stronger still at "
                 "%.2f±%.2f / %.2f±%.2f. Thus the fixed-rate gain combines smoothing with "
                 "token-budget regularization, while another sizeable gain is available from "
-                "content-aware placement. Learned policies should be compared to both k=5 "
-                "and phone alignment, not only to no downsampling."
-                % (wavlm_k5["clean"] + wavlm_phone_clean + wavlm_k5["other"]
-                   + wavlm_phone_other + wavlm_char_clean + wavlm_char_other)
+                "content-aware placement. The learned Transformer AR + BiGRU system at %.1f Hz "
+                "has similar mean WER to the phone oracle (%.2f/%.2f versus %.2f/%.2f), but "
+                "the char oracle remains %.2f points better on clean and %.2f on other. This "
+                "makes the char-level boundary gap—not further compression—the clearer target."
+                % ((wavlm_phone_frequency[0],) + wavlm_k5["clean"]
+                   + wavlm_phone_clean + wavlm_k5["other"] + wavlm_phone_other
+                   + (wavlm_char_frequency[0],) + wavlm_char_clean + wavlm_char_other
+                   + (corrected["transformer_bigru"]["frequency"][0],
+                      corrected["transformer_bigru"]["clean"][0][0],
+                      corrected["transformer_bigru"]["other"][0][0],
+                      wavlm_phone_clean[0], wavlm_phone_other[0],
+                      corrected["transformer_bigru"]["clean"][0][0]
+                      - wavlm_char_clean[0],
+                      corrected["transformer_bigru"]["other"][0][0]
+                      - wavlm_char_other[0]))
             )
         ),
     )
@@ -2577,11 +2627,11 @@ def build(args):
 
     controlled_rows = [
         ("Char-aligned baseline", "saved char alignment", "from scratch",
-         "fixed boundaries", rate_hz(0.293),
+         "fixed boundaries", wavlm_char_frequency[0],
          "%.2f ± %.2f%%" % wavlm_char_clean,
          "%.2f ± %.2f%%" % wavlm_char_other, "3"),
         ("Phone-aligned baseline", "saved phone alignment", "from scratch",
-         "fixed boundaries", rate_hz(0.210),
+         "fixed boundaries", wavlm_phone_frequency[0],
          "%.2f ± %.2f%%" % wavlm_phone_clean,
          "%.2f ± %.2f%%" % wavlm_phone_other, "3"),
         ("Fixed k=5 baseline", "every fifth frame", "from scratch",
