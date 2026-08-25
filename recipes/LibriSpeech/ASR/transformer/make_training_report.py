@@ -734,6 +734,51 @@ def system_overview_fig(rows):
     return hk.mpl_png(fig, cls="fig", pad=0.10, facecolor="white")
 
 
+def ls960_convergence_fig():
+    """Show dev-clean convergence for the first completed corrected LS960 seeds."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    steps = [2395, 4000, 8000, 12000, 16000, 20000, 24000]
+    curves = (
+        ("Local-history Transformer AR + BiGRU",
+         [4.45, 4.17, 3.75, 3.52, 3.08, 3.15, 2.94], "#27865d", "o"),
+        ("CNN first-order AR + BiGRU",
+         [4.48, 4.61, 3.59, 3.36, 3.34, 3.01, 2.98], "#b96f20", "s"),
+    )
+
+    fig, ax = plt.subplots(figsize=(9.2, 4.8), dpi=130)
+    for curve_idx, (label, values, color, marker) in enumerate(curves):
+        ax.plot(steps, values, color=color, marker=marker, lw=2.0, ms=5.5,
+                label=label, zorder=3)
+        ax.annotate(
+            "%.2f" % values[-1], (steps[-1], values[-1]),
+            textcoords="offset points", xytext=(7, -8 if curve_idx == 0 else 8),
+            va="center",
+            color=color, fontsize=8.5, fontweight="bold",
+        )
+
+    ax.axvline(2395, color="#7b858c", linestyle=(0, (4, 3)), lw=1.15,
+               alpha=0.85, zorder=1)
+    ax.annotate(
+        "decoder warmup ends", (2395, 4.67), textcoords="offset points",
+        xytext=(6, 0), color="#68737a", fontsize=8.2, va="center",
+    )
+    ax.set_xlim(1200, 26000)
+    ax.set_ylim(2.72, 4.82)
+    ax.set_xlabel("Optimizer step")
+    ax.set_ylabel("dev-clean WER (%)  ·  lower is better")
+    ax.set_title("Corrected LS960 training curves · seed 3407",
+                 fontsize=13, fontweight="bold", pad=15)
+    ax.grid(axis="y", alpha=0.25, lw=0.7)
+    ax.legend(frameon=False, fontsize=8.3, loc="upper right")
+    for spine in ("top", "right"):
+        ax.spines[spine].set_visible(False)
+    fig.tight_layout(pad=1.0)
+    return hk.mpl_png(fig, cls="fig", pad=0.10, facecolor="white")
+
+
 def controlled_wer_fig(rows):
     """Plot clean/other WER for the plainly named systems in section 2.
 
@@ -2093,37 +2138,24 @@ def build(args):
         + hk.hero(
         "JSALT 2026 · RL dynamic downsampling",
         "Learned speech segmentation — cumulative results",
-        "LibriSpeech-100h experiments organized by the question they answer: whether "
-        "compression helps, whether boundary placement matters, which initialization "
-        "controls the oracle gap, whether label-dependent sampling improves RL, and what "
-        "the learned segmenters cost at inference. "
+        "Current LibriSpeech-960h scale-up results followed by the LibriSpeech-100h "
+        "experiments that isolate compression, boundary placement, initialization, "
+        "label-dependent sampling, and inference cost. "
         "Corpus WER is recomputed from saved edit counts; ± is sample SD over seeds.",
         )
     )
 
     body += hk.section("", body=hk.tiles([
-        ("Oracle · WavLM char alignment", "%.2f±%.2f%%" % wavlm_char_clean,
-         "oracle reference · %.1f Hz · other %.2f±%.2f%% · n=%d" %
-         (wavlm_char_frequency[0],
-          wavlm_char_other[0], wavlm_char_other[1], wavlm_char_n)),
-        ("WavLM · CNN segmenter · first-order AR",
-         "%.2f±%.2f%%" % corrected["cnn_mean"]["clean"][0],
-         "n=%d · %.1f Hz · other %.2f±%.2f%%" %
-         (corrected["cnn_mean"]["n"],
-          corrected["cnn_mean"]["frequency"][0],
-          corrected["cnn_mean"]["other"][0][0],
-          corrected["cnn_mean"]["other"][0][1])),
-        ("WavLM · local-history Transformer AR + BiGRU",
-         "%.2f±%.2f%%" % corrected["transformer_bigru"]["clean"][0],
-         "n=3 · %.1f Hz · other %.2f±%.2f%%" %
-         (corrected["transformer_bigru"]["frequency"][0],
-          corrected["transformer_bigru"]["other"][0][0],
-          corrected["transformer_bigru"]["other"][0][1])),
-        ("WavLM · fixed k=5", "%.2f±%.2f%%" % wavlm_k5["clean"],
-         "10.0 Hz · other %.2f±%.2f%%" % wavlm_k5["other"]),
-        ("WavLM · no downsampling", "%.2f±%.2f%%" % wavlm_no_down["test-clean"],
-         "50.0 Hz · other %.2f±%.2f%% · 18h02m/run" %
-         wavlm_no_down["test-other"])]))
+        ("LS960 · Transformer AR + BiGRU", "2.78%",
+         "test-clean · n=1 · 11.1 Hz · test-other 5.49% at 10.7 Hz"),
+        ("LS960 · CNN first-order AR + BiGRU", "2.79%",
+         "test-clean · n=1 · 11.7 Hz · test-other 5.56% at 11.4 Hz"),
+        ("LS960 · char alignment", "2.87±0.08%",
+         "test-clean · n=3 · 14.6 Hz · test-other 5.66±0.15%"),
+        ("LS960 · fixed k=5", "4.37±0.10%",
+         "test-clean · n=3 · 10.0 Hz · test-other 7.72±0.18%"),
+        ("LS960 · no downsampling", "4.34±0.47%",
+         "test-clean · n=3 · 50.0 Hz · test-other 7.08±0.19%")]))
 
     evidence_rows = [
         ("Does compression help?",
@@ -2262,6 +2294,77 @@ def build(args):
                 'whether compression is viable.' %
                 (wavlm_no_down["test-clean"][0] - wavlm_k5["clean"][0],
                  wavlm_k5["clean"][0] - wavlm_phone_clean[0]))
+        ),
+    )
+
+    ls960_rows = (
+        '<tr style="background:var(--band)"><td><b>Local-history Transformer AR + BiGRU</b></td>'
+        '<td>64-frame causal history · BiGRU residual pooling</td>'
+        '<td>24k steps · decoder warmup to step 2,395</td><td>11.1 / 10.7 Hz</td>'
+        '<td><b>2.78%</b></td><td><b>5.49%</b></td>'
+        '<td><span class="pill">1 / 3</span></td></tr>'
+        '<tr style="background:var(--band)"><td><b>CNN first-order AR + BiGRU</b></td>'
+        '<td>previous boundary label · BiGRU residual pooling</td>'
+        '<td>24k steps · decoder warmup to step 2,395</td><td>11.7 / 11.4 Hz</td>'
+        '<td><b>2.79%</b></td><td><b>5.56%</b></td>'
+        '<td><span class="pill">1 / 3</span></td></tr>'
+        '<tr><td>Character alignment (oracle)</td><td>char-CTC boundaries · mean pooling</td>'
+        '<td>one LS960 pass</td><td>14.6 Hz</td><td>2.87 ± 0.08%</td>'
+        '<td>5.66 ± 0.15%</td><td><span class="pill">3 / 3</span></td></tr>'
+        '<tr><td>Fixed k=5</td><td>keep every fifth frame · mean pooling</td>'
+        '<td>one LS960 pass</td><td>10.0 Hz</td><td>4.37 ± 0.10%</td>'
+        '<td>7.72 ± 0.18%</td><td><span class="pill">3 / 3</span></td></tr>'
+        '<tr><td>No downsampling</td><td>keep every WavLM frame · no pooling</td>'
+        '<td>one LS960 pass</td><td>50.0 Hz</td><td>4.34 ± 0.47%</td>'
+        '<td>7.08 ± 0.19%</td><td><span class="pill">3 / 3</span></td></tr>'
+    )
+    body += hk.section(
+        "0b · Current LibriSpeech-960h scale-up",
+        lead="All rows train on train-clean-100, train-clean-360, and train-other-500. "
+             "The fixed, oracle, and no-downsampling controls are complete for three seeds. "
+             "The corrected learned-policy study currently has one finished seed per setup; "
+             "those values are individual runs, not means.",
+        body=(
+            hk.card(
+                '<table style="table-layout:fixed"><colgroup>'
+                '<col style="width:19%%"><col style="width:24%%">'
+                '<col style="width:18%%"><col style="width:12%%">'
+                '<col style="width:10%%"><col style="width:10%%">'
+                '<col style="width:7%%"></colgroup><thead><tr>'
+                '<th>system</th><th>segmenter / pooling</th><th>training budget</th>'
+                '<th>test-clean / other frequency</th><th>test-clean WER</th>'
+                '<th>test-other WER</th><th>seeds</th></tr></thead>'
+                '<tbody>%s</tbody></table>'
+                '<p class="cap">Lower WER and lower audio-token frequency are better. '
+                'The two learned rows use seed 3407 and show no ± because only one seed has '
+                'finished. The learned runs also use a longer optimization budget than the '
+                'one-pass controls, so this table compares attained systems rather than equal '
+                'training cost.</p>' % ls960_rows,
+                title="Current LS960 WER and audio-token frequency",
+            )
+            + hk.card(
+                ls960_convergence_fig()
+                + '<p class="cap">Validation uses dev-clean. The dashed line marks the end '
+                  'of decoder-only warmup; joint segmenter/decoder RL follows. Both completed '
+                  'runs select the 24k-step checkpoint. The small Transformer regression at '
+                  '20k does not change the overall downward trend.</p>',
+                title="Convergence of the first corrected seed",
+            )
+            + hk.finding(
+                '<span class="pill">Provisional · n=1</span> <b>The corrected schedule closes '
+                'the oracle gap in the first seed while using about 11 audio tokens per second.</b> '
+                'Transformer AR + BiGRU reaches 2.78/5.49 WER and CNN first-order AR + BiGRU '
+                'reaches 2.79/5.56 on test-clean/test-other. These are near the three-seed '
+                'character-alignment means of 2.87/5.66 at 14.6 Hz, but the remaining seeds '
+                'must finish before claiming a consistent advantage over the oracle control.'
+            )
+            + hk.finding(
+                '<b>Warmup plus longer joint training matters in the completed pair.</b> Against '
+                'the same-seed no-warmup diagnostics, the corrected Transformer improves by '
+                '0.39 clean and 0.97 other WER points; the corrected CNN improves by 0.37 and '
+                '0.63 points. The next decision should therefore use the completed three-seed '
+                'comparison, not the earlier no-warmup aggregate.'
+            )
         ),
     )
 
@@ -2755,6 +2858,60 @@ def build(args):
         ))
     boundary_by_label = {row[0]: row for row in boundary_plot_rows}
 
+    phone_agreement_dir = os.path.abspath(os.path.join(
+        os.path.dirname(__file__), "../../../..", "artifacts", "segmenter",
+    ))
+    fixed_phone_path = os.path.join(
+        phone_agreement_dir, "fixed_rate_phone_agreement_dev_clean.json"
+    )
+    learned_phone_path = os.path.join(
+        phone_agreement_dir,
+        "transformer_ar_bigru_phone_agreement_dev_clean.json",
+    )
+    for path in (fixed_phone_path, learned_phone_path):
+        if not os.path.isfile(path):
+            raise FileNotFoundError(
+                "Run the phone-boundary agreement audits before building the report: %s"
+                % path
+            )
+    with open(fixed_phone_path, encoding="utf-8") as handle:
+        fixed_phone = json.load(handle)
+    with open(learned_phone_path, encoding="utf-8") as handle:
+        learned_phone = json.load(handle)
+
+    phone_agreement_rows = ""
+    for k in (3, 4, 5, 6, 8):
+        result = fixed_phone["systems"]["fixed_k%d" % k]
+        scores = result["scores"]
+        phone_agreement_rows += (
+            "<tr><td>Fixed k=%d</td><td>%.2f Hz</td><td>%.1f%%</td>"
+            "<td>%.1f%%</td><td>%.1f%%</td></tr>"
+            % (k, result["actual_token_rate_hz"],
+               100 * scores["exact"]["harsh"]["f1"],
+               100 * scores["tol_20ms"]["harsh"]["f1"],
+               100 * scores["tol_40ms"]["harsh"]["f1"])
+        )
+    learned_rate = 50 * np.mean([
+        result["kept_ratio"] for result in learned_phone["per_seed"].values()
+    ])
+    learned_phone_summary = learned_phone["summary"]
+    phone_agreement_rows += (
+        '<tr style="background:var(--band)"><td><b>Transformer AR + BiGRU</b></td>'
+        "<td>%.2f Hz</td><td><b>%.1f±%.1f%%</b></td>"
+        "<td><b>%.1f±%.1f%%</b></td><td><b>%.1f±%.1f%%</b></td></tr>"
+        % ((learned_rate,)
+           + tuple(100 * value for tolerance in ("exact", "tol_20ms", "tol_40ms")
+                   for value in (
+                       learned_phone_summary[tolerance]["harsh"]["f1"]["mean"],
+                       learned_phone_summary[tolerance]["harsh"]["f1"]["sd"],
+                   )))
+    )
+    fixed_k5_phone = fixed_phone["systems"]["fixed_k5"]
+    learned_phone_20 = learned_phone_summary["tol_20ms"]["harsh"]["f1"]["mean"]
+    learned_phone_40 = learned_phone_summary["tol_40ms"]["harsh"]["f1"]["mean"]
+    fixed_phone_20 = fixed_k5_phone["scores"]["tol_20ms"]["harsh"]["f1"]
+    fixed_phone_40 = fixed_k5_phone["scores"]["tol_40ms"]["harsh"]["f1"]
+
     swap_rows = "".join(
         '<tr%s><td>%s</td><td>%.2f%%</td><td>%s</td></tr>' % row
         for row in (
@@ -2815,6 +2972,27 @@ def build(args):
                   'encoder frame; ±1 allows a one-frame timing offset. F1 is used instead '
                   'of raw frame accuracy because most frames are not boundaries.</p>',
                 title="How closely each boundary stream matches char-CTC")
+            + hk.card(
+                "<table><thead><tr><th>boundary stream</th><th>audio-token frequency</th>"
+                "<th>exact F1</th><th>±20 ms F1</th><th>±40 ms F1</th>"
+                "</tr></thead><tbody>%s</tbody></table>"
+                '<p class="cap">Harsh boundary F1 on all 2,703 dev-clean utterances; higher '
+                'is better. Fixed grids are deterministic. Transformer AR + BiGRU reports '
+                'mean ± sample SD over three WER-selected checkpoints. The phone reference '
+                'contains 10.74 boundaries/s; detailed precision, recall, R-value, and '
+                'lenient scores remain in the audit JSON.</p>' % phone_agreement_rows,
+                title="Agreement with phone boundaries")
+            + hk.finding(
+                '<span class="pill">Evidence-backed</span> <b>Learned placement improves '
+                'phone agreement at matched cost.</b> Fixed k=5 uses %.2f audio tokens/s and '
+                'reaches %.1f%%/%.1f%% harsh F1 at ±20/±40 ms. Transformer AR + BiGRU uses '
+                '%.2f tokens/s and reaches %.1f%%/%.1f%%—gains of %.1f and %.1f F1 points '
+                'at nearly the same rate.'
+                % (fixed_k5_phone["actual_token_rate_hz"],
+                   100 * fixed_phone_20, 100 * fixed_phone_40, learned_rate,
+                   100 * learned_phone_20, 100 * learned_phone_40,
+                   100 * (learned_phone_20 - fixed_phone_20),
+                   100 * (learned_phone_40 - fixed_phone_40)))
             + hk.card(
                 component_checks_fig(boundary_swap, cold_f1)
                 + '<p class="cap">Left: only the boundary stream changes; the decoder is '
