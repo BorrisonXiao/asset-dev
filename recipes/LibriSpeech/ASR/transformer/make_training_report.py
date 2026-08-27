@@ -122,14 +122,20 @@ def parse_jsonl(path):
     return rows
 
 
-def aggregate_inference_benchmark(path, splits=("test-clean", "test-other")):
+def aggregate_inference_benchmark(
+        path, splits=("test-clean", "test-other"), required_protocol=None):
     """Aggregate forward-only inference measurements over named data splits.
 
     RTF and utterances/second are recomputed from summed durations rather than
     averaged across corpora. Peak memory is the maximum observed allocation.
     """
     wanted = set(splits)
-    rows = [row for row in parse_jsonl(path) if row.get("split") in wanted]
+    protocol_rows = [
+        row for row in parse_jsonl(path)
+        if (required_protocol is None
+            or row.get("decoding_protocol") == required_protocol)
+    ]
+    rows = [row for row in protocol_rows if row.get("split") in wanted]
     if not rows:
         return None
     forward_seconds = sum(row["measured_forward_seconds"] for row in rows)
@@ -140,16 +146,32 @@ def aggregate_inference_benchmark(path, splits=("test-clean", "test-other")):
         for row in rows
     )
     token_audio_seconds = sum(row["audio_seconds"] for row in rows)
+    batch_sizes = {int(row["batch_size"]) for row in rows}
+    warmup_batches = {int(row["warmup_batches"]) for row in rows}
+    if len(batch_sizes) != 1 or len(warmup_batches) != 1:
+        raise ValueError("Mixed inference protocol settings in %s" % path)
     return {
         "forward_rtf": forward_seconds / audio_seconds,
         "utterances_per_second": utterances / forward_seconds,
         "token_frequency_hz": tokens / token_audio_seconds,
         "peak_allocated_gb": max(row["gpu_peak_allocated_gb"] for row in rows),
         "peak_reserved_gb": max(row["gpu_peak_reserved_gb"] for row in rows),
+        "run_peak_allocated_gb": max(
+            row["gpu_peak_allocated_gb"] for row in protocol_rows
+        ),
+        "run_peak_reserved_gb": max(
+            row["gpu_peak_reserved_gb"] for row in protocol_rows
+        ),
+        "prewarm_splits": sum(
+            row.get("split") not in wanted for row in protocol_rows
+        ),
         "splits": len(rows),
         "expected_splits": len(wanted),
         "hardware": rows[0].get("hardware", "unknown GPU"),
         "precision": rows[0].get("precision", "unknown precision"),
+        "batch_size": batch_sizes.pop(),
+        "warmup_batches": warmup_batches.pop(),
+        "decoding_protocol": rows[0].get("decoding_protocol", "legacy"),
     }
 
 
@@ -833,10 +855,10 @@ def controlled_wer_fig(rows):
 
 
 def inference_efficiency_fig(rows):
-    """Compare single-utterance and batched forward RTF on one A100.
+    """Plot memory-limited batched forward RTF on one A100.
 
-    Each row is a dictionary containing a plain system label, measured token
-    frequency, family/color, and aggregate batch-1/throughput benchmark records.
+    Each bar is the mean of three independently trained seeds after aggregating
+    test-clean and test-other within each seed. Error bars are sample SD.
     """
     import matplotlib
     matplotlib.use("Agg")
@@ -844,47 +866,45 @@ def inference_efficiency_fig(rows):
 
     y = np.arange(len(rows))
     labels = [
-        "%s · %.1f Hz%s" % (
-            row["label"], row["frequency"], "†" if row.get("unstable") else ""
-        )
+        "%s · %.1f Hz · b%d" %
+        (row["label"], row["frequency"][0], row["batch_size"])
         for row in rows
     ]
-    fig, axes = plt.subplots(1, 2, figsize=(12.0, 8.4), dpi=130, sharey=True)
-    panels = (
-        ("batch1", "Batch size 1", "one utterance at a time"),
-        ("throughput", "Largest tested batch", "throughput-oriented batching"),
+    values = [row["rtf"][0] for row in rows]
+    errors = [row["rtf"][1] for row in rows]
+    fig, ax = plt.subplots(figsize=(9.4, 8.4), dpi=130)
+    bars = ax.barh(
+        y, values, height=0.60,
+        color=[row["color"] for row in rows], alpha=0.88,
     )
-    for panel_idx, (ax, (key, title, subtitle)) in enumerate(zip(axes, panels)):
-        values = [row[key]["forward_rtf"] for row in rows]
-        bars = ax.barh(
-            y, values, height=0.60,
-            color=[row["color"] for row in rows], alpha=0.88,
+    ax.errorbar(
+        values, y, xerr=errors, fmt="none", ecolor="#24323f",
+        elinewidth=1.0, capsize=2.5, capthick=1.0, zorder=3,
+    )
+    for row_idx, (row, bar, value, error) in enumerate(
+            zip(rows, bars, values, errors)):
+        ax.annotate(
+            "%.3f ± %.3f" % (value, error),
+            (bar.get_width() + error, row_idx), textcoords="offset points",
+            xytext=(6, 0), va="center", fontsize=8, color="#24323f",
         )
-        for row_idx, (row, bar, value) in enumerate(zip(rows, bars, values)):
-            batch = row["batch1_batch"] if key == "batch1" else row["throughput_batch"]
-            ax.annotate(
-                "%.3f · b%d" % (value, batch),
-                (bar.get_width(), row_idx), textcoords="offset points", xytext=(5, 0),
-                va="center", fontsize=8, color="#24323f",
-            )
-        for boundary in range(1, len(rows)):
-            if rows[boundary]["family"] != rows[boundary - 1]["family"]:
-                ax.axhline(boundary - 0.5, color="#d8dee4", lw=0.9, zorder=0)
-        ax.set_title("%s\n%s" % (title, subtitle), fontsize=11.5, fontweight="bold")
-        ax.set_xlabel("forward RTF  ·  lower is faster")
-        ax.set_xlim(0, max(values) * 1.28)
-        ax.grid(axis="x", alpha=0.24, lw=0.7)
-        for spine in ("top", "right", "left"):
-            ax.spines[spine].set_visible(False)
-        ax.tick_params(axis="y", length=0)
-        if panel_idx == 0:
-            ax.set_yticks(y, labels=labels, fontsize=8.2)
-    axes[0].invert_yaxis()
-    fig.suptitle(
-        "Measured inference speed · A100 80 GB · BF16",
-        fontsize=13.5, fontweight="bold", y=0.988,
+    for boundary in range(1, len(rows)):
+        if rows[boundary]["family"] != rows[boundary - 1]["family"]:
+            ax.axhline(boundary - 0.5, color="#d8dee4", lw=0.9, zorder=0)
+    ax.set_title(
+        "Memory-limited inference operating points\n"
+        "three-seed mean ± sample SD",
+        fontsize=12.0, fontweight="bold",
     )
-    fig.tight_layout(rect=(0, 0, 1, 0.955), pad=0.9, w_pad=1.8)
+    ax.set_xlabel("forward RTF  ·  lower is faster")
+    ax.set_xlim(0, max(value + error for value, error in zip(values, errors)) * 1.32)
+    ax.set_yticks(y, labels=labels, fontsize=8.2)
+    ax.grid(axis="x", alpha=0.24, lw=0.7)
+    for spine in ("top", "right", "left"):
+        ax.spines[spine].set_visible(False)
+    ax.tick_params(axis="y", length=0)
+    ax.invert_yaxis()
+    fig.tight_layout(pad=1.0)
     return hk.mpl_png(fig, cls="fig", pad=0.10, facecolor="white")
 
 
@@ -1402,6 +1422,162 @@ def build(args):
 
     ms_root = os.path.join(S, "multiseed_shared_warmup_onpolicy")
     seeds = (3407, 3408, 3409)
+
+    # Corrected 24k-step LS960 study. Read the finished evaluations directly so
+    # the report can be regenerated while the last seed is still training.
+    ls960_root = os.path.join(RES, "speechllm_ls960_step24k_corrected")
+
+    def ls960_learned_stats(family):
+        runs = []
+        for seed in seeds:
+            run = os.path.join(ls960_root, family, "nll_mt", str(seed))
+            clean = parse_wer_file(os.path.join(
+                run, "wer_results", "wer_test-clean.txt"
+            ))
+            other = parse_wer_file(os.path.join(
+                run, "wer_results", "wer_test-other.txt"
+            ))
+            if not clean or not other:
+                continue
+
+            # Final evaluation is written in test-clean/test-other order.
+            rhos = []
+            train_log = os.path.join(run, "train_log.txt")
+            if os.path.exists(train_log):
+                for line in open(train_log, encoding="utf-8", errors="replace"):
+                    match = re.match(
+                        rf"Epoch loaded: \d+ - test .*?rho_mean: ({_NUM})", line
+                    )
+                    if match:
+                        rhos.append(float(match.group(1)))
+            if len(rhos) < 2:
+                continue
+            runs.append({
+                "seed": seed,
+                "clean": clean["wer"],
+                "other": other["wer"],
+                "clean_hz": rate_hz(rhos[0]),
+                "other_hz": rate_hz(rhos[1]),
+            })
+
+        return {
+            "runs": runs,
+            "n": len(runs),
+            "clean": mean_sd([run["clean"] for run in runs]),
+            "other": mean_sd([run["other"] for run in runs]),
+            "clean_hz": mean_sd([run["clean_hz"] for run in runs]),
+            "other_hz": mean_sd([run["other_hz"] for run in runs]),
+        }
+
+    ls960_transformer = ls960_learned_stats("transformer_ar_local64_bigru")
+    ls960_cnn = ls960_learned_stats("cnn_first_order_ar_bigru")
+
+    def ls960_metric_text(stats, n, digits=2, suffix="%"):
+        value = ("%.*f" % (digits, stats[0]))
+        if n > 1:
+            value += " ± %.*f" % (digits, stats[1])
+        return value + suffix
+
+    def ls960_one_decimal(value):
+        # Frequencies are positive; the epsilon makes x.x5 display with the
+        # conventional half-up presentation rather than binary/banker's rounding.
+        return "%.1f" % (value + 1e-9)
+
+    def ls960_frequency_text(result):
+        if result["n"] > 1:
+            return "%s ± %s / %s ± %s Hz" % (
+                ls960_one_decimal(result["clean_hz"][0]),
+                ls960_one_decimal(result["clean_hz"][1]),
+                ls960_one_decimal(result["other_hz"][0]),
+                ls960_one_decimal(result["other_hz"][1]),
+            )
+        return "%s / %s Hz" % (
+            ls960_one_decimal(result["clean_hz"][0]),
+            ls960_one_decimal(result["other_hz"][0]),
+        )
+
+    # Matched 100h comparison: fixed boundaries, a frozen supervised
+    # Transformer-AR segmenter, and the same segmenter updated by joint RL.
+    attribution_root = os.path.join(
+        SW, "attribution_100h_transformer_ar_bigru"
+    )
+
+    def attribution_family_stats(folder):
+        runs = []
+        for seed in seeds:
+            run = os.path.join(attribution_root, folder, str(seed))
+            clean = parse_wer_file(os.path.join(
+                run, "wer_results", "wer_test-clean.txt"
+            ))
+            other = parse_wer_file(os.path.join(
+                run, "wer_results", "wer_test-other.txt"
+            ))
+            if not clean or not other:
+                continue
+            rhos = []
+            train_log = os.path.join(run, "train_log.txt")
+            if os.path.exists(train_log):
+                for line in open(train_log, encoding="utf-8", errors="replace"):
+                    match = re.match(
+                        rf"Epoch loaded: \d+ - test .*?rho_mean: ({_NUM})", line
+                    )
+                    if match:
+                        rhos.append(float(match.group(1)))
+            if len(rhos) < 2:
+                continue
+            # A complete evaluation writes clean, other, then dev-other. If an
+            # evaluation was repeated, use the final complete triplet.
+            final_rhos = rhos[-3:] if len(rhos) >= 3 else rhos[-2:]
+            runs.append({
+                "seed": seed,
+                "clean": clean["wer"],
+                "other": other["wer"],
+                "clean_hz": rate_hz(final_rhos[0]),
+                "other_hz": rate_hz(final_rhos[1]),
+            })
+        return {
+            "runs": runs,
+            "n": len(runs),
+            "clean": mean_sd([run["clean"] for run in runs]),
+            "other": mean_sd([run["other"] for run in runs]),
+            "clean_hz": mean_sd([run["clean_hz"] for run in runs]),
+            "other_hz": mean_sd([run["other_hz"] for run in runs]),
+        }
+
+    def attribution_joint_progress():
+        progress = []
+        completed_seeds = {
+            run["seed"] for run in attribution_joint["runs"]
+        }
+        for seed in seeds:
+            rows_ = parse_log(os.path.join(
+                attribution_root, "joint_rl_bigru", str(seed), "train_log.txt"
+            ))
+            joint_rows = [
+                row for row in rows_
+                if int(row.get("epoch", 0)) >= 3 and "valid WER" in row
+            ]
+            if not joint_rows:
+                progress.append({
+                    "seed": seed, "epochs": 0, "best": None, "latest": None,
+                    "complete": seed in completed_seeds,
+                })
+                continue
+            best = min(joint_rows, key=lambda row: row["valid WER"])
+            latest = joint_rows[-1]
+            progress.append({
+                "seed": seed,
+                "epochs": int(latest["epoch"]),
+                "best": best,
+                "latest": latest,
+                "complete": seed in completed_seeds,
+            })
+        return progress
+
+    attribution_fixed = attribution_family_stats("fixed_k5_bigru")
+    attribution_frozen = attribution_family_stats("frozen_segmenter_bigru")
+    attribution_joint = attribution_family_stats("joint_rl_bigru")
+    attribution_joint_rows = attribution_joint_progress()
 
     def headline_stats(variant, split, backbone="cnn"):
         vals = []
@@ -2040,58 +2216,127 @@ def build(args):
         },
     ]
 
-    # Inference benchmarks use seed 3407's selected checkpoint, one A100 80 GB,
-    # BF16, and the same generation settings. Aggregate only test-clean and
-    # test-other so every row covers the same audio and the k=3 batch-4 timing is
-    # still comparable despite its later dev-other allocator-fragmentation OOM.
-    learned_bench_root = os.path.join(artifact_root, "inference_benchmark_2x2")
-    baseline_bench_root = os.path.join(
-        artifact_root, "inference_benchmark_baselines"
+    # Final inference-speed measurements use padding-invariant left packing,
+    # explicit positions, and per-utterance duration caps. Batch size is selected
+    # by memory on the longest dev-other examples, never by observed RTF. Systems
+    # whose initial batch-64 choice failed during the complete test pass use the
+    # conservative batch-32 retry for all three seeds.
+    corrected_protocol = "batch_invariant_left_packed_duration_cap_v1"
+    memory_speed_root = os.path.join(
+        artifact_root, "inference_eval_memory_limited_batch_v1"
     )
+
+    def memory_speed_dirs(root, folder):
+        return [
+            os.path.join(root, folder, "seed%d" % seed)
+            for seed in seeds
+        ]
+
     efficiency_specs = [
-        ("Reference", "No downsampling", baseline_bench_root, "no_downsampling", 1, 2,
-         "#9a5b73", False),
-        ("Fixed", "Fixed k=3", baseline_bench_root, "fixed_k3", 1, 4,
-         "#7b858c", True),
-        ("Fixed", "Fixed k=4", baseline_bench_root, "fixed_k4", 1, 6,
-         "#7b858c", False),
-        ("Fixed", "Fixed k=5", baseline_bench_root, "fixed_k5", 1, 8,
-         "#59646c", False),
-        ("Fixed", "Fixed k=6", baseline_bench_root, "fixed_k6", 1, 8,
-         "#7b858c", False),
-        ("Fixed", "Fixed k=8", baseline_bench_root, "fixed_k8", 1, 8,
-         "#7b858c", False),
-        ("Oracle", "Phone alignment", baseline_bench_root, "oracle_phone", 1, 8,
-         "#138a8a", False),
-        ("Oracle", "Character alignment", baseline_bench_root, "oracle_char", 1, 4,
-         "#1c4e80", False),
-        ("Learned", "CNN AR · mean", learned_bench_root, "cnn_ar_mean", 1, 8,
-         "#b96f20", False),
-        ("Learned", "CNN AR · BiGRU", learned_bench_root, "cnn_ar_bigru", 1, 8,
-         "#e2a24c", False),
-        ("Learned", "Transformer AR · mean", learned_bench_root,
-         "transformer_ar_mean", 1, 8, "#75579b", False),
-        ("Learned", "Transformer AR · BiGRU", learned_bench_root,
-         "transformer_ar_bigru", 1, 8, "#27865d", False),
+        ("Reference", "No downsampling", 16,
+         memory_speed_dirs(os.path.join(memory_speed_root, "results"),
+                           "no_downsampling"), "#9a5b73", "selected"),
+        ("Fixed", "Fixed k=3", 32,
+         memory_speed_dirs(os.path.join(memory_speed_root, "results"),
+                           "fixed_k3"), "#7b858c", "selected"),
+        ("Fixed", "Fixed k=4", 32,
+         memory_speed_dirs(os.path.join(memory_speed_root, "results"),
+                           "fixed_k4"), "#7b858c", "selected"),
+        ("Fixed", "Fixed k=5", 32,
+         memory_speed_dirs(os.path.join(
+             memory_speed_root, "retry_batch32_v1", "results"),
+             "fixed_k5"), "#59646c", "fallback"),
+        ("Fixed", "Fixed k=6", 32,
+         memory_speed_dirs(os.path.join(
+             memory_speed_root, "retry_batch32_v1", "results"),
+             "fixed_k6"), "#7b858c", "fallback"),
+        ("Fixed", "Fixed k=8", 64,
+         memory_speed_dirs(os.path.join(memory_speed_root, "results"),
+                           "fixed_k8"), "#7b858c", "selected"),
+        ("Oracle", "Phone alignment", 32,
+         memory_speed_dirs(os.path.join(memory_speed_root, "results"),
+                           "oracle_phone"), "#138a8a", "selected"),
+        ("Oracle", "Character alignment", 32,
+         memory_speed_dirs(os.path.join(
+             memory_speed_root, "retry_batch32_v1", "results"),
+             "oracle_char"), "#1c4e80", "fallback"),
+        ("Learned", "CNN AR · mean", 32,
+         memory_speed_dirs(os.path.join(
+             memory_speed_root, "retry_batch32_v1", "results"),
+             "cnn_ar_mean"), "#b96f20", "fallback"),
+        ("Learned", "CNN AR · BiGRU", 32,
+         memory_speed_dirs(os.path.join(
+             memory_speed_root, "retry_batch32_v1", "results"),
+             "cnn_ar_bigru"), "#e2a24c", "fallback"),
+        ("Learned", "Transformer AR · mean", 32,
+         memory_speed_dirs(os.path.join(memory_speed_root, "results"),
+                           "transformer_ar_local64_mean"),
+         "#75579b", "selected"),
+        ("Learned", "Transformer AR · BiGRU", 32,
+         memory_speed_dirs(os.path.join(memory_speed_root, "results"),
+                           "transformer_ar_local64_bigru"),
+         "#27865d", "selected"),
     ]
     efficiency_rows = []
-    for (family, label, root, folder, batch1, throughput_batch, color,
-         unstable) in efficiency_specs:
-        run_root = os.path.join(root, folder, "seed3407")
-        batch1_result = aggregate_inference_benchmark(os.path.join(
-            run_root, "batch%d" % batch1, "benchmark.jsonl"
-        ))
-        throughput_result = aggregate_inference_benchmark(os.path.join(
-            run_root, "batch%d" % throughput_batch, "benchmark.jsonl"
-        ))
-        if batch1_result is None or throughput_result is None:
-            raise FileNotFoundError("Incomplete inference benchmark for %s" % label)
+    for (family, label, batch_size, run_dirs, color,
+         batch_choice) in efficiency_specs:
+        measurements = []
+        mismatch_utterances = 0
+        compared_utterances = 0
+        for run_dir in run_dirs:
+            result = aggregate_inference_benchmark(
+                os.path.join(run_dir, "batch%d" % batch_size,
+                             "benchmark.jsonl"),
+                required_protocol=corrected_protocol,
+            )
+            if (result is not None and result["splits"] == 2
+                    and result["batch_size"] == batch_size
+                    and result["prewarm_splits"] >= 1):
+                measurements.append(result)
+            for split in ("test-clean", "test-other"):
+                comparison_path = os.path.join(
+                    run_dir, "batch_invariance_%s.json" % split
+                )
+                if not os.path.exists(comparison_path):
+                    continue
+                comparison = json.load(open(comparison_path, encoding="utf-8"))
+                mismatch_utterances += comparison["hypothesis_mismatches"]
+                compared_utterances += comparison["common_records"]
+        if len(measurements) != 3:
+            raise RuntimeError(
+                "%s requires three complete corrected speed runs; found %d" %
+                (label, len(measurements))
+            )
         efficiency_rows.append({
-            "family": family, "label": label, "color": color,
-            "batch1_batch": batch1, "throughput_batch": throughput_batch,
-            "batch1": batch1_result, "throughput": throughput_result,
-            "frequency": batch1_result["token_frequency_hz"],
-            "unstable": unstable,
+            "family": family,
+            "label": label,
+            "color": color,
+            "batch_size": batch_size,
+            "batch_choice": batch_choice,
+            "n": len(measurements),
+            "rtf": mean_sd([row["forward_rtf"] for row in measurements]),
+            "utterances_per_second": mean_sd([
+                row["utterances_per_second"] for row in measurements
+            ]),
+            "frequency": mean_sd([
+                row["token_frequency_hz"] for row in measurements
+            ]),
+            "peak_allocated_gb": mean_sd([
+                row["peak_allocated_gb"] for row in measurements
+            ]),
+            "run_peak_allocated_gb": mean_sd([
+                row["run_peak_allocated_gb"] for row in measurements
+            ]),
+            "run_peak_reserved_gb": mean_sd([
+                row["run_peak_reserved_gb"] for row in measurements
+            ]),
+            "prewarm_batches": 10,
+            "batch_mismatch_pct": (
+                100 * mismatch_utterances / compared_utterances
+                if compared_utterances else float("nan")
+            ),
+            "hardware": measurements[0]["hardware"],
+            "precision": measurements[0]["precision"],
         })
 
     efficiency_by_label = {row["label"]: row for row in efficiency_rows}
@@ -2146,10 +2391,20 @@ def build(args):
     )
 
     body += hk.section("", body=hk.tiles([
-        ("LS960 · Transformer AR + BiGRU", "2.78%",
-         "test-clean · n=1 · 11.1 Hz · test-other 5.49% at 10.7 Hz"),
-        ("LS960 · CNN first-order AR + BiGRU", "2.79%",
-         "test-clean · n=1 · 11.7 Hz · test-other 5.56% at 11.4 Hz"),
+        ("LS960 · Transformer AR + BiGRU",
+         ls960_metric_text(ls960_transformer["clean"], ls960_transformer["n"]),
+         "test-clean · n=%d · %s Hz · test-other %s at %s Hz" % (
+             ls960_transformer["n"],
+             ls960_one_decimal(ls960_transformer["clean_hz"][0]),
+             ls960_metric_text(ls960_transformer["other"],
+                               ls960_transformer["n"]),
+             ls960_one_decimal(ls960_transformer["other_hz"][0]))),
+        ("LS960 · CNN first-order AR + BiGRU",
+         ls960_metric_text(ls960_cnn["clean"], ls960_cnn["n"]),
+         "test-clean · n=%d · %s Hz · test-other %s at %s Hz" % (
+             ls960_cnn["n"], ls960_one_decimal(ls960_cnn["clean_hz"][0]),
+             ls960_metric_text(ls960_cnn["other"], ls960_cnn["n"]),
+             ls960_one_decimal(ls960_cnn["other_hz"][0]))),
         ("LS960 · char alignment", "2.87±0.08%",
          "test-clean · n=3 · 14.6 Hz · test-other 5.66±0.15%"),
         ("LS960 · fixed k=5", "4.37±0.10%",
@@ -2233,27 +2488,50 @@ def build(args):
           corrected["cnn_bigru"]["clean"][0][0]
           - corrected["cnn_mean"]["clean"][0][0],
           cnn_bigru_other_wins, cnn_bigru_other_pairs,
-          corrected["cnn_mean"]["other"][0][0]
+         corrected["cnn_mean"]["other"][0][0]
           - corrected["cnn_bigru"]["other"][0][0]),
+        "Evidence-backed"),
+        ("What changes in the matched BiGRU study?",
+         "Fixed k=5, frozen learned boundaries, and joint RL on train-clean-100",
+         "Fixed k=5: %.2f clean, %.2f other (n=%d). Frozen Transformer AR: "
+         "%.2f clean, %.2f other (n=%d). Joint Transformer AR: %.2f clean, "
+         "%.2f other (n=%d)." %
+         (attribution_fixed["clean"][0], attribution_fixed["other"][0],
+          attribution_fixed["n"], attribution_frozen["clean"][0],
+          attribution_frozen["other"][0], attribution_frozen["n"],
+          attribution_joint["clean"][0], attribution_joint["other"][0],
+          attribution_joint["n"]),
+         "Joint RL lowers WER by %.2f clean / %.2f other versus the frozen segmenter "
+         "while emitting about %.1f fewer audio tokens/s on test-clean. Versus fixed k=5, "
+         "it improves WER but uses about %.1f more audio tokens/s." %
+         (attribution_frozen["clean"][0] - attribution_joint["clean"][0],
+          attribution_frozen["other"][0] - attribution_joint["other"][0],
+          attribution_frozen["clean_hz"][0] - attribution_joint["clean_hz"][0],
+          attribution_joint["clean_hz"][0] - attribution_fixed["clean_hz"][0]),
          "Evidence-backed"),
         ("What does learned segmentation cost at inference?",
-         "One A100, BF16, identical decoding; seed-3407 selected checkpoints",
-         "No downsampling: RTF %.3f (b%d). Fixed k=5: %.3f (b%d). CNN AR: "
-         "%.3f (b%d). Transformer AR + BiGRU: %.3f (b%d)." %
-         (efficiency_by_label["No downsampling"]["throughput"]["forward_rtf"],
-          efficiency_by_label["No downsampling"]["throughput_batch"],
-          efficiency_by_label["Fixed k=5"]["throughput"]["forward_rtf"],
-          efficiency_by_label["Fixed k=5"]["throughput_batch"],
-          efficiency_by_label["CNN AR · mean"]["throughput"]["forward_rtf"],
-          efficiency_by_label["CNN AR · mean"]["throughput_batch"],
-          efficiency_by_label["Transformer AR · BiGRU"]["throughput"]["forward_rtf"],
-          efficiency_by_label["Transformer AR · BiGRU"]["throughput_batch"]),
-         "CNN first-order AR is effectively tied with fixed k=5 in batched RTF. "
-         "The local-history Transformer costs %.0f%% more RTF than CNN AR." %
-         (100 * (efficiency_by_label["Transformer AR · BiGRU"]["throughput"]
-                 ["forward_rtf"]
-                 / efficiency_by_label["CNN AR · mean"]["throughput"]["forward_rtf"]
-                 - 1)),
+         "Memory-limited operating points; one A100 80 GB, BF16; three seeds",
+         "No downsampling: RTF %.3f (b%d). Phone oracle: %.3f (b%d). Fixed k=5: "
+         "%.3f (b%d). CNN AR + BiGRU: %.3f (b%d). Transformer AR + BiGRU: "
+         "%.3f (b%d)." %
+         (efficiency_by_label["No downsampling"]["rtf"][0],
+          efficiency_by_label["No downsampling"]["batch_size"],
+          efficiency_by_label["Phone alignment"]["rtf"][0],
+          efficiency_by_label["Phone alignment"]["batch_size"],
+          efficiency_by_label["Fixed k=5"]["rtf"][0],
+          efficiency_by_label["Fixed k=5"]["batch_size"],
+          efficiency_by_label["CNN AR · BiGRU"]["rtf"][0],
+          efficiency_by_label["CNN AR · BiGRU"]["batch_size"],
+          efficiency_by_label["Transformer AR · BiGRU"]["rtf"][0],
+          efficiency_by_label["Transformer AR · BiGRU"]["batch_size"]),
+         "CNN AR + BiGRU and Transformer AR + BiGRU are close to the phone-oracle "
+         "throughput and have %.1f× / %.1f× lower RTF than native 50-Hz decoding. "
+         "This system-level gain intentionally includes the larger batch enabled by "
+         "shorter audio prefixes." %
+         (efficiency_by_label["No downsampling"]["rtf"][0]
+          / efficiency_by_label["CNN AR · BiGRU"]["rtf"][0],
+          efficiency_by_label["No downsampling"]["rtf"][0]
+          / efficiency_by_label["Transformer AR · BiGRU"]["rtf"][0]),
          "Evidence-backed"),
         ("Do more RL epochs help?",
          "Thirty-epoch wav2vec2 Transformer AR continuation",
@@ -2300,30 +2578,40 @@ def build(args):
     ls960_rows = (
         '<tr style="background:var(--band)"><td><b>Local-history Transformer AR + BiGRU</b></td>'
         '<td>64-frame causal history · BiGRU residual pooling</td>'
-        '<td>24k steps · decoder warmup to step 2,395</td><td>11.1 / 10.7 Hz</td>'
-        '<td><b>2.78%</b></td><td><b>5.49%</b></td>'
-        '<td><span class="pill">1 / 3</span></td></tr>'
+        '<td>24k steps · decoder warmup to step 2,395</td><td>%s</td>'
+        '<td><b>%s</b></td><td><b>%s</b></td>'
+        '<td><span class="pill">%d / 3</span></td></tr>'
         '<tr style="background:var(--band)"><td><b>CNN first-order AR + BiGRU</b></td>'
         '<td>previous boundary label · BiGRU residual pooling</td>'
-        '<td>24k steps · decoder warmup to step 2,395</td><td>11.7 / 11.4 Hz</td>'
-        '<td><b>2.79%</b></td><td><b>5.56%</b></td>'
-        '<td><span class="pill">1 / 3</span></td></tr>'
+        '<td>24k steps · decoder warmup to step 2,395</td><td>%s</td>'
+        '<td><b>%s</b></td><td><b>%s</b></td>'
+        '<td><span class="pill">%d / 3</span></td></tr>'
         '<tr><td>Character alignment (oracle)</td><td>char-CTC boundaries · mean pooling</td>'
-        '<td>one LS960 pass</td><td>14.6 Hz</td><td>2.87 ± 0.08%</td>'
-        '<td>5.66 ± 0.15%</td><td><span class="pill">3 / 3</span></td></tr>'
+        '<td>one LS960 pass</td><td>14.6 Hz</td><td>2.87 ± 0.08%%</td>'
+        '<td>5.66 ± 0.15%%</td><td><span class="pill">3 / 3</span></td></tr>'
         '<tr><td>Fixed k=5</td><td>keep every fifth frame · mean pooling</td>'
-        '<td>one LS960 pass</td><td>10.0 Hz</td><td>4.37 ± 0.10%</td>'
-        '<td>7.72 ± 0.18%</td><td><span class="pill">3 / 3</span></td></tr>'
+        '<td>one LS960 pass</td><td>10.0 Hz</td><td>4.37 ± 0.10%%</td>'
+        '<td>7.72 ± 0.18%%</td><td><span class="pill">3 / 3</span></td></tr>'
         '<tr><td>No downsampling</td><td>keep every WavLM frame · no pooling</td>'
-        '<td>one LS960 pass</td><td>50.0 Hz</td><td>4.34 ± 0.47%</td>'
-        '<td>7.08 ± 0.19%</td><td><span class="pill">3 / 3</span></td></tr>'
+        '<td>one LS960 pass</td><td>50.0 Hz</td><td>4.34 ± 0.47%%</td>'
+        '<td>7.08 ± 0.19%%</td><td><span class="pill">3 / 3</span></td></tr>'
+    ) % (
+        ls960_frequency_text(ls960_transformer),
+        ls960_metric_text(ls960_transformer["clean"], ls960_transformer["n"]),
+        ls960_metric_text(ls960_transformer["other"], ls960_transformer["n"]),
+        ls960_transformer["n"],
+        ls960_frequency_text(ls960_cnn),
+        ls960_metric_text(ls960_cnn["clean"], ls960_cnn["n"]),
+        ls960_metric_text(ls960_cnn["other"], ls960_cnn["n"]),
+        ls960_cnn["n"],
     )
     body += hk.section(
-        "0b · Current LibriSpeech-960h scale-up",
+        "0b · LibriSpeech-960h scale-up — three seeds complete",
         lead="All rows train on train-clean-100, train-clean-360, and train-other-500. "
              "The fixed, oracle, and no-downsampling controls are complete for three seeds. "
-             "The corrected learned-policy study currently has one finished seed per setup; "
-             "those values are individual runs, not means.",
+             "The corrected learned-policy study has %d/3 Transformer seeds and %d/3 CNN "
+             "seeds; ± is sample SD across the completed seeds." %
+             (ls960_transformer["n"], ls960_cnn["n"]),
         body=(
             hk.card(
                 '<table style="table-layout:fixed"><colgroup>'
@@ -2336,8 +2624,8 @@ def build(args):
                 '<th>test-other WER</th><th>seeds</th></tr></thead>'
                 '<tbody>%s</tbody></table>'
                 '<p class="cap">Lower WER and lower audio-token frequency are better. '
-                'The two learned rows use seed 3407 and show no ± because only one seed has '
-                'finished. The learned runs also use a longer optimization budget than the '
+                'The learned rows aggregate the completed seeds; ± is sample SD when n&gt;1. '
+                'The learned runs use a longer optimization budget than the '
                 'one-pass controls, so this table compares attained systems rather than equal '
                 'training cost.</p>' % ls960_rows,
                 title="Current LS960 WER and audio-token frequency",
@@ -2351,19 +2639,180 @@ def build(args):
                 title="Convergence of the first corrected seed",
             )
             + hk.finding(
-                '<span class="pill">Provisional · n=1</span> <b>The corrected schedule closes '
-                'the oracle gap in the first seed while using about 11 audio tokens per second.</b> '
-                'Transformer AR + BiGRU reaches 2.78/5.49 WER and CNN first-order AR + BiGRU '
-                'reaches 2.79/5.56 on test-clean/test-other. These are near the three-seed '
-                'character-alignment means of 2.87/5.66 at 14.6 Hz, but the remaining seeds '
-                'must finish before claiming a consistent advantage over the oracle control.'
+                '<span class="pill">Both learned systems complete · 3 seeds</span> '
+                '<b>CNN and Transformer AR reach essentially the same WER, while the '
+                'Transformer uses about one fewer audio token per second.</b> CNN first-order '
+                'AR + BiGRU reaches %s clean and %s other at %s. Transformer AR + BiGRU '
+                'reaches %s/%s at %s. CNN is 0.04 points lower on clean; Transformer is 0.04 '
+                'points lower on other. Both are near the character-alignment control '
+                '(2.87 ± 0.08 / 5.66 ± 0.15 at 14.6 Hz), but the learned and control '
+                'training budgets are not matched.' % (
+                    ls960_metric_text(ls960_cnn["clean"], ls960_cnn["n"]),
+                    ls960_metric_text(ls960_cnn["other"], ls960_cnn["n"]),
+                    ls960_frequency_text(ls960_cnn),
+                    ls960_metric_text(ls960_transformer["clean"],
+                                      ls960_transformer["n"]),
+                    ls960_metric_text(ls960_transformer["other"],
+                                      ls960_transformer["n"]),
+                    ls960_frequency_text(ls960_transformer),
+                )
             )
             + hk.finding(
-                '<b>Warmup plus longer joint training matters in the completed pair.</b> Against '
+                '<b>Warmup plus longer joint training matters in the seed-3407 pair.</b> Against '
                 'the same-seed no-warmup diagnostics, the corrected Transformer improves by '
                 '0.39 clean and 0.97 other WER points; the corrected CNN improves by 0.37 and '
                 '0.63 points. The next decision should therefore use the completed three-seed '
                 'comparison, not the earlier no-warmup aggregate.'
+            )
+        ),
+    )
+
+    def attribution_frequency_text(result):
+        if (result["n"] > 1 and result["clean_hz"][1] < 0.05
+                and result["other_hz"][1] < 0.05):
+            return "%s / %s Hz" % (
+                ls960_one_decimal(result["clean_hz"][0]),
+                ls960_one_decimal(result["other_hz"][0]),
+            )
+        return ls960_frequency_text(result)
+
+    def attribution_result_row(label, boundaries, training, result, highlight=False):
+        style = ' style="background:var(--band)"' if highlight else ""
+        if result["n"]:
+            frequency = attribution_frequency_text(result)
+            clean = ls960_metric_text(result["clean"], result["n"])
+            other = ls960_metric_text(result["other"], result["n"])
+        else:
+            frequency = clean = other = '<span class="pill">pending</span>'
+        return (
+            '<tr%s><td><b>%s</b></td><td>%s</td><td>%s</td><td>%s</td>'
+            '<td>%s</td><td>%s</td><td>%d / 3</td></tr>' %
+            (style, label, boundaries, training, frequency, clean, other, result["n"])
+        )
+
+    attribution_rows_html = "".join([
+        attribution_result_row(
+            "Fixed k=5 + BiGRU", "keep every fifth frame",
+            "7 decoder/BiGRU CE epochs", attribution_fixed,
+        ),
+        attribution_result_row(
+            "Frozen Transformer AR + BiGRU",
+            "supervised local-history segmenter; boundaries frozen",
+            "7 decoder/BiGRU CE epochs", attribution_frozen, highlight=True,
+        ),
+        attribution_result_row(
+            "Joint Transformer AR + BiGRU",
+            "same segmenter; updated by NLL policy gradient",
+            "2 warmup + 5 joint-RL epochs", attribution_joint, highlight=True,
+        ),
+    ])
+
+    attribution_plot_rows = []
+    for label, result, color in (
+        ("Fixed k=5 + BiGRU", attribution_fixed, "#59646c"),
+        ("Frozen Transformer AR + BiGRU", attribution_frozen, "#75579b"),
+        ("Joint Transformer AR + BiGRU", attribution_joint, "#27865d"),
+    ):
+        if result["n"]:
+            attribution_plot_rows.append((
+                label, result["clean"][0], result["clean"][1],
+                result["other"][0], result["other"][1], result["n"], color,
+            ))
+
+    joint_progress_html = ""
+    for row in attribution_joint_rows:
+        if row["best"] is None:
+            best_text = latest_text = frequency_text = "warmup only"
+            latest_epoch = "—"
+        else:
+            best = row["best"]
+            latest = row["latest"]
+            best_text = "epoch %d · %.2f%%" % (
+                int(best["epoch"]), best["valid WER"]
+            )
+            latest_text = "%.2f%%" % latest["valid WER"]
+            frequency_text = "%.1f Hz" % rate_hz(best["valid rho_mean"])
+            latest_epoch = str(row["epochs"])
+        status = "test complete" if row["complete"] else "training"
+        joint_progress_html += (
+            '<tr><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>'
+            '<td><span class="pill">%s</span></td></tr>' %
+            (row["seed"], latest_epoch, best_text, frequency_text,
+             latest_text, status)
+        )
+
+    body += hk.section(
+        "0c · Matched 100h comparison — fixed, frozen, and joint RL",
+        lead="All three arms use WavLM features, the same best character-decoder "
+             "initialization, BiGRU residual pooling, seven total training epochs, "
+             "and padding-invariant decoding rules. Test WER and dev-clean training progress "
+             "are kept separate.",
+        body=(
+            hk.card(
+                '<table style="table-layout:fixed"><colgroup>'
+                '<col style="width:18%%"><col style="width:23%%">'
+                '<col style="width:18%%"><col style="width:14%%">'
+                '<col style="width:10%%"><col style="width:10%%">'
+                '<col style="width:7%%"></colgroup><thead><tr>'
+                '<th>setup</th><th>boundary treatment</th><th>training</th>'
+                '<th>clean / other frequency</th><th>test-clean</th>'
+                '<th>test-other</th><th>seeds</th></tr></thead><tbody>%s</tbody></table>'
+                '<p class="cap">Lower WER is better; frequency is the decoder-side audio-token '
+                'rate in Hz. ± is sample SD across the same three seeds. Every row reports final '
+                'test evidence; dev WER appears only in the separate progress table.</p>'
+                % attribution_rows_html,
+                title="Matched test results",
+            )
+            + hk.card(
+                controlled_wer_fig(attribution_plot_rows)
+                + '<p class="cap">Every marker is a three-seed mean; error bars are sample '
+                  'SD. Lower WER is better. All three arms use the same decoder initialization, '
+                  'pooler, total epoch budget, and evaluation protocol.</p>',
+                title="Completed test WER by setup",
+            )
+            + hk.card(
+                '<table><thead><tr><th>seed</th><th>latest completed joint epoch</th>'
+                '<th>best joint-stage dev-clean</th><th>frequency at best</th>'
+                '<th>latest dev-clean</th><th>status</th></tr></thead><tbody>%s</tbody></table>'
+                '<p class="cap">Epochs 1–2 are decoder/BiGRU warmup; joint RL begins at epoch '
+                '3. These are dev-clean checkpoints, not final test results.</p>' %
+                joint_progress_html,
+                title="Joint-RL training progress",
+            )
+            + hk.finding(
+                '<span class="pill">Evidence-backed</span> <b>Updating the segmenter with '
+                'joint RL improves both recognition and compression relative to freezing its '
+                'supervised initialization.</b> Frozen Transformer AR + BiGRU reaches %s/%s '
+                'at %s; joint RL reaches %s/%s at %s. Joint RL is %.2f points lower on clean, '
+                '%.2f lower on other, and emits %.1f fewer audio tokens/s on test-clean.' % (
+                    ls960_metric_text(attribution_frozen["clean"], 3),
+                    ls960_metric_text(attribution_frozen["other"], 3),
+                    attribution_frequency_text(attribution_frozen),
+                    ls960_metric_text(attribution_joint["clean"], 3),
+                    ls960_metric_text(attribution_joint["other"], 3),
+                    attribution_frequency_text(attribution_joint),
+                    attribution_frozen["clean"][0] - attribution_joint["clean"][0],
+                    attribution_frozen["other"][0] - attribution_joint["other"][0],
+                    attribution_frozen["clean_hz"][0]
+                    - attribution_joint["clean_hz"][0],
+                )
+            )
+            + hk.finding(
+                '<span class="pill">Evidence-backed</span> <b>Joint RL also beats fixed k=5, '
+                'but uses a slightly denser audio prefix.</b> Fixed k=5 + BiGRU reaches %s/%s '
+                'at %s. Joint RL lowers WER by %.2f clean / %.2f other while emitting %.1f '
+                'more audio tokens/s on test-clean. The frozen arm has substantially larger '
+                'clean-WER seed variation (SD %.2f), so conclusions should use the three-seed '
+                'aggregate rather than its strongest seed.' % (
+                    ls960_metric_text(attribution_fixed["clean"], 3),
+                    ls960_metric_text(attribution_fixed["other"], 3),
+                    attribution_frequency_text(attribution_fixed),
+                    attribution_fixed["clean"][0] - attribution_joint["clean"][0],
+                    attribution_fixed["other"][0] - attribution_joint["other"][0],
+                    attribution_joint["clean_hz"][0]
+                    - attribution_fixed["clean_hz"][0],
+                    attribution_frozen["clean"][1],
+                )
             )
         ),
     )
@@ -3159,17 +3608,23 @@ def build(args):
         for row in pooling_2x2
     ]
 
+    def speed_stat_text(stats, digits):
+        return "%.*f ± %.*f" % (digits, stats[0], digits, stats[1])
+
     efficiency_table_rows = ""
     for row in efficiency_rows:
-        note = "†" if row.get("unstable") else ""
+        batch_text = "%d%s" % (
+            row["batch_size"],
+            "&#8224;" if row["batch_choice"] == "fallback" else "",
+        )
         efficiency_table_rows += (
-            "<tr><td>%s</td><td>%s%s</td><td>%.1f Hz</td><td>%.3f</td>"
-            "<td>%d%s</td><td>%.3f</td><td>%.2f</td><td>%.1f GB</td></tr>" %
-            (row["family"], row["label"], note, row["frequency"],
-             row["batch1"]["forward_rtf"], row["throughput_batch"], note,
-             row["throughput"]["forward_rtf"],
-             row["throughput"]["utterances_per_second"],
-             row["throughput"]["peak_allocated_gb"])
+            "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s Hz</td>"
+            "<td>%s</td><td>%s</td><td>%s GB</td><td>%d</td></tr>" %
+            (row["family"], row["label"], batch_text,
+             speed_stat_text(row["frequency"], 1),
+             speed_stat_text(row["rtf"], 3),
+             speed_stat_text(row["utterances_per_second"], 2),
+             speed_stat_text(row["peak_allocated_gb"], 1), row["n"])
         )
 
     body += hk.section(
@@ -3341,75 +3796,122 @@ def build(args):
 
     no_down_eff = efficiency_by_label["No downsampling"]
     k5_eff = efficiency_by_label["Fixed k=5"]
-    cnn_eff = efficiency_by_label["CNN AR · mean"]
+    phone_eff = efficiency_by_label["Phone alignment"]
+    cnn_bigru_eff = efficiency_by_label["CNN AR · BiGRU"]
     transformer_bigru_eff = efficiency_by_label["Transformer AR · BiGRU"]
+    mismatch_range = (
+        min(row["batch_mismatch_pct"] for row in efficiency_rows),
+        max(row["batch_mismatch_pct"] for row in efficiency_rows),
+    )
     body += hk.section(
         "4c · Inference speed and GPU memory",
-        lead="These measurements add the missing runtime comparison. Every row uses one A100 "
-             "80 GB, BF16, seed 3407's selected checkpoint, and the same decoding settings. "
-             "RTF below measures model forward time; lower is faster.",
+        lead="The primary comparison gives each system its largest batch that completed the "
+             "full evaluation reliably. This is intentional: shorter audio prefixes use less "
+             "memory and therefore allow more utterances per batch. Every row aggregates three "
+             "seeds on one A100 80 GB with BF16. Lower RTF is faster.",
         body=(
             hk.card(
-                inference_efficiency_fig(efficiency_rows)
-                + '<p class="cap">Forward RTF is summed over test-clean and test-other '
-                  'after five warm-up batches. Labels include the measured audio-token '
-                  'frequency. The left panel fixes batch size 1; the right uses the largest '
-                  'tested batch shown after each bar. † Fixed k=3 batch 4 completed both test '
-                  'splits but later hit CUDA allocator fragmentation on dev-other, so it is a '
-                  'measured but not memory-safe operating point.</p>',
-                title="Single-utterance latency and batched throughput")
-            + hk.card(
-                '<table><thead><tr><th>family</th><th>system</th><th>measured frequency</th>'
-                '<th>batch-1 RTF</th><th>largest tested batch</th><th>batched RTF</th>'
-                '<th>utterances/s</th><th>peak allocated</th></tr></thead>'
+                '<table><thead><tr><th>family</th><th>system</th><th>batch</th>'
+                '<th>measured frequency</th><th>forward RTF</th>'
+                '<th>utterances/s</th><th>test peak allocated</th><th>seeds</th></tr></thead>'
                 '<tbody>%s</tbody></table>'
-                '<p class="cap">All speed values aggregate test-clean and test-other. Peak '
-                  'allocated memory is the maximum over those two splits at the listed '
-                  'throughput batch. Reserved memory is omitted because allocator caching '
-                  'made it a poor measure of live tensors. Oracle timings condition on '
-                  'precomputed boundaries and therefore exclude alignment generation. † The '
-                  'fixed-k=3 batch-4 caveat is described in the figure caption.</p>'
+                '<p class="cap">RTF and utterances/s aggregate all of test-clean and '
+                  'test-other within each seed; ± is sample SD across seeds. Test peak '
+                  'allocated is the larger PyTorch allocation from the two timed test sets. '
+                  'A dagger (†) marks systems stepped down from batch 64 to batch 32 after a '
+                  'complete-pass OOM, then rerun at batch 32 for all three seeds. Oracle '
+                  'timings use precomputed boundaries and exclude alignment generation.</p>'
                 % efficiency_table_rows,
-                title="Exact inference measurements")
+                title="Memory-limited inference measurements")
+            + hk.card(
+                inference_efficiency_fig(efficiency_rows)
+                + '<p class="cap">Each bar is forward RTF after summing model-forward time '
+                  'and audio duration over test-clean and test-other within a seed. Error bars '
+                  'are sample SD across three seeds. Labels give the measured decoder-side '
+                  'audio-token frequency and the system-specific stable batch size.</p>',
+                title="RTF at each system’s stable throughput batch")
+            + hk.card(
+                '<table><thead><tr><th>protocol item</th><th>implementation</th></tr></thead>'
+                '<tbody>'
+                '<tr><td>hardware and precision</td><td>one NVIDIA A100-SXM4 80 GB; BF16; '
+                'one process per system and seed</td></tr>'
+                '<tr><td>checkpoints</td><td>seeds 3407, 3408, and 3409; the same selected '
+                'checkpoints used for the corresponding WER systems</td></tr>'
+                '<tr><td>batch-size calibration data</td><td>seed 3407 only; the longest '
+                'dev-other utterances, selected by duration without reading RTF or test WER</td></tr>'
+                '<tr><td>batch-size search</td><td>powers of two; two batches per candidate; '
+                'keep the largest candidate that finishes at no more than 90% allocated '
+                'memory. If the later complete pass OOMs, step down one power and rerun all '
+                'three seeds at that batch.</td></tr>'
+                '<tr><td>GPU warm-up</td><td>ten batches drawn from the longest dev-other '
+                'utterances, in the same process as timing; excluded from both RTF and '
+                'utterances/s</td></tr>'
+                '<tr><td>measured data</td><td>complete LibriSpeech test-clean and test-other; '
+                'each set is sorted by ascending duration and grouped into a fixed number of '
+                'utterances per batch, with no random test sampling</td></tr>'
+                '<tr><td>timing</td><td>sum model-forward time and divide by summed audio '
+                'duration. Data loading and metric writing are excluded; WavLM, the segmenter '
+                'or fixed/oracle pooling, and the current Llama evaluation path are included.</td></tr>'
+                '<tr><td>decoding rules</td><td>left-packed prefixes, explicit position IDs, '
+                'and a per-utterance duration-based output cap prevent padded neighbors from '
+                'changing the allowed decode length</td></tr>'
+                '</tbody></table>'
+                '<p class="cap">RTF is measured on held-out test audio, but test labels and '
+                'RTF are never used to select a batch. The longest-utterance dev-other warm-up '
+                'both primes CUDA kernels/allocator state and exercises difficult shapes.</p>',
+                title="RTF measurement setup")
             + hk.finding(
-                '<span class="pill">Evidence-backed</span> <b>Compression mainly pays off '
-                'through batching.</b> Fixed k=5 improves throughput from %.2f to %.2f '
-                'utterances/s (%.1f×) versus no downsampling, while reducing forward RTF from '
-                '%.3f to %.3f. At batch 1 the RTF difference is much smaller (%.3f versus '
-                '%.3f), because WavLM encoding and text generation still dominate.' %
-                (no_down_eff["throughput"]["utterances_per_second"],
-                 k5_eff["throughput"]["utterances_per_second"],
-                 k5_eff["throughput"]["utterances_per_second"]
-                 / no_down_eff["throughput"]["utterances_per_second"],
-                 no_down_eff["throughput"]["forward_rtf"],
-                 k5_eff["throughput"]["forward_rtf"],
-                 no_down_eff["batch1"]["forward_rtf"],
-                 k5_eff["batch1"]["forward_rtf"]))
+                '<span class="pill">Evidence-backed</span> <b>Learned downsampling reaches '
+                'near-oracle throughput and is much faster than native 50-Hz decoding.</b> '
+                'No downsampling reaches %.3f±%.3f RTF at batch %d. Phone alignment, CNN AR + '
+                'BiGRU, and Transformer AR + BiGRU reach %.3f±%.3f, %.3f±%.3f, and '
+                '%.3f±%.3f at batch 32—%.1f×, %.1f×, and %.1f× lower RTF than no '
+                'downsampling.' %
+                (no_down_eff["rtf"][0], no_down_eff["rtf"][1],
+                 no_down_eff["batch_size"], phone_eff["rtf"][0], phone_eff["rtf"][1],
+                 cnn_bigru_eff["rtf"][0], cnn_bigru_eff["rtf"][1],
+                 transformer_bigru_eff["rtf"][0], transformer_bigru_eff["rtf"][1],
+                 no_down_eff["rtf"][0] / phone_eff["rtf"][0],
+                 no_down_eff["rtf"][0] / cnn_bigru_eff["rtf"][0],
+                 no_down_eff["rtf"][0] / transformer_bigru_eff["rtf"][0]))
             + hk.finding(
-                '<span class="pill">Evidence-backed</span> <b>CNN first-order AR has little '
-                'measured throughput overhead over fixed k=5.</b> Their batched forward RTFs '
-                'are %.3f and %.3f at batch 8, respectively. The learned segmenter therefore '
-                'adds adaptive placement without giving back the main batching benefit.' %
-                (cnn_eff["throughput"]["forward_rtf"],
-                 k5_eff["throughput"]["forward_rtf"]))
+                '<span class="pill">Evidence-backed</span> <b>At the same batch 32, the two '
+                'learned BiGRU systems have nearly equal throughput.</b> CNN AR + BiGRU is '
+                '%.3f±%.3f RTF and Transformer AR + BiGRU is %.3f±%.3f; CNN is about '
+                '%.0f%% lower. Fixed k=5 is %.3f±%.3f, so learned boundary generation and '
+                'order-aware pooling add about %.0f%% RTF over fixed pooling.' %
+                (cnn_bigru_eff["rtf"][0], cnn_bigru_eff["rtf"][1],
+                 transformer_bigru_eff["rtf"][0], transformer_bigru_eff["rtf"][1],
+                 100 * (1 - cnn_bigru_eff["rtf"][0]
+                        / transformer_bigru_eff["rtf"][0]),
+                 k5_eff["rtf"][0], k5_eff["rtf"][1],
+                 100 * (cnn_bigru_eff["rtf"][0] / k5_eff["rtf"][0] - 1)))
             + hk.finding(
-                '<span class="pill">Evidence-backed</span> <b>The local-history Transformer '
-                'is the expensive learned policy.</b> Transformer AR + BiGRU uses %.3f batched '
-                'RTF versus %.3f for CNN AR mean (%.0f%% slower) and %.3f versus %.3f at '
-                'batch 1. This makes the accuracy comparison a real speed tradeoff: the '
-                'Transformer/BiGRU arm has stronger mean WER, while CNN AR is the simpler and '
-                'faster learned system.' %
-                (transformer_bigru_eff["throughput"]["forward_rtf"],
-                 cnn_eff["throughput"]["forward_rtf"],
-                 100 * (transformer_bigru_eff["throughput"]["forward_rtf"]
-                        / cnn_eff["throughput"]["forward_rtf"] - 1),
-                 transformer_bigru_eff["batch1"]["forward_rtf"],
-                 cnn_eff["batch1"]["forward_rtf"]))
+                '<span class="pill">Memory evidence</span> <b>The larger feasible batch is '
+                'part of the downsampling gain.</b> No downsampling peaks at %.1f±%.1f GB '
+                'allocated on the timed tests and %.1f±%.1f GB on the long warm-up; reserved '
+                'memory reaches %.1f±%.1f GB of the 79.25-GB device, and batch 32 OOMs. Its '
+                'stable batch is therefore 16, while the headline compressed systems finish '
+                'at batch 32.' %
+                (no_down_eff["peak_allocated_gb"][0],
+                 no_down_eff["peak_allocated_gb"][1],
+                 no_down_eff["run_peak_allocated_gb"][0],
+                 no_down_eff["run_peak_allocated_gb"][1],
+                 no_down_eff["run_peak_reserved_gb"][0],
+                 no_down_eff["run_peak_reserved_gb"][1]))
             + hk.finding(
-                '<span class="pill">Protocol note</span> <b>These are one-checkpoint timing '
-                'runs, not confidence intervals.</b> They are sufficient to expose the large '
-                'batching and architecture effects, but small differences should be confirmed '
-                'with sequential repeated timings before publication.')
+                '<span class="pill">Numerical audit</span> <b>Padding no longer changes the '
+                'decode budget, but greedy outputs remain numerically batch-sensitive.</b> '
+                'Batch-1 and throughput-batch hypotheses differ for %.0f–%.0f%% of utterances '
+                'depending on the system, while corpus WER shifts are much smaller. Use this '
+                'section for speed and memory; the main WER tables remain the recognition '
+                'evidence.' % mismatch_range)
+            + hk.finding(
+                '<span class="pill">Scope</span> <b>These numbers describe the current '
+                'evaluation pipeline, not an optimized production decoder.</b> The pipeline '
+                'performs a teacher-forced Llama pass before greedy decoding, and the greedy '
+                'searcher does not use a KV cache. Oracle rows also exclude the cost of '
+                'creating their forced alignments.')
         ),
     )
 
