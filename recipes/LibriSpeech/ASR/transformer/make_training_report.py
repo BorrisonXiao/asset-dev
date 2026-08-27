@@ -1544,40 +1544,9 @@ def build(args):
             "other_hz": mean_sd([run["other_hz"] for run in runs]),
         }
 
-    def attribution_joint_progress():
-        progress = []
-        completed_seeds = {
-            run["seed"] for run in attribution_joint["runs"]
-        }
-        for seed in seeds:
-            rows_ = parse_log(os.path.join(
-                attribution_root, "joint_rl_bigru", str(seed), "train_log.txt"
-            ))
-            joint_rows = [
-                row for row in rows_
-                if int(row.get("epoch", 0)) >= 3 and "valid WER" in row
-            ]
-            if not joint_rows:
-                progress.append({
-                    "seed": seed, "epochs": 0, "best": None, "latest": None,
-                    "complete": seed in completed_seeds,
-                })
-                continue
-            best = min(joint_rows, key=lambda row: row["valid WER"])
-            latest = joint_rows[-1]
-            progress.append({
-                "seed": seed,
-                "epochs": int(latest["epoch"]),
-                "best": best,
-                "latest": latest,
-                "complete": seed in completed_seeds,
-            })
-        return progress
-
     attribution_fixed = attribution_family_stats("fixed_k5_bigru")
     attribution_frozen = attribution_family_stats("frozen_segmenter_bigru")
     attribution_joint = attribution_family_stats("joint_rl_bigru")
-    attribution_joint_rows = attribution_joint_progress()
 
     def headline_stats(variant, split, backbone="cnn"):
         vals = []
@@ -2719,34 +2688,11 @@ def build(args):
                 result["other"][0], result["other"][1], result["n"], color,
             ))
 
-    joint_progress_html = ""
-    for row in attribution_joint_rows:
-        if row["best"] is None:
-            best_text = latest_text = frequency_text = "warmup only"
-            latest_epoch = "—"
-        else:
-            best = row["best"]
-            latest = row["latest"]
-            best_text = "epoch %d · %.2f%%" % (
-                int(best["epoch"]), best["valid WER"]
-            )
-            latest_text = "%.2f%%" % latest["valid WER"]
-            frequency_text = "%.1f Hz" % rate_hz(best["valid rho_mean"])
-            latest_epoch = str(row["epochs"])
-        status = "test complete" if row["complete"] else "training"
-        joint_progress_html += (
-            '<tr><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>'
-            '<td><span class="pill">%s</span></td></tr>' %
-            (row["seed"], latest_epoch, best_text, frequency_text,
-             latest_text, status)
-        )
-
     body += hk.section(
         "0c · Matched 100h comparison — fixed, frozen, and joint RL",
         lead="All three arms use WavLM features, the same best character-decoder "
              "initialization, BiGRU residual pooling, seven total training epochs, "
-             "and padding-invariant decoding rules. Test WER and dev-clean training progress "
-             "are kept separate.",
+             "and padding-invariant decoding rules.",
         body=(
             hk.card(
                 '<table style="table-layout:fixed"><colgroup>'
@@ -2759,7 +2705,7 @@ def build(args):
                 '<th>test-other</th><th>seeds</th></tr></thead><tbody>%s</tbody></table>'
                 '<p class="cap">Lower WER is better; frequency is the decoder-side audio-token '
                 'rate in Hz. ± is sample SD across the same three seeds. Every row reports final '
-                'test evidence; dev WER appears only in the separate progress table.</p>'
+                'test evidence.</p>'
                 % attribution_rows_html,
                 title="Matched test results",
             )
@@ -2769,15 +2715,6 @@ def build(args):
                   'SD. Lower WER is better. All three arms use the same decoder initialization, '
                   'pooler, total epoch budget, and evaluation protocol.</p>',
                 title="Completed test WER by setup",
-            )
-            + hk.card(
-                '<table><thead><tr><th>seed</th><th>latest completed joint epoch</th>'
-                '<th>best joint-stage dev-clean</th><th>frequency at best</th>'
-                '<th>latest dev-clean</th><th>status</th></tr></thead><tbody>%s</tbody></table>'
-                '<p class="cap">Epochs 1–2 are decoder/BiGRU warmup; joint RL begins at epoch '
-                '3. These are dev-clean checkpoints, not final test results.</p>' %
-                joint_progress_html,
-                title="Joint-RL training progress",
             )
             + hk.finding(
                 '<span class="pill">Evidence-backed</span> <b>Updating the segmenter with '
