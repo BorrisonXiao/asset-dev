@@ -855,7 +855,7 @@ def controlled_wer_fig(rows):
 
 
 def inference_efficiency_fig(rows):
-    """Plot memory-limited batched forward RTF on one A100.
+    """Compare batch-1 and memory-limited batched forward RTF on one A100.
 
     Each bar is the mean of three independently trained seeds after aggregating
     test-clean and test-other within each seed. Error bars are sample SD.
@@ -866,45 +866,61 @@ def inference_efficiency_fig(rows):
 
     y = np.arange(len(rows))
     labels = [
-        "%s · %.1f Hz · b%d" %
-        (row["label"], row["frequency"][0], row["batch_size"])
+        "%s · %.1f Hz" % (row["label"], row["frequency"][0])
         for row in rows
     ]
-    values = [row["rtf"][0] for row in rows]
-    errors = [row["rtf"][1] for row in rows]
-    fig, ax = plt.subplots(figsize=(9.4, 8.4), dpi=130)
-    bars = ax.barh(
-        y, values, height=0.60,
-        color=[row["color"] for row in rows], alpha=0.88,
+    panels = (
+        ("batch1_rtf", "Batch 1\nsingle-utterance processing", False),
+        ("rtf", "Stable throughput batch\nshorter prefixes allow larger batches", True),
     )
-    ax.errorbar(
-        values, y, xerr=errors, fmt="none", ecolor="#24323f",
-        elinewidth=1.0, capsize=2.5, capthick=1.0, zorder=3,
+    fig, axes = plt.subplots(
+        1, 2, figsize=(11.2, 8.6), dpi=130, sharey=True,
+        gridspec_kw={"wspace": 0.16},
     )
-    for row_idx, (row, bar, value, error) in enumerate(
-            zip(rows, bars, values, errors)):
-        ax.annotate(
-            "%.3f ± %.3f" % (value, error),
-            (bar.get_width() + error, row_idx), textcoords="offset points",
-            xytext=(6, 0), va="center", fontsize=8, color="#24323f",
+    for ax, (metric, title, show_batch) in zip(axes, panels):
+        values = [row[metric][0] for row in rows]
+        errors = [row[metric][1] for row in rows]
+        bars = ax.barh(
+            y, values, height=0.60,
+            color=[row["color"] for row in rows], alpha=0.88,
         )
-    for boundary in range(1, len(rows)):
-        if rows[boundary]["family"] != rows[boundary - 1]["family"]:
-            ax.axhline(boundary - 0.5, color="#d8dee4", lw=0.9, zorder=0)
-    ax.set_title(
-        "Memory-limited inference operating points\n"
+        ax.errorbar(
+            values, y, xerr=errors, fmt="none", ecolor="#24323f",
+            elinewidth=1.0, capsize=2.5, capthick=1.0, zorder=3,
+        )
+        for row_idx, (row, bar, value, error) in enumerate(
+                zip(rows, bars, values, errors)):
+            text = "%.3f ± %.3f" % (value, error)
+            if show_batch:
+                text += " · b%d" % row["batch_size"]
+            ax.annotate(
+                text, (bar.get_width() + error, row_idx),
+                textcoords="offset points", xytext=(5, 0), va="center",
+                fontsize=7.4, color="#24323f",
+            )
+        for boundary in range(1, len(rows)):
+            if rows[boundary]["family"] != rows[boundary - 1]["family"]:
+                ax.axhline(
+                    boundary - 0.5, color="#d8dee4", lw=0.9, zorder=0
+                )
+        ax.set_title(title, fontsize=11.0, fontweight="bold", pad=12)
+        ax.set_xlabel("forward RTF  ·  lower is faster")
+        ax.set_xlim(
+            0,
+            max(value + error for value, error in zip(values, errors)) * 1.42,
+        )
+        ax.grid(axis="x", alpha=0.24, lw=0.7)
+        for spine in ("top", "right", "left"):
+            ax.spines[spine].set_visible(False)
+        ax.tick_params(axis="y", length=0)
+    axes[0].set_yticks(y, labels=labels, fontsize=7.8)
+    axes[0].invert_yaxis()
+    fig.suptitle(
+        "Inference RTF: single-utterance processing and batched throughput\n"
         "three-seed mean ± sample SD",
-        fontsize=12.0, fontweight="bold",
+        fontsize=13.0, fontweight="bold", y=0.995,
     )
-    ax.set_xlabel("forward RTF  ·  lower is faster")
-    ax.set_xlim(0, max(value + error for value, error in zip(values, errors)) * 1.32)
-    ax.set_yticks(y, labels=labels, fontsize=8.2)
-    ax.grid(axis="x", alpha=0.24, lw=0.7)
-    for spine in ("top", "right", "left"):
-        ax.spines[spine].set_visible(False)
-    ax.tick_params(axis="y", length=0)
-    ax.invert_yaxis()
-    fig.tight_layout(pad=1.0)
+    fig.subplots_adjust(left=0.22, right=0.98, bottom=0.08, top=0.86, wspace=0.16)
     return hk.mpl_png(fig, cls="fig", pad=0.10, facecolor="white")
 
 
@@ -2353,10 +2369,25 @@ def build(args):
                            "transformer_ar_local64_bigru"),
          "#27865d", "selected"),
     ]
+    batch1_folders = {
+        "No downsampling": "no_downsampling",
+        "Fixed k=3": "fixed_k3",
+        "Fixed k=4": "fixed_k4",
+        "Fixed k=5": "fixed_k5",
+        "Fixed k=6": "fixed_k6",
+        "Fixed k=8": "fixed_k8",
+        "Phone alignment": "oracle_phone",
+        "Character alignment": "oracle_char",
+        "CNN AR · mean": "cnn_ar_mean",
+        "CNN AR · BiGRU": "cnn_ar_bigru",
+        "Transformer AR · mean": "transformer_ar_local64_mean",
+        "Transformer AR · BiGRU": "transformer_ar_local64_bigru",
+    }
     efficiency_rows = []
     for (family, label, batch_size, run_dirs, color,
          batch_choice) in efficiency_specs:
         measurements = []
+        batch1_measurements = []
         mismatch_utterances = 0
         compared_utterances = 0
         for run_dir in run_dirs:
@@ -2378,10 +2409,26 @@ def build(args):
                 comparison = json.load(open(comparison_path, encoding="utf-8"))
                 mismatch_utterances += comparison["hypothesis_mismatches"]
                 compared_utterances += comparison["common_records"]
+        for run_dir in memory_speed_dirs(
+                os.path.join(memory_speed_root, "results"),
+                batch1_folders[label]):
+            result = aggregate_inference_benchmark(
+                os.path.join(run_dir, "batch1", "benchmark.jsonl"),
+                required_protocol=corrected_protocol,
+            )
+            if (result is not None and result["splits"] == 2
+                    and result["batch_size"] == 1
+                    and result["prewarm_splits"] >= 1):
+                batch1_measurements.append(result)
         if len(measurements) != 3:
             raise RuntimeError(
                 "%s requires three complete corrected speed runs; found %d" %
                 (label, len(measurements))
+            )
+        if len(batch1_measurements) != 3:
+            raise RuntimeError(
+                "%s requires three complete corrected batch-1 runs; found %d" %
+                (label, len(batch1_measurements))
             )
         efficiency_rows.append({
             "family": family,
@@ -2391,8 +2438,14 @@ def build(args):
             "batch_choice": batch_choice,
             "n": len(measurements),
             "rtf": mean_sd([row["forward_rtf"] for row in measurements]),
+            "batch1_rtf": mean_sd([
+                row["forward_rtf"] for row in batch1_measurements
+            ]),
             "utterances_per_second": mean_sd([
                 row["utterances_per_second"] for row in measurements
+            ]),
+            "batch1_utterances_per_second": mean_sd([
+                row["utterances_per_second"] for row in batch1_measurements
             ]),
             "frequency": mean_sd([
                 row["token_frequency_hz"] for row in measurements
@@ -2911,6 +2964,7 @@ def build(args):
             )
         ),
     )
+    body += "__INFERENCE_EFFICIENCY_SECTION__"
 
     # One compact inventory of the systems readers most often need to compare.
     # This intentionally spans several experiment families, so decoder treatment
@@ -3776,9 +3830,10 @@ def build(args):
         )
         efficiency_table_rows += (
             "<tr><td>%s</td><td>%s</td><td>%s</td><td>%s Hz</td>"
-            "<td>%s</td><td>%s</td><td>%s GB</td><td>%d</td></tr>" %
+            "<td>%s</td><td>%s</td><td>%s</td><td>%s GB</td><td>%d</td></tr>" %
             (row["family"], row["label"], batch_text,
              speed_stat_text(row["frequency"], 1),
+             speed_stat_text(row["batch1_rtf"], 3),
              speed_stat_text(row["rtf"], 3),
              speed_stat_text(row["utterances_per_second"], 2),
              speed_stat_text(row["peak_allocated_gb"], 1), row["n"])
@@ -3960,20 +4015,24 @@ def build(args):
         min(row["batch_mismatch_pct"] for row in efficiency_rows),
         max(row["batch_mismatch_pct"] for row in efficiency_rows),
     )
-    body += hk.section(
-        "4c · Inference speed and GPU memory",
-        lead="The primary comparison gives each system its largest batch that completed the "
-             "full evaluation reliably. This is intentional: shorter audio prefixes use less "
-             "memory and therefore allow more utterances per batch. Every row aggregates three "
-             "seeds on one A100 80 GB with BF16. Lower RTF is faster.",
+    efficiency_section = hk.section(
+        "0d · Inference speed and GPU memory",
+        lead="Batch 1 shows single-utterance processing without a batching advantage. The "
+             "primary throughput comparison gives each system its largest batch that completed "
+             "the full evaluation reliably; shorter audio prefixes use less memory and can "
+             "therefore admit more utterances per batch. Every value aggregates three seeds "
+             "on one A100 80 GB with BF16. Lower RTF is faster.",
         body=(
             hk.card(
                 '<table><thead><tr><th>family</th><th>system</th><th>batch</th>'
-                '<th>measured frequency</th><th>forward RTF</th>'
+                '<th>measured frequency</th><th>batch-1 RTF</th>'
+                '<th>stable-batch RTF</th>'
                 '<th>utterances/s</th><th>test peak allocated</th><th>seeds</th></tr></thead>'
                 '<tbody>%s</tbody></table>'
-                '<p class="cap">RTF and utterances/s aggregate all of test-clean and '
-                  'test-other within each seed; ± is sample SD across seeds. Test peak '
+                '<p class="cap">Both RTF columns aggregate all of test-clean and test-other '
+                  'within each seed; ± is sample SD across seeds. Utterances/s and peak '
+                  'allocated memory use the stable throughput batch shown in the batch '
+                  'column. Test peak '
                   'allocated is the larger PyTorch allocation from the two timed test sets. '
                   'A dagger (†) marks systems stepped down from batch 64 to batch 32 after a '
                   'complete-pass OOM, then rerun at batch 32 for all three seeds. Oracle '
@@ -3982,11 +4041,12 @@ def build(args):
                 title="Memory-limited inference measurements")
             + hk.card(
                 inference_efficiency_fig(efficiency_rows)
-                + '<p class="cap">Each bar is forward RTF after summing model-forward time '
-                  'and audio duration over test-clean and test-other within a seed. Error bars '
-                  'are sample SD across three seeds. Labels give the measured decoder-side '
-                  'audio-token frequency and the system-specific stable batch size.</p>',
-                title="RTF at each system’s stable throughput batch")
+                + '<p class="cap">Left: batch-1 forward RTF, which removes the ability to '
+                  'process more utterances together. Right: each system’s stable complete-pass '
+                  'throughput batch; the value label includes its batch size. Every bar sums '
+                  'model-forward time and audio duration over test-clean and test-other within '
+                  'a seed; error bars are sample SD across three seeds.</p>',
+                title="Batch-1 processing and stable-batch throughput")
             + hk.card(
                 '<table><thead><tr><th>protocol item</th><th>implementation</th></tr></thead>'
                 '<tbody>'
@@ -4032,6 +4092,19 @@ def build(args):
                  no_down_eff["rtf"][0] / cnn_bigru_eff["rtf"][0],
                  no_down_eff["rtf"][0] / transformer_bigru_eff["rtf"][0]))
             + hk.finding(
+                '<span class="pill">Evidence-backed</span> <b>Batch 1 and batched throughput '
+                'answer different questions.</b> At batch 1, no downsampling is %.3f±%.3f '
+                'RTF, CNN AR + BiGRU is %.3f±%.3f, and Transformer AR + BiGRU is '
+                '%.3f±%.3f. The local-history Transformer is slower for one utterance because '
+                'its sequential boundary policy adds work that cannot be amortized. Its '
+                'throughput advantage appears only when the shorter decoder prefix permits a '
+                'larger batch; do not describe the right panel as a batch-1 latency gain.' %
+                (no_down_eff["batch1_rtf"][0], no_down_eff["batch1_rtf"][1],
+                 cnn_bigru_eff["batch1_rtf"][0],
+                 cnn_bigru_eff["batch1_rtf"][1],
+                 transformer_bigru_eff["batch1_rtf"][0],
+                 transformer_bigru_eff["batch1_rtf"][1]))
+            + hk.finding(
                 '<span class="pill">Evidence-backed</span> <b>At the same batch 32, the two '
                 'learned BiGRU systems have nearly equal throughput.</b> CNN AR + BiGRU is '
                 '%.3f±%.3f RTF and Transformer AR + BiGRU is %.3f±%.3f; CNN is about '
@@ -4071,6 +4144,9 @@ def build(args):
                 'creating their forced alignments.')
         ),
     )
+    if body.count("__INFERENCE_EFFICIENCY_SECTION__") != 1:
+        raise RuntimeError("Inference-efficiency section placeholder is missing or duplicated")
+    body = body.replace("__INFERENCE_EFFICIENCY_SECTION__", efficiency_section)
 
     body += hk.section(
         "5 · Method — data, model &amp; curriculum",
