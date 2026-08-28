@@ -2964,6 +2964,9 @@ def build(args):
             )
         ),
     )
+    # These two sections are assembled later, after their audit artifacts have
+    # been loaded, but belong here in the reader-facing evidence order.
+    body += "__PHONE_BOUNDARY_AGREEMENT_SECTION__"
     body += "__INFERENCE_EFFICIENCY_SECTION__"
 
     # One compact inventory of the systems readers most often need to compare.
@@ -3595,6 +3598,7 @@ def build(args):
                   'encoder frame; ±1 allows a one-frame timing offset. F1 is used instead '
                   'of raw frame accuracy because most frames are not boundaries.</p>',
                 title="How closely each boundary stream matches char-CTC")
+            + "__PHONE_BOUNDARY_AGREEMENT_START__"
             + hk.card(
                 "<table><thead><tr><th>boundary stream</th><th>audio-token frequency</th>"
                 "<th>exact F1</th><th>±20 ms F1</th><th>±40 ms F1</th>"
@@ -3653,6 +3657,7 @@ def build(args):
                    100 * fixed_k4_phone_20, 100 * learned_phone_20,
                    fixed_k4_phone["actual_token_rate_hz"],
                    100 * (fixed_k4_phone["actual_token_rate_hz"] / learned_rate - 1)))
+            + "__PHONE_BOUNDARY_AGREEMENT_END__"
             + hk.card(
                 component_checks_fig(boundary_swap, cold_f1)
                 + '<p class="cap">Left: only the boundary stream changes; the decoder is '
@@ -4144,6 +4149,29 @@ def build(args):
                 'creating their forced alignments.')
         ),
     )
+    phone_start_marker = "__PHONE_BOUNDARY_AGREEMENT_START__"
+    phone_end_marker = "__PHONE_BOUNDARY_AGREEMENT_END__"
+    phone_placeholder = "__PHONE_BOUNDARY_AGREEMENT_SECTION__"
+    if (body.count(phone_start_marker) != 1
+            or body.count(phone_end_marker) != 1
+            or body.count(phone_placeholder) != 1):
+        raise RuntimeError("Phone-boundary section markers are missing or duplicated")
+    phone_start = body.index(phone_start_marker)
+    phone_end = body.index(phone_end_marker, phone_start)
+    phone_agreement_body = body[
+        phone_start + len(phone_start_marker):phone_end
+    ]
+    body = body[:phone_start] + body[phone_end + len(phone_end_marker):]
+    phone_agreement_section = hk.section(
+        "0c.1 · Agreement with phone boundaries",
+        lead="This audit asks whether the learned cuts follow phone transitions or merely "
+             "benefit from emitting boundaries at a similar frequency. One-to-one F1 is "
+             "therefore compared with deterministic fixed-rate grids at matched audio-token "
+             "frequencies.",
+        body=phone_agreement_body,
+    )
+    body = body.replace(phone_placeholder, phone_agreement_section)
+
     if body.count("__INFERENCE_EFFICIENCY_SECTION__") != 1:
         raise RuntimeError("Inference-efficiency section placeholder is missing or duplicated")
     body = body.replace("__INFERENCE_EFFICIENCY_SECTION__", efficiency_section)
