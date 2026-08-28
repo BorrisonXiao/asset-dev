@@ -959,6 +959,112 @@ def controlled_boundary_accuracy_fig(rows):
     return hk.mpl_png(fig, cls="fig", pad=0.10, facecolor="white")
 
 
+def phone_boundary_agreement_fig(fixed_phone, learned_phone):
+    """Plot phone-boundary F1 against audio-token frequency.
+
+    Fixed-rate grids form the rate-conditioned reference curve. The learned
+    point reports the three-seed mean and sample SD in both rate and F1.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
+
+    fixed = [
+        fixed_phone["systems"]["fixed_k%d" % k]
+        for k in (8, 6, 5, 4, 3)
+    ]
+    fixed_rates = np.asarray(
+        [row["actual_token_rate_hz"] for row in fixed], dtype=float
+    )
+    learned_rates = np.asarray([
+        FRAME_HZ * row["kept_ratio"]
+        for row in learned_phone["per_seed"].values()
+    ])
+    learned_rate = float(np.mean(learned_rates))
+    learned_rate_sd = float(np.std(learned_rates, ddof=1))
+    series = (
+        ("exact frame", "exact", "#7b858c"),
+        ("within ±20 ms", "tol_20ms", "#2f6f9f"),
+        ("within ±40 ms", "tol_40ms", "#27866f"),
+    )
+
+    fig, ax = plt.subplots(figsize=(9.8, 5.8), dpi=130)
+    for label, tolerance, color in series:
+        fixed_f1 = 100 * np.asarray([
+            row["scores"][tolerance]["harsh"]["f1"] for row in fixed
+        ])
+        learned_f1 = (
+            100
+            * learned_phone["summary"][tolerance]["harsh"]["f1"]["mean"]
+        )
+        learned_f1_sd = (
+            100
+            * learned_phone["summary"][tolerance]["harsh"]["f1"]["sd"]
+        )
+        ax.plot(
+            fixed_rates, fixed_f1, "o-", lw=1.8, ms=6.5,
+            color=color, label=label, zorder=2,
+        )
+        ax.errorbar(
+            learned_rate, learned_f1,
+            xerr=learned_rate_sd, yerr=learned_f1_sd,
+            fmt="*", ms=13, color=color, ecolor=color,
+            capsize=3, markeredgecolor="white", markeredgewidth=0.8,
+            zorder=4,
+        )
+
+    tol20 = [
+        100 * row["scores"]["tol_20ms"]["harsh"]["f1"] for row in fixed
+    ]
+    for row, x, y in zip(fixed, fixed_rates, tol20):
+        ax.annotate(
+            "k=%d" % row["k"], (x, y), textcoords="offset points",
+            xytext=(0, 8), ha="center", fontsize=8, color="#4d5963",
+        )
+    ax.annotate(
+        "learned\n%.1f Hz" % learned_rate,
+        (
+            learned_rate,
+            100
+            * learned_phone["summary"]["tol_20ms"]["harsh"]["f1"]["mean"],
+        ),
+        textcoords="offset points", xytext=(-12, 10), ha="right", va="bottom",
+        fontsize=8.5, fontweight="bold", color="#24323f",
+    )
+    phone_rate = fixed_phone["reference"]["boundary_rate_hz"]
+    ax.axvline(
+        phone_rate, color="#b94747", ls="--", lw=1.2, alpha=0.9,
+        label="phone reference rate (%.1f Hz)" % phone_rate,
+    )
+    shape_legend = Line2D(
+        [], [], marker="*", linestyle="none", markersize=11,
+        markerfacecolor="#58636c", markeredgecolor="white",
+        label="learned system · mean ± sample SD",
+    )
+    handles, labels = ax.get_legend_handles_labels()
+    handles.append(shape_legend)
+    labels.append(shape_legend.get_label())
+    ax.legend(
+        handles, labels, loc="lower right", frameon=False,
+        fontsize=8.5, ncol=2,
+    )
+    ax.set_title(
+        "Phone-boundary agreement must be read at matched frequency\n"
+        "fixed grids are the rate-conditioned reference",
+        fontsize=12.5, fontweight="bold", pad=15,
+    )
+    ax.set_xlabel("audio-token frequency (Hz)  ·  lower means fewer decoder tokens")
+    ax.set_ylabel("one-to-one boundary F1 (%)  ·  higher is better")
+    ax.set_xlim(5.4, 17.7)
+    ax.set_ylim(10, 89)
+    ax.grid(alpha=0.22, lw=0.7)
+    for spine in ("top", "right"):
+        ax.spines[spine].set_visible(False)
+    fig.tight_layout(pad=1.2)
+    return hk.mpl_png(fig, cls="fig", pad=0.10, facecolor="white")
+
+
 def component_checks_fig(boundary_swap, cold_f1):
     """Two direct checks: boundary-stream WER and char-boundary imitation F1."""
     import matplotlib
@@ -3329,9 +3435,12 @@ def build(args):
                100 * scores["tol_20ms"]["harsh"]["f1"],
                100 * scores["tol_40ms"]["harsh"]["f1"])
         )
-    learned_rate = 50 * np.mean([
-        result["kept_ratio"] for result in learned_phone["per_seed"].values()
+    learned_rates = np.asarray([
+        50 * result["kept_ratio"]
+        for result in learned_phone["per_seed"].values()
     ])
+    learned_rate = float(np.mean(learned_rates))
+    learned_rate_sd = float(np.std(learned_rates, ddof=1))
     learned_phone_summary = learned_phone["summary"]
     phone_agreement_rows += (
         '<tr style="background:var(--band)"><td><b>Transformer AR + BiGRU</b></td>'
@@ -3345,10 +3454,32 @@ def build(args):
                    )))
     )
     fixed_k5_phone = fixed_phone["systems"]["fixed_k5"]
+    fixed_k4_phone = fixed_phone["systems"]["fixed_k4"]
+    learned_phone_exact = learned_phone_summary["exact"]["harsh"]["f1"]["mean"]
     learned_phone_20 = learned_phone_summary["tol_20ms"]["harsh"]["f1"]["mean"]
     learned_phone_40 = learned_phone_summary["tol_40ms"]["harsh"]["f1"]["mean"]
+    learned_phone_precision_20 = (
+        learned_phone_summary["tol_20ms"]["harsh"]["precision"]["mean"]
+    )
+    learned_phone_precision_20_sd = (
+        learned_phone_summary["tol_20ms"]["harsh"]["precision"]["sd"]
+    )
+    learned_phone_recall_20 = (
+        learned_phone_summary["tol_20ms"]["harsh"]["recall"]["mean"]
+    )
+    learned_phone_recall_20_sd = (
+        learned_phone_summary["tol_20ms"]["harsh"]["recall"]["sd"]
+    )
+    fixed_phone_exact = fixed_k5_phone["scores"]["exact"]["harsh"]["f1"]
     fixed_phone_20 = fixed_k5_phone["scores"]["tol_20ms"]["harsh"]["f1"]
     fixed_phone_40 = fixed_k5_phone["scores"]["tol_40ms"]["harsh"]["f1"]
+    fixed_k4_phone_20 = fixed_k4_phone["scores"]["tol_20ms"]["harsh"]["f1"]
+    fixed_k5_precision_20 = (
+        fixed_k5_phone["scores"]["tol_20ms"]["harsh"]["precision"]
+    )
+    fixed_k5_recall_20 = (
+        fixed_k5_phone["scores"]["tol_20ms"]["harsh"]["recall"]
+    )
 
     swap_rows = "".join(
         '<tr%s><td>%s</td><td>%.2f%%</td><td>%s</td></tr>' % row
@@ -3414,23 +3545,60 @@ def build(args):
                 "<table><thead><tr><th>boundary stream</th><th>audio-token frequency</th>"
                 "<th>exact F1</th><th>±20 ms F1</th><th>±40 ms F1</th>"
                 "</tr></thead><tbody>%s</tbody></table>"
-                '<p class="cap">Harsh boundary F1 on all 2,703 dev-clean utterances; higher '
-                'is better. Fixed grids are deterministic. Transformer AR + BiGRU reports '
-                'mean ± sample SD over three WER-selected checkpoints. The phone reference '
-                'contains 10.74 boundaries/s; detailed precision, recall, R-value, and '
-                'lenient scores remain in the audit JSON.</p>' % phone_agreement_rows,
+                '<p class="cap">One-to-one boundary F1 on all 2,703 dev-clean utterances; '
+                'each predicted or reference boundary can be matched at most once. ±20 ms '
+                'allows a one-frame offset on the 50-Hz WavLM grid. Fixed grids are '
+                'deterministic; Transformer AR + BiGRU reports mean ± sample SD over three '
+                'WER-selected checkpoints. The phone reference contains 10.74 boundaries/s. '
+                'This is boundary-event F1, not raw frame accuracy.</p>'
+                % phone_agreement_rows,
                 title="Agreement with phone boundaries")
+            + hk.card(
+                phone_boundary_agreement_fig(fixed_phone, learned_phone)
+                + '<p class="cap">Circles and lines are deterministic fixed-rate grids. '
+                  'Stars are the learned system’s three-seed mean with sample-SD error bars '
+                  'in both frequency and F1. Comparing points at similar frequency prevents '
+                  'a denser boundary stream from looking better merely because it places '
+                  'more candidates near each phone transition.</p>',
+                title="Phone agreement as a function of audio-token frequency")
             + hk.finding(
-                '<span class="pill">Evidence-backed</span> <b>Learned placement improves '
-                'phone agreement at matched cost.</b> Fixed k=5 uses %.2f audio tokens/s and '
-                'reaches %.1f%%/%.1f%% harsh F1 at ±20/±40 ms. Transformer AR + BiGRU uses '
-                '%.2f tokens/s and reaches %.1f%%/%.1f%%—gains of %.1f and %.1f F1 points '
-                'at nearly the same rate.'
-                % (fixed_k5_phone["actual_token_rate_hz"],
-                   100 * fixed_phone_20, 100 * fixed_phone_40, learned_rate,
-                   100 * learned_phone_20, 100 * learned_phone_40,
+                '<span class="pill">Evidence-backed</span> <b>The ≈63%% score is meaningful '
+                'only after controlling for frequency.</b> Transformer AR + BiGRU emits '
+                '%.2f±%.2f audio tokens/s, almost matching the phone reference at 10.74 Hz. '
+                'Within ±20 ms, its precision is %.1f±%.1f%% and recall is %.1f±%.1f%%, '
+                'so the %.1f±%.1f%% F1 means roughly 63%% of learned cuts and phone cuts can '
+                'be paired one-to-one. But a content-blind fixed k=5 grid at %.2f Hz already '
+                'gets %.1f%% precision, %.1f%% recall, and %.1f%% F1. The rate-matched '
+                'result is unsurprising: a ±1-frame window around a cut every five frames '
+                'covers about three fifths of possible frame positions before one-to-one '
+                'matching. The evidence for learned placement is therefore the '
+                '<b>+%.1f F1-point gain</b>, not the raw 63%% alone.'
+                % (learned_rate, learned_rate_sd,
+                   100 * learned_phone_precision_20,
+                   100 * learned_phone_precision_20_sd,
+                   100 * learned_phone_recall_20,
+                   100 * learned_phone_recall_20_sd,
+                   100 * learned_phone_20,
+                   100 * learned_phone_summary["tol_20ms"]["harsh"]["f1"]["sd"],
+                   fixed_k5_phone["actual_token_rate_hz"],
+                   100 * fixed_k5_precision_20, 100 * fixed_k5_recall_20,
+                   100 * fixed_phone_20,
+                   100 * (learned_phone_20 - fixed_phone_20)))
+            + hk.finding(
+                '<span class="pill">Evidence-backed</span> <b>The learned advantage is '
+                'mostly near-boundary timing, not exact phone recovery.</b> Against fixed '
+                'k=5, the gain is only %.1f point at the exact WavLM frame, then %.1f points '
+                'within ±20 ms and %.1f within ±40 ms. A denser fixed k=4 grid reaches %.1f%% '
+                'at ±20 ms, essentially the learned %.1f%%, but requires %.2f Hz—%.0f%% more '
+                'decoder-side audio tokens than the learned system. This supports adaptive '
+                'placement efficiency, while not implying that RL has discovered a pure '
+                'phone segmenter.'
+                % (100 * (learned_phone_exact - fixed_phone_exact),
                    100 * (learned_phone_20 - fixed_phone_20),
-                   100 * (learned_phone_40 - fixed_phone_40)))
+                   100 * (learned_phone_40 - fixed_phone_40),
+                   100 * fixed_k4_phone_20, 100 * learned_phone_20,
+                   fixed_k4_phone["actual_token_rate_hz"],
+                   100 * (fixed_k4_phone["actual_token_rate_hz"] / learned_rate - 1)))
             + hk.card(
                 component_checks_fig(boundary_swap, cold_f1)
                 + '<p class="cap">Left: only the boundary stream changes; the decoder is '
