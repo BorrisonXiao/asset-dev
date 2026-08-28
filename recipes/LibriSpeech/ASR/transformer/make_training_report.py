@@ -1544,6 +1544,7 @@ def build(args):
             "other_hz": mean_sd([run["other_hz"] for run in runs]),
         }
 
+    attribution_fixed_mean = attribution_family_stats("fixed_k5_mean")
     attribution_fixed = attribution_family_stats("fixed_k5_bigru")
     attribution_frozen = attribution_family_stats("frozen_segmenter_bigru")
     attribution_joint = attribution_family_stats("joint_rl_bigru")
@@ -2460,22 +2461,27 @@ def build(args):
          corrected["cnn_mean"]["other"][0][0]
           - corrected["cnn_bigru"]["other"][0][0]),
         "Evidence-backed"),
-        ("What changes in the matched BiGRU study?",
-         "Fixed k=5, frozen learned boundaries, and joint RL on train-clean-100",
-         "Fixed k=5: %.2f clean, %.2f other (n=%d). Frozen Transformer AR: "
+        ("What changes in the matched 100h attribution?",
+         "Fixed k=5 mean/BiGRU, frozen learned boundaries, and joint RL",
+         "Fixed k=5 + mean: %.2f clean, %.2f other (n=%d). Fixed k=5 + BiGRU: "
+         "%.2f clean, %.2f other (n=%d). Frozen Transformer AR: "
          "%.2f clean, %.2f other (n=%d). Joint Transformer AR: %.2f clean, "
          "%.2f other (n=%d)." %
-         (attribution_fixed["clean"][0], attribution_fixed["other"][0],
+         (attribution_fixed_mean["clean"][0],
+          attribution_fixed_mean["other"][0], attribution_fixed_mean["n"],
+          attribution_fixed["clean"][0], attribution_fixed["other"][0],
           attribution_fixed["n"], attribution_frozen["clean"][0],
           attribution_frozen["other"][0], attribution_frozen["n"],
           attribution_joint["clean"][0], attribution_joint["other"][0],
           attribution_joint["n"]),
-         "Joint RL lowers WER by %.2f clean / %.2f other versus the frozen segmenter "
-         "while emitting about %.1f fewer audio tokens/s on test-clean. Versus fixed k=5, "
-         "it improves WER but uses about %.1f more audio tokens/s." %
-         (attribution_frozen["clean"][0] - attribution_joint["clean"][0],
-          attribution_frozen["other"][0] - attribution_joint["other"][0],
-          attribution_frozen["clean_hz"][0] - attribution_joint["clean_hz"][0],
+         "At identical fixed boundaries and frequency, BiGRU lowers clean WER by %.2f "
+         "but changes other WER by only %.2f. Joint RL then lowers WER by %.2f clean / "
+         "%.2f other versus fixed k=5 + BiGRU, at about %.1f more audio tokens/s on "
+         "test-clean." %
+         (attribution_fixed_mean["clean"][0] - attribution_fixed["clean"][0],
+          attribution_fixed_mean["other"][0] - attribution_fixed["other"][0],
+          attribution_fixed["clean"][0] - attribution_joint["clean"][0],
+          attribution_fixed["other"][0] - attribution_joint["other"][0],
           attribution_joint["clean_hz"][0] - attribution_fixed["clean_hz"][0]),
          "Evidence-backed"),
         ("What does learned segmentation cost at inference?",
@@ -2661,6 +2667,10 @@ def build(args):
 
     attribution_rows_html = "".join([
         attribution_result_row(
+            "Fixed k=5 + mean", "keep every fifth frame",
+            "7 decoder CE epochs", attribution_fixed_mean,
+        ),
+        attribution_result_row(
             "Fixed k=5 + BiGRU", "keep every fifth frame",
             "7 decoder/BiGRU CE epochs", attribution_fixed,
         ),
@@ -2678,6 +2688,7 @@ def build(args):
 
     attribution_plot_rows = []
     for label, result, color in (
+        ("Fixed k=5 + mean", attribution_fixed_mean, "#8a9399"),
         ("Fixed k=5 + BiGRU", attribution_fixed, "#59646c"),
         ("Frozen Transformer AR + BiGRU", attribution_frozen, "#75579b"),
         ("Joint Transformer AR + BiGRU", attribution_joint, "#27865d"),
@@ -2689,10 +2700,11 @@ def build(args):
             ))
 
     body += hk.section(
-        "0c · Matched 100h comparison — fixed, frozen, and joint RL",
-        lead="All three arms use WavLM features, the same best character-decoder "
-             "initialization, BiGRU residual pooling, seven total training epochs, "
-             "and padding-invariant decoding rules.",
+        "0c · Matched 100h attribution — mean, BiGRU, and joint RL",
+        lead="All four arms use WavLM features, the same best character-decoder "
+             "initialization, seven total training epochs, and padding-invariant "
+             "decoding. The two fixed-k=5 rows isolate pooler capacity; the three "
+             "BiGRU rows isolate boundary treatment and policy optimization.",
         body=(
             hk.card(
                 '<table style="table-layout:fixed"><colgroup>'
@@ -2707,14 +2719,38 @@ def build(args):
                 'rate in Hz. ± is sample SD across the same three seeds. Every row reports final '
                 'test evidence.</p>'
                 % attribution_rows_html,
-                title="Matched test results",
+                title="Matched attribution results",
             )
             + hk.card(
                 controlled_wer_fig(attribution_plot_rows)
                 + '<p class="cap">Every marker is a three-seed mean; error bars are sample '
-                  'SD. Lower WER is better. All three arms use the same decoder initialization, '
-                  'pooler, total epoch budget, and evaluation protocol.</p>',
-                title="Completed test WER by setup",
+                  'SD. Lower WER is better. All four arms use the same decoder initialization, '
+                  'total epoch budget, and evaluation protocol. The fixed pair isolates mean '
+                  'versus BiGRU pooling; the BiGRU trio isolates boundary treatment.</p>',
+                title="Completed attribution WER by setup",
+            )
+            + hk.finding(
+                '<span class="pill">Evidence-backed</span> <b>The fixed-k=5 mean control '
+                'shows where BiGRU capacity helps.</b> Mean pooling reaches %s/%s at %s; '
+                'BiGRU pooling reaches %s/%s at %s. With identical fixed boundaries and '
+                'frequency, BiGRU is %.2f points lower on clean and %.2f lower on other. '
+                'Its seed variation is also smaller (clean SD %.2f versus %.2f; other SD '
+                '%.2f versus %.2f).' % (
+                    ls960_metric_text(attribution_fixed_mean["clean"], 3),
+                    ls960_metric_text(attribution_fixed_mean["other"], 3),
+                    attribution_frequency_text(attribution_fixed_mean),
+                    ls960_metric_text(attribution_fixed["clean"], 3),
+                    ls960_metric_text(attribution_fixed["other"], 3),
+                    attribution_frequency_text(attribution_fixed),
+                    attribution_fixed_mean["clean"][0]
+                    - attribution_fixed["clean"][0],
+                    attribution_fixed_mean["other"][0]
+                    - attribution_fixed["other"][0],
+                    attribution_fixed["clean"][1],
+                    attribution_fixed_mean["clean"][1],
+                    attribution_fixed["other"][1],
+                    attribution_fixed_mean["other"][1],
+                )
             )
             + hk.finding(
                 '<span class="pill">Evidence-backed</span> <b>Updating the segmenter with '
@@ -2749,6 +2785,22 @@ def build(args):
                     attribution_joint["clean_hz"][0]
                     - attribution_fixed["clean_hz"][0],
                     attribution_frozen["clean"][1],
+                )
+            )
+            + hk.finding(
+                '<span class="pill">Evidence-backed</span> <b>The simplest fixed mean '
+                'control does not explain the learned result.</b> Joint Transformer AR + '
+                'BiGRU is %.2f points lower on clean and %.2f lower on other than fixed '
+                'k=5 + mean, while emitting %.1f / %.1f more audio tokens/s on test-clean '
+                '/ test-other.' % (
+                    attribution_fixed_mean["clean"][0]
+                    - attribution_joint["clean"][0],
+                    attribution_fixed_mean["other"][0]
+                    - attribution_joint["other"][0],
+                    attribution_joint["clean_hz"][0]
+                    - attribution_fixed_mean["clean_hz"][0],
+                    attribution_joint["other_hz"][0]
+                    - attribution_fixed_mean["other_hz"][0],
                 )
             )
         ),
