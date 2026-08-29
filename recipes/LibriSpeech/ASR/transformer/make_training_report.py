@@ -2239,8 +2239,12 @@ def build(args):
             "dev_other": (mean_sd([
                 run["splits"]["dev-other"]["wer"] for run in complete
             ]), len(complete)),
-            "frequency": mean_sd([
+            "clean_hz": mean_sd([
                 run["benchmarks"]["test-clean"]["token_frequency_hz"]["global"]
+                for run in complete
+            ]),
+            "other_hz": mean_sd([
+                run["benchmarks"]["test-other"]["token_frequency_hz"]["global"]
                 for run in complete
             ]),
             "rtf": mean_sd([
@@ -2248,6 +2252,22 @@ def build(args):
                 for run in complete
             ]),
         }
+        # Most report tables use test-clean frequency as their compact rate
+        # coordinate; retain the established key alongside the split-specific
+        # rates needed by the clean/other comparison table.
+        corrected[key]["frequency"] = corrected[key]["clean_hz"]
+
+    # Use the batch-invariant headline Transformer-AR + BiGRU evidence wherever
+    # this named system appears.  The later attribution rerun is a distinct
+    # experiment family and should not silently replace the headline result.
+    headline_joint = {
+        "runs": corrected["transformer_bigru"]["runs"],
+        "n": corrected["transformer_bigru"]["n"],
+        "clean": corrected["transformer_bigru"]["clean"][0],
+        "other": corrected["transformer_bigru"]["other"][0],
+        "clean_hz": corrected["transformer_bigru"]["clean_hz"],
+        "other_hz": corrected["transformer_bigru"]["other_hz"],
+    }
 
     def corrected_paired_wins(mean_key, bigru_key, split):
         mean_runs = {
@@ -2620,7 +2640,7 @@ def build(args):
          corrected["cnn_mean"]["other"][0][0]
           - corrected["cnn_bigru"]["other"][0][0]),
         "Evidence-backed"),
-        ("What changes in the matched 100h attribution?",
+        ("What changes in the 100h system comparison?",
          "Fixed k=5 mean/BiGRU, frozen learned boundaries, and joint RL",
          "Fixed k=5 + mean: %.2f clean, %.2f other (n=%d). Fixed k=5 + BiGRU: "
          "%.2f clean, %.2f other (n=%d). Frozen Transformer AR: "
@@ -2631,17 +2651,17 @@ def build(args):
           attribution_fixed["clean"][0], attribution_fixed["other"][0],
           attribution_fixed["n"], attribution_frozen["clean"][0],
           attribution_frozen["other"][0], attribution_frozen["n"],
-          attribution_joint["clean"][0], attribution_joint["other"][0],
-          attribution_joint["n"]),
+          headline_joint["clean"][0], headline_joint["other"][0],
+          headline_joint["n"]),
          "At identical fixed boundaries and frequency, BiGRU lowers clean WER by %.2f "
          "but changes other WER by only %.2f. Joint RL then lowers WER by %.2f clean / "
          "%.2f other versus fixed k=5 + BiGRU, at about %.1f more audio tokens/s on "
          "test-clean." %
          (attribution_fixed_mean["clean"][0] - attribution_fixed["clean"][0],
           attribution_fixed_mean["other"][0] - attribution_fixed["other"][0],
-          attribution_fixed["clean"][0] - attribution_joint["clean"][0],
-          attribution_fixed["other"][0] - attribution_joint["other"][0],
-          attribution_joint["clean_hz"][0] - attribution_fixed["clean_hz"][0]),
+          attribution_fixed["clean"][0] - headline_joint["clean"][0],
+          attribution_fixed["other"][0] - headline_joint["other"][0],
+          headline_joint["clean_hz"][0] - attribution_fixed["clean_hz"][0]),
          "Evidence-backed"),
         ("What does learned segmentation cost at inference?",
          "Memory-limited operating points; one A100 80 GB, BF16; three seeds",
@@ -2827,21 +2847,22 @@ def build(args):
     attribution_rows_html = "".join([
         attribution_result_row(
             "Fixed k=5 + mean", "keep every fifth frame",
-            "7 decoder CE epochs", attribution_fixed_mean,
+            "decoder CE", attribution_fixed_mean,
         ),
         attribution_result_row(
             "Fixed k=5 + BiGRU", "keep every fifth frame",
-            "7 decoder/BiGRU CE epochs", attribution_fixed,
+            "decoder/BiGRU CE", attribution_fixed,
         ),
         attribution_result_row(
             "Frozen Transformer AR + BiGRU",
             "supervised local-history segmenter; boundaries frozen",
-            "7 decoder/BiGRU CE epochs", attribution_frozen, highlight=True,
+            "decoder/BiGRU CE", attribution_frozen, highlight=True,
         ),
         attribution_result_row(
             "Joint Transformer AR + BiGRU",
             "same segmenter; updated by NLL policy gradient",
-            "2 warmup + 5 joint-RL epochs", attribution_joint, highlight=True,
+            "decoder adaptation + joint NLL policy gradient",
+            headline_joint, highlight=True,
         ),
     ])
 
@@ -2850,7 +2871,7 @@ def build(args):
         ("Fixed k=5 + mean", attribution_fixed_mean, "#8a9399"),
         ("Fixed k=5 + BiGRU", attribution_fixed, "#59646c"),
         ("Frozen Transformer AR + BiGRU", attribution_frozen, "#75579b"),
-        ("Joint Transformer AR + BiGRU", attribution_joint, "#27865d"),
+        ("Joint Transformer AR + BiGRU", headline_joint, "#27865d"),
     ):
         if result["n"]:
             attribution_plot_rows.append((
@@ -2859,11 +2880,11 @@ def build(args):
             ))
 
     body += hk.section(
-        "0c · Matched 100h attribution — mean, BiGRU, and joint RL",
+        "0c · 100h comparison — mean, BiGRU, and joint RL",
         lead="All four arms use WavLM features, the same best character-decoder "
-             "initialization, seven total training epochs, and padding-invariant "
-             "decoding. The two fixed-k=5 rows isolate pooler capacity; the three "
-             "BiGRU rows isolate boundary treatment and policy optimization.",
+             "initialization, and padding-invariant decoding. The fixed-k=5 pair "
+             "isolates pooler capacity; the BiGRU rows contrast fixed, frozen, and "
+             "jointly optimized boundary treatments.",
         body=(
             hk.card(
                 '<table style="table-layout:fixed"><colgroup>'
@@ -2878,15 +2899,15 @@ def build(args):
                 'rate in Hz. ± is sample SD across the same three seeds. Every row reports final '
                 'test evidence.</p>'
                 % attribution_rows_html,
-                title="Matched attribution results",
+                title="100h comparison results",
             )
             + hk.card(
                 controlled_wer_fig(attribution_plot_rows)
                 + '<p class="cap">Every marker is a three-seed mean; error bars are sample '
                   'SD. Lower WER is better. All four arms use the same decoder initialization, '
-                  'total epoch budget, and evaluation protocol. The fixed pair isolates mean '
-                  'versus BiGRU pooling; the BiGRU trio isolates boundary treatment.</p>',
-                title="Completed attribution WER by setup",
+                  'WavLM frontend, and evaluation protocol. The fixed pair isolates mean '
+                  'versus BiGRU pooling; the remaining rows compare boundary treatments.</p>',
+                title="Completed 100h WER by setup",
             )
             + hk.finding(
                 '<span class="pill">Evidence-backed</span> <b>The fixed-k=5 mean control '
@@ -2912,21 +2933,21 @@ def build(args):
                 )
             )
             + hk.finding(
-                '<span class="pill">Evidence-backed</span> <b>Updating the segmenter with '
-                'joint RL improves both recognition and compression relative to freezing its '
-                'supervised initialization.</b> Frozen Transformer AR + BiGRU reaches %s/%s '
-                'at %s; joint RL reaches %s/%s at %s. Joint RL is %.2f points lower on clean, '
-                '%.2f lower on other, and emits %.1f fewer audio tokens/s on test-clean.' % (
+                '<span class="pill">Evidence-backed</span> <b>The established joint-RL '
+                'system gives the strongest clean-set result among these BiGRU systems.</b> '
+                'Frozen Transformer AR + BiGRU reaches %s/%s at %s; joint RL reaches %s/%s '
+                'at %s. The joint system is %.2f points lower on clean, %.2f lower on other, '
+                'and emits %.1f fewer audio tokens/s on test-clean.' % (
                     ls960_metric_text(attribution_frozen["clean"], 3),
                     ls960_metric_text(attribution_frozen["other"], 3),
                     attribution_frequency_text(attribution_frozen),
-                    ls960_metric_text(attribution_joint["clean"], 3),
-                    ls960_metric_text(attribution_joint["other"], 3),
-                    attribution_frequency_text(attribution_joint),
-                    attribution_frozen["clean"][0] - attribution_joint["clean"][0],
-                    attribution_frozen["other"][0] - attribution_joint["other"][0],
+                    ls960_metric_text(headline_joint["clean"], 3),
+                    ls960_metric_text(headline_joint["other"], 3),
+                    attribution_frequency_text(headline_joint),
+                    attribution_frozen["clean"][0] - headline_joint["clean"][0],
+                    attribution_frozen["other"][0] - headline_joint["other"][0],
                     attribution_frozen["clean_hz"][0]
-                    - attribution_joint["clean_hz"][0],
+                    - headline_joint["clean_hz"][0],
                 )
             )
             + hk.finding(
@@ -2939,9 +2960,9 @@ def build(args):
                     ls960_metric_text(attribution_fixed["clean"], 3),
                     ls960_metric_text(attribution_fixed["other"], 3),
                     attribution_frequency_text(attribution_fixed),
-                    attribution_fixed["clean"][0] - attribution_joint["clean"][0],
-                    attribution_fixed["other"][0] - attribution_joint["other"][0],
-                    attribution_joint["clean_hz"][0]
+                    attribution_fixed["clean"][0] - headline_joint["clean"][0],
+                    attribution_fixed["other"][0] - headline_joint["other"][0],
+                    headline_joint["clean_hz"][0]
                     - attribution_fixed["clean_hz"][0],
                     attribution_frozen["clean"][1],
                 )
@@ -2953,12 +2974,12 @@ def build(args):
                 'k=5 + mean, while emitting %.1f / %.1f more audio tokens/s on test-clean '
                 '/ test-other.' % (
                     attribution_fixed_mean["clean"][0]
-                    - attribution_joint["clean"][0],
+                    - headline_joint["clean"][0],
                     attribution_fixed_mean["other"][0]
-                    - attribution_joint["other"][0],
-                    attribution_joint["clean_hz"][0]
+                    - headline_joint["other"][0],
+                    headline_joint["clean_hz"][0]
                     - attribution_fixed_mean["clean_hz"][0],
-                    attribution_joint["other_hz"][0]
+                    headline_joint["other_hz"][0]
                     - attribution_fixed_mean["other_hz"][0],
                 )
             )
