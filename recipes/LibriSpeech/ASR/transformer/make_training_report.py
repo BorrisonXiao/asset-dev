@@ -2942,8 +2942,11 @@ def build(args):
                 'transcript-free phone-CTC baseline at essentially the same audio-token '
                 'frequency.</b> Transformer AR + BiGRU reaches %s clean and %s other at %s, '
                 'versus %s/%s at %.1f / %.1f Hz for phone-CTC + long-segment split. The '
-                'learned system lowers WER by %.2f points on test-clean and %.2f on '
-                'test-other.' % (
+                'learned system delivers a <b>%.1f%% / %.1f%% relative WER reduction</b> '
+                '(%.2f / %.2f absolute points) on test-clean/test-other. This sizeable '
+                'relative gain at a matched token rate demonstrates the effectiveness of '
+                'learning content-adaptive boundaries and the within-segment representation '
+                'rather than relying on CTC boundaries with mean pooling.' % (
                     ls960_metric_text(ls960_transformer["clean"],
                                       ls960_transformer["n"]),
                     ls960_metric_text(ls960_transformer["other"],
@@ -2955,6 +2958,14 @@ def build(args):
                                       ls960_phone_ctc["n"]),
                     ls960_phone_ctc_hz["test-clean"],
                     ls960_phone_ctc_hz["test-other"],
+                    100.0 * (
+                        ls960_phone_ctc["test-clean"][0]
+                        - ls960_transformer["clean"][0]
+                    ) / ls960_phone_ctc["test-clean"][0],
+                    100.0 * (
+                        ls960_phone_ctc["test-other"][0]
+                        - ls960_transformer["other"][0]
+                    ) / ls960_phone_ctc["test-other"][0],
                     ls960_phone_ctc["test-clean"][0]
                     - ls960_transformer["clean"][0],
                     ls960_phone_ctc["test-other"][0]
