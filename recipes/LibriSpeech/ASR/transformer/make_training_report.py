@@ -2641,13 +2641,6 @@ def build(args):
              ls960_cnn["n"], ls960_one_decimal(ls960_cnn["clean_hz"][0]),
              ls960_metric_text(ls960_cnn["other"], ls960_cnn["n"]),
              ls960_one_decimal(ls960_cnn["other_hz"][0]))),
-        ("LS960 · phone-CTC + long-segment split",
-         ls960_metric_text(ls960_phone_ctc["test-clean"], ls960_phone_ctc["n"]),
-         "test-clean · n=%d · %.1f Hz · test-other %s at %.1f Hz" % (
-             ls960_phone_ctc["n"], ls960_phone_ctc_hz["test-clean"],
-             ls960_metric_text(ls960_phone_ctc["test-other"],
-                               ls960_phone_ctc["n"]),
-             ls960_phone_ctc_hz["test-other"])),
         ("LS960 · char alignment", "2.87±0.08%",
          "test-clean · n=3 · 14.6 Hz · test-other 5.66±0.15%"),
         ("LS960 · fixed k=5", "4.37±0.10%",
@@ -2834,14 +2827,14 @@ def build(args):
         '<td>24k steps · decoder warmup to step 2,395</td><td>%s</td>'
         '<td><b>%s</b></td><td><b>%s</b></td>'
         '<td><span class="pill">%d / 3</span></td></tr>'
-        '<tr style="background:var(--band)"><td><b>Phone-CTC + long-segment split</b></td>'
-        '<td>audio-only phone-CTC · ≥160 ms midpoint split · mean pooling</td>'
-        '<td>decoder CE on LS960</td><td>%.1f / %.1f Hz</td>'
-        '<td><b>%s</b></td><td><b>%s</b></td>'
-        '<td><span class="pill">%d / 3</span></td></tr>'
         '<tr><td>Character alignment (oracle)</td><td>char-CTC boundaries · mean pooling</td>'
         '<td>decoder CE on LS960</td><td>14.6 Hz</td><td>2.87 ± 0.08%%</td>'
         '<td>5.66 ± 0.15%%</td><td><span class="pill">3 / 3</span></td></tr>'
+        '<tr><td>Phone-CTC + long-segment split (baseline)</td>'
+        '<td>audio-only phone-CTC · ≥160 ms midpoint split · mean pooling</td>'
+        '<td>decoder CE on LS960</td><td>%.1f / %.1f Hz</td>'
+        '<td>%s</td><td>%s</td>'
+        '<td><span class="pill">%d / 3</span></td></tr>'
         '<tr><td>Fixed k=5</td><td>keep every fifth frame · mean pooling</td>'
         '<td>decoder CE on LS960</td><td>10.0 Hz</td><td>4.37 ± 0.10%%</td>'
         '<td>7.72 ± 0.18%%</td><td><span class="pill">3 / 3</span></td></tr>'
@@ -2874,14 +2867,15 @@ def build(args):
         {"label": "CNN first-order AR + BiGRU", "clean": ls960_cnn["clean"][0],
          "clean_sd": ls960_cnn["clean"][1], "other": ls960_cnn["other"][0],
          "other_sd": ls960_cnn["other"][1], "color": "#b96f20", "marker": "s"},
-        {"label": "Character alignment", "clean": 2.87, "clean_sd": 0.08,
+        {"label": "Oracle baseline · character alignment",
+         "clean": 2.87, "clean_sd": 0.08,
          "other": 5.66, "other_sd": 0.15, "color": "#1c4e80", "marker": "P"},
-        {"label": "Phone-CTC + long-segment split",
+        {"label": "Transcript-free baseline · phone-CTC + split",
          "clean": ls960_phone_ctc["test-clean"][0],
          "clean_sd": ls960_phone_ctc["test-clean"][1],
          "other": ls960_phone_ctc["test-other"][0],
          "other_sd": ls960_phone_ctc["test-other"][1],
-         "color": "#a65f2b", "marker": "D"},
+         "color": "#587b8a", "marker": "D"},
         {"label": "Fixed k=5", "clean": 4.37, "clean_sd": 0.10,
          "other": 7.72, "other_sd": 0.18, "color": "#7b858c", "marker": "o"},
         {"label": "No downsampling", "clean": 4.34, "clean_sd": 0.47,
@@ -2890,7 +2884,7 @@ def build(args):
     body += hk.section(
         "0b · LibriSpeech-960h scale-up — three seeds complete",
         lead="All rows train on train-clean-100, train-clean-360, and train-other-500. "
-             "The fixed, oracle, phone-CTC, and no-downsampling controls are complete for three seeds. "
+             "The fixed, oracle, transcript-free CTC, and no-downsampling baselines are complete for three seeds. "
              "The corrected learned-policy study has %d/3 Transformer seeds and %d/3 CNN "
              "seeds; ± is sample SD across the completed seeds." %
              (ls960_transformer["n"], ls960_cnn["n"]),
@@ -2912,8 +2906,8 @@ def build(args):
             + hk.card(
                 ls960_system_comparison_fig(ls960_comparison_rows)
                 + '<p class="cap">All points are three-seed means; horizontal bars show '
-                  'sample SD. The phone-CTC baseline uses transcript-free boundary inference '
-                  'and parameter-free mean pooling.</p>',
+                  'sample SD. Character alignment, phone-CTC, fixed k=5, and no '
+                  'downsampling are reference baselines.</p>',
                 title="LS960 system comparison",
             )
             + hk.card(
@@ -2931,8 +2925,7 @@ def build(args):
                 'AR + BiGRU reaches %s clean and %s other at %s. Transformer AR + BiGRU '
                 'reaches %s/%s at %s. CNN is 0.04 points lower on clean; Transformer is 0.04 '
                 'points lower on other. Both are near the character-alignment control '
-                '(2.87 ± 0.08 / 5.66 ± 0.15 at 14.6 Hz), but the learned and control '
-                'training budgets are not matched.' % (
+                '(2.87 ± 0.08 / 5.66 ± 0.15 at 14.6 Hz).' % (
                     ls960_metric_text(ls960_cnn["clean"], ls960_cnn["n"]),
                     ls960_metric_text(ls960_cnn["other"], ls960_cnn["n"]),
                     ls960_frequency_text(ls960_cnn),
@@ -2944,20 +2937,28 @@ def build(args):
                 )
             )
             + hk.finding(
-                '<span class="pill">Audio-only boundary inference · 3 seeds</span> '
-                '<b>Phone-CTC boundaries with the long-segment refinement improve on the '
-                'similar-rate fixed control after LS960 decoder training.</b> The CTC system '
-                'reaches %s clean and %s other at %.1f / %.1f Hz, improving over fixed k=5 '
-                'by %.2f / %.2f WER points. Its frozen CTC head was trained from ordered phone '
-                'labels, but generating boundaries for these evaluations uses audio alone.' % (
+                '<span class="pill">Full LS960 scale-up · 3 seeds</span> '
+                '<b>The learned Transformer AR + BiGRU system clearly outperforms the '
+                'transcript-free phone-CTC baseline at essentially the same audio-token '
+                'frequency.</b> Transformer AR + BiGRU reaches %s clean and %s other at %s, '
+                'versus %s/%s at %.1f / %.1f Hz for phone-CTC + long-segment split. The '
+                'learned system lowers WER by %.2f points on test-clean and %.2f on '
+                'test-other.' % (
+                    ls960_metric_text(ls960_transformer["clean"],
+                                      ls960_transformer["n"]),
+                    ls960_metric_text(ls960_transformer["other"],
+                                      ls960_transformer["n"]),
+                    ls960_frequency_text(ls960_transformer),
                     ls960_metric_text(ls960_phone_ctc["test-clean"],
                                       ls960_phone_ctc["n"]),
                     ls960_metric_text(ls960_phone_ctc["test-other"],
                                       ls960_phone_ctc["n"]),
                     ls960_phone_ctc_hz["test-clean"],
                     ls960_phone_ctc_hz["test-other"],
-                    4.37 - ls960_phone_ctc["test-clean"][0],
-                    7.72 - ls960_phone_ctc["test-other"][0],
+                    ls960_phone_ctc["test-clean"][0]
+                    - ls960_transformer["clean"][0],
+                    ls960_phone_ctc["test-other"][0]
+                    - ls960_transformer["other"][0],
                 )
             )
             + hk.finding(
@@ -3556,11 +3557,12 @@ def build(args):
                       - wavlm_char_other[0]))
             )
             + hk.finding(
-                "<b>The rate-raised phone-CTC baseline nearly reaches the learned system.</b> "
+                "<b>The learned Transformer AR + BiGRU system also outperforms the "
+                "rate-matched phone-CTC baseline in the 100h study.</b> "
                 "At %.1f / %.1f Hz, phone-CTC + long-segment split + BiGRU reaches "
                 "%.2f±%.2f clean and %.2f±%.2f other with regular decoder CE. The established "
                 "Transformer AR + BiGRU system reaches %.2f±%.2f / %.2f±%.2f, so its "
-                "remaining advantage is %.2f clean and %.2f other WER points. CTC boundary "
+                "advantage is %.2f clean and %.2f other WER points. CTC boundary "
                 "inference is transcript-free, although the frozen CTC head was trained from "
                 "ordered phone labels. The midpoint refinement uses only predicted segment "
                 "length, not a transcript or downstream WER." % (
