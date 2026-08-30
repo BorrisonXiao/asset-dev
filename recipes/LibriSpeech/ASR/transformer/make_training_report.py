@@ -2990,6 +2990,70 @@ def build(args):
     body += "__PHONE_BOUNDARY_AGREEMENT_SECTION__"
     body += "__INFERENCE_EFFICIENCY_SECTION__"
 
+    # Rate-raised phone-CTC baseline. Checkpoint rank differs by seed, so recover
+    # the retained rank whose metadata names epoch 3 rather than assuming rank 0.
+    phone_ctc_longsplit_root = os.path.join(
+        attribution_root, "wavlm_phone_ctc_longsplit8_bigru_3ep"
+    )
+
+    def retained_epoch_stats(root, epoch):
+        runs = []
+        for seed in seeds:
+            run = os.path.join(root, str(seed))
+            rank = None
+            eval_log = os.path.join(run, "log.txt")
+            if os.path.exists(eval_log):
+                for line in open(eval_log, encoding="utf-8", errors="replace"):
+                    match = re.search(
+                        r"Evaluation loaded retained checkpoint rank=(\d+).*"
+                        r"['\"]epoch['\"]: (\d+)",
+                        line,
+                    )
+                    if match and int(match.group(2)) == epoch:
+                        rank = int(match.group(1))
+                        break
+            if rank is None:
+                continue
+            records = {
+                split: parse_wer_file(os.path.join(
+                    run, "wer_results_rank_%d" % rank, "wer_%s.txt" % split
+                ))
+                for split in ("test-clean", "test-other", "dev-other")
+            }
+            train_rows = [
+                row for row in parse_log(os.path.join(run, "train_log.txt"))
+                if int(row.get("epoch", -1)) == epoch
+            ]
+            if not all(records.values()) or not train_rows:
+                continue
+            runs.append({
+                "seed": seed,
+                "rank": rank,
+                "dev-clean": train_rows[-1]["valid WER"],
+                **{split: record["wer"] for split, record in records.items()},
+            })
+        return {
+            "runs": runs,
+            "n": len(runs),
+            **{
+                split: mean_sd([run[split] for run in runs])
+                for split in ("dev-clean", "dev-other", "test-clean", "test-other")
+            },
+        }
+
+    phone_ctc_longsplit = retained_epoch_stats(phone_ctc_longsplit_root, 3)
+    phone_ctc_longsplit_summary_path = (
+        "/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/"
+        "boundary_targets/wavlm_phone_ctc_tc100_best_longsplit8/_stats/"
+        "long_segment_split_summary.json"
+    )
+    with open(phone_ctc_longsplit_summary_path, encoding="utf-8") as stream:
+        phone_ctc_longsplit_boundary_summary = json.load(stream)
+    phone_ctc_longsplit_hz = {
+        split: phone_ctc_longsplit_boundary_summary["splits"][split]["refined_rate_hz"]
+        for split in ("dev-clean", "dev-other", "test-clean", "test-other")
+    }
+
     # One compact inventory of the systems readers most often need to compare.
     # This intentionally spans several experiment families, so decoder treatment
     # and policy context are explicit rather than implying a controlled ablation.
@@ -3032,6 +3096,21 @@ def build(args):
             "clean": wavlm_char_clean[0], "clean_sd": wavlm_char_clean[1],
             "other": wavlm_char_other[0], "other_sd": wavlm_char_other[1],
             "color": "#1c4e80", "marker": "P",
+        },
+        {
+            "family": "CTC baseline", "label": "Phone-CTC + split · BiGRU",
+            "system": "Phone-CTC + long-segment split",
+            "configuration": "audio-only CTC runs + ≥160 ms midpoint · BiGRU residual",
+            "decoder": "best char init · BiGRU/decoder CE",
+            "frequency": phone_ctc_longsplit_hz["test-clean"],
+            "other_frequency": phone_ctc_longsplit_hz["test-other"],
+            "frequency_sd": 0.0,
+            "clean": phone_ctc_longsplit["test-clean"][0],
+            "clean_sd": phone_ctc_longsplit["test-clean"][1],
+            "other": phone_ctc_longsplit["test-other"][0],
+            "other_sd": phone_ctc_longsplit["test-other"][1],
+            "n": phone_ctc_longsplit["n"],
+            "color": "#a65f2b", "marker": "D",
         },
         {
             "family": "CNN policy", "label": "CNN · Bernoulli",
@@ -3125,6 +3204,10 @@ def build(args):
         frequency = "%.1f Hz" % row["frequency"]
         if row["frequency_sd"] > 0:
             frequency = "%.1f ± %.1f Hz" % (row["frequency"], row["frequency_sd"])
+        elif "other_frequency" in row:
+            frequency = "%.1f / %.1f Hz" % (
+                row["frequency"], row["other_frequency"]
+            )
         n_complete = row.get("n", 3)
         if n_complete == 1:
             clean_text = "%.2f%%" % row["clean"]
@@ -3172,6 +3255,18 @@ def build(args):
            + (wavlm_phone_n,))
     )
     wavlm_baseline_rows += (
+        '<tr style="background:var(--band)"><td><b>phone-CTC + long-segment split + BiGRU</b></td>'
+        '<td>%.1f / %.1f Hz</td><td>%.2f ± %.2f%%</td>'
+        '<td><b>%.2f ± %.2f%%</b></td><td><b>%.2f ± %.2f%%</b></td>'
+        '<td><span class="pill">n=%d</span></td></tr>'
+        % ((phone_ctc_longsplit_hz["test-clean"],
+            phone_ctc_longsplit_hz["test-other"])
+           + phone_ctc_longsplit["dev-clean"]
+           + phone_ctc_longsplit["test-clean"]
+           + phone_ctc_longsplit["test-other"]
+           + (phone_ctc_longsplit["n"],))
+    )
+    wavlm_baseline_rows += (
         '<tr style="background:var(--band)"><td><b>char alignment</b></td><td>%.1f Hz</td>'
         '<td><b>%.2f ± %.2f%%</b></td><td><b>%.2f ± %.2f%%</b></td>'
         '<td><b>%.2f ± %.2f%%</b></td><td><span class="pill">n=%d</span></td></tr>'
@@ -3206,7 +3301,7 @@ def build(args):
     body += hk.section(
         "1 · WavLM-Large results — LibriSpeech-100h",
         lead="The full CNN/Transformer × NLL-frozen/NLL-multitask/CER-multitask grid and "
-             "all fixed-pooling, no-downsampling, char-aligned, and phone-aligned controls finished "
+             "all fixed-pooling, no-downsampling, alignment, and rate-raised phone-CTC controls finished "
              "for seeds 3407/3408/3409. "
              "Both local-history Transformer AR rows are complete, while the CNN AR mean and "
              "BiGRU rows currently have one and two complete seeds. Values are corpus WER from "
@@ -3217,7 +3312,8 @@ def build(args):
                 system_overview_fig(system_overview_rows)
                 + '<p class="cap">Rows are grouped by system family; the three panels show '
                   'test-clean audio-token frequency on a log scale and WER on both test splits. '
-                  'Error bars use completed seeds only; CNN n is reported in the table. '
+                  'The frequency panel uses test-clean; the table gives split-specific rates '
+                  'where they differ. Error bars use completed seeds only; CNN n is reported in the table. '
                   'Deterministic policies '
                   'have fixed frequency, so only learned-policy frequencies carry error bars. '
                   'Lower frequency means more compression; lower WER is better.</p>',
@@ -3230,7 +3326,7 @@ def build(args):
                 '<col style="width:12%%"><col style="width:9%%">'
                 '<col style="width:9%%"></colgroup><thead><tr>'
                 '<th>family</th><th>system</th><th>policy / pooling</th>'
-                '<th>decoder treatment</th><th>test-clean audio-token frequency</th>'
+                '<th>decoder treatment</th><th>test-clean / other audio-token frequency</th>'
                 '<th>test-clean WER</th><th>test-other WER</th>'
                 '</tr></thead><tbody>%s</tbody></table>'
                 '<p class="cap">This is a system inventory, not one fully controlled ablation: '
@@ -3252,7 +3348,7 @@ def build(args):
                 % wavlm_checkpoint_rows,
                 title="RL checkpoint selection")
             + hk.card(
-                "<table><thead><tr><th>baseline</th><th>audio-token frequency</th>"
+                "<table><thead><tr><th>baseline</th><th>test-clean / other audio-token frequency</th>"
                 "<th>dev-clean WER</th>"
                 "<th>test-clean WER</th><th>test-other WER</th>"
                 "<th>seeds complete</th></tr></thead>"
@@ -3261,7 +3357,7 @@ def build(args):
                 "three-seed mean ± sample SD. Bold marks the current best value in each test "
                 "column.</p>"
                 % wavlm_baseline_rows,
-                title="Fixed pooling, alignment, and no-downsampling controls")
+                title="Fixed pooling, alignment, CTC, and no-downsampling controls")
             + hk.finding(
                 "<b>The clean-set compression gain survives three seeds.</b> Fixed k=5 reaches "
                 "%.2f±%.2f on test-clean versus %.2f±%.2f without downsampling, a %.2f-point "
@@ -3309,6 +3405,27 @@ def build(args):
                       - wavlm_char_clean[0],
                       corrected["transformer_bigru"]["other"][0][0]
                       - wavlm_char_other[0]))
+            )
+            + hk.finding(
+                "<b>The rate-raised phone-CTC baseline nearly reaches the learned system.</b> "
+                "At %.1f / %.1f Hz, phone-CTC + long-segment split + BiGRU reaches "
+                "%.2f±%.2f clean and %.2f±%.2f other using epoch 3. The established "
+                "Transformer AR + BiGRU system reaches %.2f±%.2f / %.2f±%.2f, so its "
+                "remaining advantage is %.2f clean and %.2f other WER points. CTC boundary "
+                "inference is transcript-free, although the frozen CTC head was trained from "
+                "ordered phone labels. The midpoint refinement uses only predicted segment "
+                "length, not a transcript or downstream WER." % (
+                    phone_ctc_longsplit_hz["test-clean"],
+                    phone_ctc_longsplit_hz["test-other"],
+                    *phone_ctc_longsplit["test-clean"],
+                    *phone_ctc_longsplit["test-other"],
+                    *corrected["transformer_bigru"]["clean"][0],
+                    *corrected["transformer_bigru"]["other"][0],
+                    phone_ctc_longsplit["test-clean"][0]
+                    - corrected["transformer_bigru"]["clean"][0][0],
+                    phone_ctc_longsplit["test-other"][0]
+                    - corrected["transformer_bigru"]["other"][0][0],
+                )
             )
         ),
     )
