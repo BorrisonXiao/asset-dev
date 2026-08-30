@@ -801,6 +801,54 @@ def ls960_convergence_fig():
     return hk.mpl_png(fig, cls="fig", pad=0.10, facecolor="white")
 
 
+def ls960_system_comparison_fig(rows):
+    """Compare attained clean/other WER for the principal LS960 systems."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    y = np.arange(len(rows))
+    fig, axes = plt.subplots(1, 2, figsize=(11.4, 5.4), dpi=130, sharey=True)
+    for metric_idx, (ax, title) in enumerate(zip(
+            axes, ("test-clean", "test-other"))):
+        value_key = "clean" if metric_idx == 0 else "other"
+        sd_key = value_key + "_sd"
+        for row_idx, row in enumerate(rows):
+            value, sd = row[value_key], row[sd_key]
+            ax.errorbar(
+                value, row_idx, xerr=sd if sd > 0 else None,
+                fmt=row.get("marker", "o"), ms=7.5, color=row["color"],
+                ecolor=row["color"], capsize=3, markerfacecolor=row["color"],
+                markeredgecolor="white", markeredgewidth=0.8, zorder=3,
+            )
+            ax.annotate(
+                "%.2f" % value, (value + sd, row_idx),
+                textcoords="offset points", xytext=(5, 0), va="center",
+                fontsize=8.0, color="#24323f",
+            )
+        values = [row[value_key] for row in rows]
+        sds = [row[sd_key] for row in rows]
+        ax.set_xlim(
+            max(0, min(v - s for v, s in zip(values, sds)) - 0.55),
+            max(v + s for v, s in zip(values, sds)) + 0.85,
+        )
+        ax.set_title(title, fontsize=12, fontweight="bold")
+        ax.set_xlabel("WER (%) · lower is better")
+        ax.grid(axis="x", alpha=0.24, lw=0.7)
+        for spine in ("top", "right", "left"):
+            ax.spines[spine].set_visible(False)
+        ax.tick_params(axis="y", length=0)
+
+    axes[0].set_yticks(y, labels=[row["label"] for row in rows], fontsize=8.5)
+    axes[0].invert_yaxis()
+    fig.suptitle(
+        "Attained system comparison · LibriSpeech-960h",
+        fontsize=14, fontweight="bold", y=0.985,
+    )
+    fig.tight_layout(rect=(0, 0, 1, 0.95), pad=0.9, w_pad=1.4)
+    return hk.mpl_png(fig, cls="fig", pad=0.10, facecolor="white")
+
+
 def controlled_wer_fig(rows):
     """Plot clean/other WER for the plainly named systems in section 2.
 
@@ -1593,6 +1641,45 @@ def build(args):
 
     ls960_transformer = ls960_learned_stats("transformer_ar_local64_bigru")
     ls960_cnn = ls960_learned_stats("cnn_first_order_ar_bigru")
+
+    # Frozen audio-only phone-CTC boundaries with deterministic midpoint splits
+    # for predicted segments of at least eight 20-ms frames. Only the decoder
+    # projection and LoRA parameters are adapted with regular CE on LS960.
+    ls960_phone_ctc_root = os.path.join(
+        RES, "speechllm_ls960_phone_ctc_longsplit8_mean_ce_1ep"
+    )
+    ls960_phone_ctc_runs = []
+    for seed in seeds:
+        run = os.path.join(ls960_phone_ctc_root, str(seed), "wer_results")
+        records = {
+            split: parse_wer_file(os.path.join(run, "wer_%s.txt" % split))
+            for split in ("test-clean", "test-other", "dev-other")
+        }
+        if not all(records.values()):
+            continue
+        ls960_phone_ctc_runs.append({
+            "seed": seed,
+            **{split: record["wer"] for split, record in records.items()},
+        })
+    ls960_phone_ctc = {
+        "runs": ls960_phone_ctc_runs,
+        "n": len(ls960_phone_ctc_runs),
+        **{
+            split: mean_sd([run[split] for run in ls960_phone_ctc_runs])
+            for split in ("test-clean", "test-other", "dev-other")
+        },
+    }
+    ls960_phone_ctc_summary_path = (
+        "/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/"
+        "boundary_targets/wavlm_phone_ctc_tc100_best_longsplit8/_stats/"
+        "long_segment_split_summary.json"
+    )
+    with open(ls960_phone_ctc_summary_path, encoding="utf-8") as stream:
+        ls960_phone_ctc_boundary_summary = json.load(stream)
+    ls960_phone_ctc_hz = {
+        split: ls960_phone_ctc_boundary_summary["splits"][split]["refined_rate_hz"]
+        for split in ("dev-clean", "dev-other", "test-clean", "test-other")
+    }
 
     def ls960_metric_text(stats, n, digits=2, suffix="%"):
         value = ("%.*f" % (digits, stats[0]))
@@ -2554,6 +2641,13 @@ def build(args):
              ls960_cnn["n"], ls960_one_decimal(ls960_cnn["clean_hz"][0]),
              ls960_metric_text(ls960_cnn["other"], ls960_cnn["n"]),
              ls960_one_decimal(ls960_cnn["other_hz"][0]))),
+        ("LS960 · phone-CTC + long-segment split",
+         ls960_metric_text(ls960_phone_ctc["test-clean"], ls960_phone_ctc["n"]),
+         "test-clean · n=%d · %.1f Hz · test-other %s at %.1f Hz" % (
+             ls960_phone_ctc["n"], ls960_phone_ctc_hz["test-clean"],
+             ls960_metric_text(ls960_phone_ctc["test-other"],
+                               ls960_phone_ctc["n"]),
+             ls960_phone_ctc_hz["test-other"])),
         ("LS960 · char alignment", "2.87±0.08%",
          "test-clean · n=3 · 14.6 Hz · test-other 5.66±0.15%"),
         ("LS960 · fixed k=5", "4.37±0.10%",
@@ -2740,14 +2834,19 @@ def build(args):
         '<td>24k steps · decoder warmup to step 2,395</td><td>%s</td>'
         '<td><b>%s</b></td><td><b>%s</b></td>'
         '<td><span class="pill">%d / 3</span></td></tr>'
+        '<tr style="background:var(--band)"><td><b>Phone-CTC + long-segment split</b></td>'
+        '<td>audio-only phone-CTC · ≥160 ms midpoint split · mean pooling</td>'
+        '<td>decoder CE on LS960</td><td>%.1f / %.1f Hz</td>'
+        '<td><b>%s</b></td><td><b>%s</b></td>'
+        '<td><span class="pill">%d / 3</span></td></tr>'
         '<tr><td>Character alignment (oracle)</td><td>char-CTC boundaries · mean pooling</td>'
-        '<td>one LS960 pass</td><td>14.6 Hz</td><td>2.87 ± 0.08%%</td>'
+        '<td>decoder CE on LS960</td><td>14.6 Hz</td><td>2.87 ± 0.08%%</td>'
         '<td>5.66 ± 0.15%%</td><td><span class="pill">3 / 3</span></td></tr>'
         '<tr><td>Fixed k=5</td><td>keep every fifth frame · mean pooling</td>'
-        '<td>one LS960 pass</td><td>10.0 Hz</td><td>4.37 ± 0.10%%</td>'
+        '<td>decoder CE on LS960</td><td>10.0 Hz</td><td>4.37 ± 0.10%%</td>'
         '<td>7.72 ± 0.18%%</td><td><span class="pill">3 / 3</span></td></tr>'
         '<tr><td>No downsampling</td><td>keep every WavLM frame · no pooling</td>'
-        '<td>one LS960 pass</td><td>50.0 Hz</td><td>4.34 ± 0.47%%</td>'
+        '<td>decoder CE on LS960</td><td>50.0 Hz</td><td>4.34 ± 0.47%%</td>'
         '<td>7.08 ± 0.19%%</td><td><span class="pill">3 / 3</span></td></tr>'
     ) % (
         ls960_frequency_text(ls960_transformer),
@@ -2758,11 +2857,40 @@ def build(args):
         ls960_metric_text(ls960_cnn["clean"], ls960_cnn["n"]),
         ls960_metric_text(ls960_cnn["other"], ls960_cnn["n"]),
         ls960_cnn["n"],
+        ls960_phone_ctc_hz["test-clean"],
+        ls960_phone_ctc_hz["test-other"],
+        ls960_metric_text(ls960_phone_ctc["test-clean"],
+                          ls960_phone_ctc["n"]),
+        ls960_metric_text(ls960_phone_ctc["test-other"],
+                          ls960_phone_ctc["n"]),
+        ls960_phone_ctc["n"],
     )
+    ls960_comparison_rows = [
+        {"label": "Transformer AR + BiGRU", "clean": ls960_transformer["clean"][0],
+         "clean_sd": ls960_transformer["clean"][1],
+         "other": ls960_transformer["other"][0],
+         "other_sd": ls960_transformer["other"][1],
+         "color": "#27865d", "marker": "o"},
+        {"label": "CNN first-order AR + BiGRU", "clean": ls960_cnn["clean"][0],
+         "clean_sd": ls960_cnn["clean"][1], "other": ls960_cnn["other"][0],
+         "other_sd": ls960_cnn["other"][1], "color": "#b96f20", "marker": "s"},
+        {"label": "Character alignment", "clean": 2.87, "clean_sd": 0.08,
+         "other": 5.66, "other_sd": 0.15, "color": "#1c4e80", "marker": "P"},
+        {"label": "Phone-CTC + long-segment split",
+         "clean": ls960_phone_ctc["test-clean"][0],
+         "clean_sd": ls960_phone_ctc["test-clean"][1],
+         "other": ls960_phone_ctc["test-other"][0],
+         "other_sd": ls960_phone_ctc["test-other"][1],
+         "color": "#a65f2b", "marker": "D"},
+        {"label": "Fixed k=5", "clean": 4.37, "clean_sd": 0.10,
+         "other": 7.72, "other_sd": 0.18, "color": "#7b858c", "marker": "o"},
+        {"label": "No downsampling", "clean": 4.34, "clean_sd": 0.47,
+         "other": 7.08, "other_sd": 0.19, "color": "#9a5b73", "marker": "X"},
+    ]
     body += hk.section(
         "0b · LibriSpeech-960h scale-up — three seeds complete",
         lead="All rows train on train-clean-100, train-clean-360, and train-other-500. "
-             "The fixed, oracle, and no-downsampling controls are complete for three seeds. "
+             "The fixed, oracle, phone-CTC, and no-downsampling controls are complete for three seeds. "
              "The corrected learned-policy study has %d/3 Transformer seeds and %d/3 CNN "
              "seeds; ± is sample SD across the completed seeds." %
              (ls960_transformer["n"], ls960_cnn["n"]),
@@ -2773,16 +2901,20 @@ def build(args):
                 '<col style="width:18%%"><col style="width:12%%">'
                 '<col style="width:10%%"><col style="width:10%%">'
                 '<col style="width:7%%"></colgroup><thead><tr>'
-                '<th>system</th><th>segmenter / pooling</th><th>training budget</th>'
+                '<th>system</th><th>segmenter / pooling</th><th>training recipe</th>'
                 '<th>test-clean / other frequency</th><th>test-clean WER</th>'
                 '<th>test-other WER</th><th>seeds</th></tr></thead>'
                 '<tbody>%s</tbody></table>'
                 '<p class="cap">Lower WER and lower audio-token frequency are better. '
-                'The learned rows aggregate the completed seeds; ± is sample SD when n&gt;1. '
-                'The learned runs use a longer optimization budget than the '
-                'one-pass controls, so this table compares attained systems rather than equal '
-                'training cost.</p>' % ls960_rows,
+                'Rows aggregate the completed seeds; ± is sample SD when n&gt;1.</p>' % ls960_rows,
                 title="Current LS960 WER and audio-token frequency",
+            )
+            + hk.card(
+                ls960_system_comparison_fig(ls960_comparison_rows)
+                + '<p class="cap">All points are three-seed means; horizontal bars show '
+                  'sample SD. The phone-CTC baseline uses transcript-free boundary inference '
+                  'and parameter-free mean pooling.</p>',
+                title="LS960 system comparison",
             )
             + hk.card(
                 ls960_convergence_fig()
@@ -2809,6 +2941,23 @@ def build(args):
                     ls960_metric_text(ls960_transformer["other"],
                                       ls960_transformer["n"]),
                     ls960_frequency_text(ls960_transformer),
+                )
+            )
+            + hk.finding(
+                '<span class="pill">Audio-only boundary inference · 3 seeds</span> '
+                '<b>Phone-CTC boundaries with the long-segment refinement improve on the '
+                'similar-rate fixed control after LS960 decoder training.</b> The CTC system '
+                'reaches %s clean and %s other at %.1f / %.1f Hz, improving over fixed k=5 '
+                'by %.2f / %.2f WER points. Its frozen CTC head was trained from ordered phone '
+                'labels, but generating boundaries for these evaluations uses audio alone.' % (
+                    ls960_metric_text(ls960_phone_ctc["test-clean"],
+                                      ls960_phone_ctc["n"]),
+                    ls960_metric_text(ls960_phone_ctc["test-other"],
+                                      ls960_phone_ctc["n"]),
+                    ls960_phone_ctc_hz["test-clean"],
+                    ls960_phone_ctc_hz["test-other"],
+                    4.37 - ls960_phone_ctc["test-clean"][0],
+                    7.72 - ls960_phone_ctc["test-other"][0],
                 )
             )
             + hk.finding(
@@ -3409,7 +3558,7 @@ def build(args):
             + hk.finding(
                 "<b>The rate-raised phone-CTC baseline nearly reaches the learned system.</b> "
                 "At %.1f / %.1f Hz, phone-CTC + long-segment split + BiGRU reaches "
-                "%.2f±%.2f clean and %.2f±%.2f other using epoch 3. The established "
+                "%.2f±%.2f clean and %.2f±%.2f other with regular decoder CE. The established "
                 "Transformer AR + BiGRU system reaches %.2f±%.2f / %.2f±%.2f, so its "
                 "remaining advantage is %.2f clean and %.2f other WER points. CTC boundary "
                 "inference is transcript-free, although the frozen CTC head was trained from "
