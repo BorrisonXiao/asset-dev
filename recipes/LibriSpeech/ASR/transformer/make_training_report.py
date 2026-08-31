@@ -3780,6 +3780,69 @@ def build(args):
     with open(learned_phone_path, encoding="utf-8") as handle:
         learned_phone = json.load(handle)
 
+    # Cross-corpus audit against TIMIT's native, sample-indexed .PHN boundaries.
+    # This is deliberately separate from the LibriSpeech dev-clean reference above:
+    # it tests whether the conclusion generalizes to an independently annotated phone
+    # corpus, including the trained WavLM phone-CTC boundary source requested here.
+    timit_phone_path = os.path.join(
+        phone_agreement_dir, "timit_test_phone_agreement.json"
+    )
+    if not os.path.isfile(timit_phone_path):
+        raise FileNotFoundError(
+            "Run the TIMIT phone-boundary agreement audit before building the report: %s"
+            % timit_phone_path
+        )
+    with open(timit_phone_path, encoding="utf-8") as handle:
+        timit_phone = json.load(handle)
+    timit_systems = timit_phone["systems"]
+
+    def timit_rate(system):
+        return float(np.mean([
+            seed["audio_frequency_hz"] for seed in system["per_seed"].values()
+        ]))
+
+    def timit_f1(system, tolerance):
+        value = system["summary"][tolerance]["f1"]
+        if system["n"] == 1:
+            return "%.1f%%" % (100 * value["mean"])
+        return "%.1f±%.1f%%" % (100 * value["mean"], 100 * value["sd"])
+
+    timit_rows = ""
+    for key, label, highlight in (
+        ("fixed_k5", "Fixed k=5", False),
+        ("wavlm_phone_ctc", "Trained WavLM phone-CTC", True),
+        ("cnn_first_order_ar_bigru", "CNN first-order AR + BiGRU", False),
+        ("transformer_ar_local64_bigru", "Transformer local-64 AR + BiGRU", True),
+    ):
+        system = timit_systems[key]
+        style = ' style="background:var(--band)"' if highlight else ""
+        timit_rows += (
+            "<tr%s><td>%s</td><td>%.2f Hz</td><td>%s</td><td>%s</td><td>%s</td></tr>"
+            % (style, label, timit_rate(system),
+               timit_f1(system, "exact"),
+               timit_f1(system, "tol_20ms"),
+               timit_f1(system, "tol_40ms"))
+        )
+
+    timit_fixed = timit_systems["fixed_k5"]
+    timit_ctc = timit_systems["wavlm_phone_ctc"]
+    timit_cnn = timit_systems["cnn_first_order_ar_bigru"]
+    timit_transformer = timit_systems["transformer_ar_local64_bigru"]
+    timit_ctc_gains = {
+        tolerance: 100 * (
+            timit_ctc["summary"][tolerance]["f1"]["mean"]
+            - timit_fixed["summary"][tolerance]["f1"]["mean"]
+        )
+        for tolerance in ("exact", "tol_20ms", "tol_40ms")
+    }
+    timit_transformer_gains = {
+        tolerance: 100 * (
+            timit_transformer["summary"][tolerance]["f1"]["mean"]
+            - timit_ctc["summary"][tolerance]["f1"]["mean"]
+        )
+        for tolerance in ("exact", "tol_20ms", "tol_40ms")
+    }
+
     phone_agreement_rows = ""
     for k in (3, 4, 5, 6, 8):
         result = fixed_phone["systems"]["fixed_k%d" % k]
@@ -3957,6 +4020,47 @@ def build(args):
                    100 * fixed_k4_phone_20, 100 * learned_phone_20,
                    fixed_k4_phone["actual_token_rate_hz"],
                    100 * (fixed_k4_phone["actual_token_rate_hz"] / learned_rate - 1)))
+            + hk.card(
+                "<table><thead><tr><th>boundary stream</th><th>audio-token frequency</th>"
+                "<th>exact F1</th><th>±20 ms F1</th><th>±40 ms F1</th>"
+                "</tr></thead><tbody>%s</tbody></table>"
+                '<p class="cap"><b>Cross-corpus check: TIMIT TEST.</b> Native TIMIT '
+                '.PHN phone starts are mapped from sample indices to the 50-Hz WavLM frame '
+                'grid; SA prompts are excluded (1,344 utterances). Scores are micro '
+                'precision/recall/F1 under maximum ordered one-to-one matching, so each '
+                'predicted and reference boundary can match at most once. Exact requires the '
+                'same 20-ms frame; tolerances allow ±20 or ±40 ms. Fixed and phone-CTC rows '
+                'are deterministic; learned segmenters are three-seed mean ± sample SD. '
+                'The phone-CTC system has a frozen WavLM-Large encoder and was trained with '
+                'ordered phone sequences, but boundary inference is audio-only CTC decoding.</p>'
+                % timit_rows,
+                title="Native TIMIT phone-boundary agreement")
+            + hk.finding(
+                '<span class="pill">Cross-corpus</span> <b>The trained WavLM phone-CTC '
+                'source beats the rate-matched fixed grid.</b> At %.2f Hz versus %.2f Hz for '
+                'fixed k=5, it gains <b>+%.1f</b> exact-F1 points, <b>+%.1f</b> at ±20 ms, '
+                'and <b>+%.1f</b> at ±40 ms. This is the appropriate CTC comparator here: '
+                'it is the project’s trained WavLM phone model, not an external wav2vec2 '
+                'CTC system.'
+                % (timit_rate(timit_ctc), timit_rate(timit_fixed),
+                   timit_ctc_gains["exact"], timit_ctc_gains["tol_20ms"],
+                   timit_ctc_gains["tol_40ms"]))
+            + hk.finding(
+                '<span class="pill">Cross-corpus</span> <b>The Transformer improves '
+                'tolerance-scale agreement at nearly the same rate as phone-CTC.</b> At '
+                '%.2f Hz, its exact F1 changes by <b>%+.1f</b> points, then it gains '
+                '<b>+%.1f</b> at ±20 ms, '
+                'and <b>+%.1f</b> at ±40 ms against the %.2f-Hz WavLM phone-CTC source. '
+                'The CNN has the best exact F1 (%.1f%%), but emits %.0f%% more audio tokens '
+                'than phone-CTC and does not improve tolerance F1. Thus the TIMIT evidence '
+                'supports more accurate near-boundary timing for the Transformer, not a '
+                'claim of exact phone segmentation.'
+                % (timit_rate(timit_transformer),
+                   timit_transformer_gains["exact"],
+                   timit_transformer_gains["tol_20ms"],
+                   timit_transformer_gains["tol_40ms"], timit_rate(timit_ctc),
+                   100 * timit_cnn["summary"]["exact"]["f1"]["mean"],
+                   100 * (timit_rate(timit_cnn) / timit_rate(timit_ctc) - 1)))
             + "__PHONE_BOUNDARY_AGREEMENT_END__"
             + hk.card(
                 component_checks_fig(boundary_swap, cold_f1)

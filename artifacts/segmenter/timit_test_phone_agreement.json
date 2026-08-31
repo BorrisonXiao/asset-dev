@@ -1,0 +1,475 @@
+{
+  "dataset": "TIMIT",
+  "split": "TEST",
+  "utterances": 1344,
+  "include_sa_prompts": false,
+  "reference": "native .PHN sample-index phone starts",
+  "frame_rate_hz": 50.0,
+  "collapsed_phone_starts_after_20ms_quantization": 490,
+  "metric": "Micro precision/recall/F1 with maximum ordered one-to-one matches; exact is same 20 ms frame, tolerances permit \u00b120 ms per frame.",
+  "prediction_rules": {
+    "fixed_k5": "boundaries at frames 0, 5, 10, \u2026",
+    "wavlm_phone_ctc": "trained frozen-WavLM-Large phone-CTC head, ordinary argmax nonblank CTC state runs; blanks merge into adjacent segments"
+  },
+  "selected_checkpoints": {
+    "wavlm_phone_ctc": {
+      "checkpoint": "/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/artifacts/models/wavlm_phone_ctc_tc100_seed3407/checkpoints/epoch_003.pt",
+      "sha256": "8204fd4b1fb0a3caab8359c491755bb0baf05509b454b06e36e625b468b24a17",
+      "epoch": 3,
+      "dev_phone_error_rate": 0.027090737464344112,
+      "training_target": "ordered MFA phones; stress stripped; timing discarded"
+    },
+    "cnn_first_order_ar_bigru": {
+      "3407": {
+        "epoch": 9,
+        "path": "/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_segmenter_wavlm/cnn_first_order_ar_bigru_best_char_decoder/nll_mt/3407/save/CKPT+2026-08-19+16-23-31+00/segmenter.ckpt",
+        "sha256": "dfa2a00d2f8c6417393512c6de8fa1294ed7812df7eaccd2448be6ca18dee2f8"
+      },
+      "3408": {
+        "epoch": 12,
+        "path": "/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_segmenter_wavlm/cnn_first_order_ar_bigru_best_char_decoder/nll_mt/3408/save/CKPT+2026-08-19+18-36-19+00/segmenter.ckpt",
+        "sha256": "a76fa0b6a4843ae3ccef91a480f950706f7af7cd215f7ad909f9e8cf38990ee2"
+      },
+      "3409": {
+        "epoch": 8,
+        "path": "/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_segmenter_wavlm/cnn_first_order_ar_bigru_best_char_decoder/nll_mt/3409/save/CKPT+2026-08-19+16-11-43+00/segmenter.ckpt",
+        "sha256": "559ee39c8d5d2b585005fc94bcd375814a66a97bf39162376212827d36cfe465"
+      }
+    },
+    "transformer_ar_local64_bigru": {
+      "3407": {
+        "epoch": 12,
+        "path": "/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_segmenter_wavlm/fullprefix_transformer_ar_local64_bigru_best_char_decoder/nll_mt/3407/save/CKPT+2026-08-15+03-13-00+00/segmenter.ckpt",
+        "sha256": "ae45031e6da80c1fbc01e70bbbb792a0e5a74f2ed46b943a11d9ffe15cfb1125"
+      },
+      "3408": {
+        "epoch": 7,
+        "path": "/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_segmenter_wavlm/fullprefix_transformer_ar_local64_bigru_best_char_decoder/nll_mt/3408/save/CKPT+2026-08-17+05-00-38+00/segmenter.ckpt",
+        "sha256": "1883cd6ad956c6e746ee0448e0ed150d47bebf730c8add584adeff4ff0977cc9"
+      },
+      "3409": {
+        "epoch": 7,
+        "path": "/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_segmenter_wavlm/fullprefix_transformer_ar_local64_bigru_best_char_decoder/nll_mt/3409/save/CKPT+2026-08-14+15-20-38+00/segmenter.ckpt",
+        "sha256": "1471475f7f8599e41f035a97e67bd77a60c5df0e5283e13b176397568463d40c"
+      }
+    }
+  },
+  "systems": {
+    "fixed_k5": {
+      "kind": "deterministic",
+      "n": 1,
+      "per_seed": {
+        "deterministic": {
+          "exact": {
+            "hits": 11112,
+            "predicted": 41675,
+            "reference": 51191,
+            "precision": 0.2666346730653869,
+            "recall": 0.21706940673165204,
+            "f1": 0.2393125578790946
+          },
+          "tol_20ms": {
+            "hits": 26838,
+            "predicted": 41675,
+            "reference": 51191,
+            "precision": 0.6439832033593281,
+            "recall": 0.5242718446601942,
+            "f1": 0.5779940990244007
+          },
+          "tol_40ms": {
+            "hits": 34688,
+            "predicted": 41675,
+            "reference": 51191,
+            "precision": 0.8323455308938212,
+            "recall": 0.6776191127346604,
+            "f1": 0.7470548963021988
+          },
+          "audio_frequency_hz": 10.126154758260075
+        }
+      },
+      "summary": {
+        "exact": {
+          "precision": {
+            "mean": 0.2666346730653869,
+            "sd": 0.0
+          },
+          "recall": {
+            "mean": 0.21706940673165204,
+            "sd": 0.0
+          },
+          "f1": {
+            "mean": 0.2393125578790946,
+            "sd": 0.0
+          }
+        },
+        "tol_20ms": {
+          "precision": {
+            "mean": 0.6439832033593281,
+            "sd": 0.0
+          },
+          "recall": {
+            "mean": 0.5242718446601942,
+            "sd": 0.0
+          },
+          "f1": {
+            "mean": 0.5779940990244007,
+            "sd": 0.0
+          }
+        },
+        "tol_40ms": {
+          "precision": {
+            "mean": 0.8323455308938212,
+            "sd": 0.0
+          },
+          "recall": {
+            "mean": 0.6776191127346604,
+            "sd": 0.0
+          },
+          "f1": {
+            "mean": 0.7470548963021988,
+            "sd": 0.0
+          }
+        }
+      }
+    },
+    "wavlm_phone_ctc": {
+      "kind": "deterministic",
+      "n": 1,
+      "per_seed": {
+        "deterministic": {
+          "exact": {
+            "hits": 13872,
+            "predicted": 43755,
+            "reference": 51191,
+            "precision": 0.3170380527939664,
+            "recall": 0.2709851341056045,
+            "f1": 0.29220820255724306
+          },
+          "tol_20ms": {
+            "hits": 29511,
+            "predicted": 43755,
+            "reference": 51191,
+            "precision": 0.6744600617072335,
+            "recall": 0.5764880545408373,
+            "f1": 0.6216375624038927
+          },
+          "tol_40ms": {
+            "hits": 36469,
+            "predicted": 43755,
+            "reference": 51191,
+            "precision": 0.8334818877842533,
+            "recall": 0.7124103846379246,
+            "f1": 0.7682050849956817
+          },
+          "audio_frequency_hz": 10.631551324479174
+        }
+      },
+      "summary": {
+        "exact": {
+          "precision": {
+            "mean": 0.3170380527939664,
+            "sd": 0.0
+          },
+          "recall": {
+            "mean": 0.2709851341056045,
+            "sd": 0.0
+          },
+          "f1": {
+            "mean": 0.29220820255724306,
+            "sd": 0.0
+          }
+        },
+        "tol_20ms": {
+          "precision": {
+            "mean": 0.6744600617072335,
+            "sd": 0.0
+          },
+          "recall": {
+            "mean": 0.5764880545408373,
+            "sd": 0.0
+          },
+          "f1": {
+            "mean": 0.6216375624038927,
+            "sd": 0.0
+          }
+        },
+        "tol_40ms": {
+          "precision": {
+            "mean": 0.8334818877842533,
+            "sd": 0.0
+          },
+          "recall": {
+            "mean": 0.7124103846379246,
+            "sd": 0.0
+          },
+          "f1": {
+            "mean": 0.7682050849956817,
+            "sd": 0.0
+          }
+        }
+      }
+    },
+    "cnn_first_order_ar_bigru": {
+      "kind": "learned segmenter",
+      "n": 3,
+      "per_seed": {
+        "3407": {
+          "exact": {
+            "hits": 16243,
+            "predicted": 52857,
+            "reference": 51191,
+            "precision": 0.30730083054278523,
+            "recall": 0.31730186946924266,
+            "f1": 0.3122212824850069
+          },
+          "tol_20ms": {
+            "hits": 30337,
+            "predicted": 52857,
+            "reference": 51191,
+            "precision": 0.5739447944453904,
+            "recall": 0.5926237033853607,
+            "f1": 0.5831347070582807
+          },
+          "tol_40ms": {
+            "hits": 38613,
+            "predicted": 52857,
+            "reference": 51191,
+            "precision": 0.7305181905897042,
+            "recall": 0.7542927467718935,
+            "f1": 0.7422151314777795
+          },
+          "audio_frequency_hz": 12.843147259924482
+        },
+        "3408": {
+          "exact": {
+            "hits": 15560,
+            "predicted": 52143,
+            "reference": 51191,
+            "precision": 0.2984101413420785,
+            "recall": 0.30395968041257254,
+            "f1": 0.3011593473590493
+          },
+          "tol_20ms": {
+            "hits": 30373,
+            "predicted": 52143,
+            "reference": 51191,
+            "precision": 0.5824942945361794,
+            "recall": 0.5933269520032818,
+            "f1": 0.5878607234792033
+          },
+          "tol_40ms": {
+            "hits": 38467,
+            "predicted": 52143,
+            "reference": 51191,
+            "precision": 0.737721266517078,
+            "recall": 0.7514406829325467,
+            "f1": 0.7445177773046625
+          },
+          "audio_frequency_hz": 12.669660169405041
+        },
+        "3409": {
+          "exact": {
+            "hits": 16593,
+            "predicted": 53380,
+            "reference": 51191,
+            "precision": 0.31084675908579995,
+            "recall": 0.3241390088101424,
+            "f1": 0.317353759646556
+          },
+          "tol_20ms": {
+            "hits": 30919,
+            "predicted": 53380,
+            "reference": 51191,
+            "precision": 0.5792244286249532,
+            "recall": 0.6039928893750854,
+            "f1": 0.591349418098708
+          },
+          "tol_40ms": {
+            "hits": 38956,
+            "predicted": 53380,
+            "reference": 51191,
+            "precision": 0.7297864368677407,
+            "recall": 0.7609931433259752,
+            "f1": 0.74506316282717
+          },
+          "audio_frequency_hz": 12.970225338834382
+        }
+      },
+      "summary": {
+        "exact": {
+          "precision": {
+            "mean": 0.3055192436568879,
+            "sd": 0.006406863827167148
+          },
+          "recall": {
+            "mean": 0.3151335195639859,
+            "sd": 0.010262925003524225
+          },
+          "f1": {
+            "mean": 0.31024479649687076,
+            "sd": 0.008276147653371754
+          }
+        },
+        "tol_20ms": {
+          "precision": {
+            "mean": 0.5785545058688409,
+            "sd": 0.004313940811481784
+          },
+          "recall": {
+            "mean": 0.596647848254576,
+            "sd": 0.006370703371774031
+          },
+          "f1": {
+            "mean": 0.5874482828787306,
+            "sd": 0.004122856995593956
+          }
+        },
+        "tol_40ms": {
+          "precision": {
+            "mean": 0.7326752979915077,
+            "sd": 0.004385226863936122
+          },
+          "recall": {
+            "mean": 0.7555755243434719,
+            "sd": 0.004903724463671801
+          },
+          "f1": {
+            "mean": 0.7439320238698707,
+            "sd": 0.0015116715769490337
+          }
+        }
+      }
+    },
+    "transformer_ar_local64_bigru": {
+      "kind": "learned segmenter",
+      "n": 3,
+      "per_seed": {
+        "3407": {
+          "exact": {
+            "hits": 12777,
+            "predicted": 46002,
+            "reference": 51191,
+            "precision": 0.2777487935307161,
+            "recall": 0.2495946553105038,
+            "f1": 0.26292016914798394
+          },
+          "tol_20ms": {
+            "hits": 31664,
+            "predicted": 46002,
+            "reference": 51191,
+            "precision": 0.688317899221773,
+            "recall": 0.6185462288292864,
+            "f1": 0.6515695574784192
+          },
+          "tol_40ms": {
+            "hits": 39151,
+            "predicted": 46002,
+            "reference": 51191,
+            "precision": 0.8510716925351072,
+            "recall": 0.764802406673048,
+            "f1": 0.8056341506075541
+          },
+          "audio_frequency_hz": 11.177525403466825
+        },
+        "3408": {
+          "exact": {
+            "hits": 15098,
+            "predicted": 44126,
+            "reference": 51191,
+            "precision": 0.3421565516928795,
+            "recall": 0.2949346564825848,
+            "f1": 0.31679553489933593
+          },
+          "tol_20ms": {
+            "hits": 33288,
+            "predicted": 44126,
+            "reference": 51191,
+            "precision": 0.7543851697411956,
+            "recall": 0.6502705553710613,
+            "f1": 0.6984693181698962
+          },
+          "tol_40ms": {
+            "hits": 38770,
+            "predicted": 44126,
+            "reference": 51191,
+            "precision": 0.8786203145537779,
+            "recall": 0.7573596921333828,
+            "f1": 0.8134960185486325
+          },
+          "audio_frequency_hz": 10.72169657739614
+        },
+        "3409": {
+          "exact": {
+            "hits": 13897,
+            "predicted": 47057,
+            "reference": 51191,
+            "precision": 0.29532269375438297,
+            "recall": 0.2714735012013831,
+            "f1": 0.28289634394593277
+          },
+          "tol_20ms": {
+            "hits": 32313,
+            "predicted": 47057,
+            "reference": 51191,
+            "precision": 0.6866778587670272,
+            "recall": 0.6312242386356977,
+            "f1": 0.657784382379285
+          },
+          "tol_40ms": {
+            "hits": 39618,
+            "predicted": 47057,
+            "reference": 51191,
+            "precision": 0.8419151242110632,
+            "recall": 0.7739251040221914,
+            "f1": 0.8064896995358685
+          },
+          "audio_frequency_hz": 11.433868373351993
+        }
+      },
+      "summary": {
+        "exact": {
+          "precision": {
+            "mean": 0.3050760129926595,
+            "sd": 0.033293171296704886
+          },
+          "recall": {
+            "mean": 0.2720009376648239,
+            "sd": 0.02267460183748113
+          },
+          "f1": {
+            "mean": 0.2875373493310842,
+            "sd": 0.02723587628385107
+          }
+        },
+        "tol_20ms": {
+          "precision": {
+            "mean": 0.7097936425766653,
+            "sd": 0.038626100687515506
+          },
+          "recall": {
+            "mean": 0.6333470076120151,
+            "sd": 0.015968338508667752
+          },
+          "f1": {
+            "mean": 0.6692744193425335,
+            "sd": 0.02547376297864266
+          }
+        },
+        "tol_40ms": {
+          "precision": {
+            "mean": 0.8572023770999827,
+            "sd": 0.019105149029757178
+          },
+          "recall": {
+            "mean": 0.7653624009428741,
+            "sd": 0.008296891764278265
+          },
+          "f1": {
+            "mean": 0.808539956230685,
+            "sd": 0.004313340499742557
+          }
+        }
+      }
+    }
+  }
+}
