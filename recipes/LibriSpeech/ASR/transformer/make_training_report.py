@@ -24,8 +24,8 @@ import torch
 sys.path.insert(0, os.path.expanduser("~/.claude-scale/skills/html-report"))
 import htmlkit as hk  # noqa: E402
 
-DATA = "/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/datasets"
-SSL_CACHE = "/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/ssl_cache"
+DATA = "/export/jsalt26/omnienc/users/cxiao/datasets"
+SSL_CACHE = "/export/jsalt26/omnienc/users/cxiao/hf/hub"
 RES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
 _NUM = r"[-+0-9.eE]+"
 FRAME_HZ = 50.0
@@ -1670,7 +1670,7 @@ def build(args):
         },
     }
     ls960_phone_ctc_summary_path = (
-        "/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/"
+        "/export/jsalt26/omnienc/users/cxiao/"
         "boundary_targets/wavlm_phone_ctc_tc100_best_longsplit8/_stats/"
         "long_segment_split_summary.json"
     )
@@ -2942,8 +2942,11 @@ def build(args):
                 'transcript-free phone-CTC baseline at essentially the same audio-token '
                 'frequency.</b> Transformer AR + BiGRU reaches %s clean and %s other at %s, '
                 'versus %s/%s at %.1f / %.1f Hz for phone-CTC + long-segment split. The '
-                'learned system lowers WER by %.2f points on test-clean and %.2f on '
-                'test-other.' % (
+                'learned system delivers a <b>%.1f%% / %.1f%% relative WER reduction</b> '
+                '(%.2f / %.2f absolute points) on test-clean/test-other. This sizeable '
+                'relative gain at a matched token rate demonstrates the effectiveness of '
+                'learning content-adaptive boundaries and the within-segment representation '
+                'rather than relying on CTC boundaries with mean pooling.' % (
                     ls960_metric_text(ls960_transformer["clean"],
                                       ls960_transformer["n"]),
                     ls960_metric_text(ls960_transformer["other"],
@@ -2955,6 +2958,10 @@ def build(args):
                                       ls960_phone_ctc["n"]),
                     ls960_phone_ctc_hz["test-clean"],
                     ls960_phone_ctc_hz["test-other"],
+                    100 * (1 - ls960_transformer["clean"][0]
+                           / ls960_phone_ctc["test-clean"][0]),
+                    100 * (1 - ls960_transformer["other"][0]
+                           / ls960_phone_ctc["test-other"][0]),
                     ls960_phone_ctc["test-clean"][0]
                     - ls960_transformer["clean"][0],
                     ls960_phone_ctc["test-other"][0]
@@ -3193,7 +3200,7 @@ def build(args):
 
     phone_ctc_longsplit = retained_epoch_stats(phone_ctc_longsplit_root, 3)
     phone_ctc_longsplit_summary_path = (
-        "/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/"
+        "/export/jsalt26/omnienc/users/cxiao/"
         "boundary_targets/wavlm_phone_ctc_tc100_best_longsplit8/_stats/"
         "long_segment_split_summary.json"
     )
@@ -3769,6 +3776,61 @@ def build(args):
     with open(learned_phone_path, encoding="utf-8") as handle:
         learned_phone = json.load(handle)
 
+    # Cross-corpus TIMIT check, from audit_timit_phone_agreement.py.
+    timit_phone_path = os.path.join(
+        phone_agreement_dir, "timit_test_phone_agreement.json"
+    )
+    if not os.path.isfile(timit_phone_path):
+        raise FileNotFoundError(
+            "Run audit_timit_phone_agreement.py before building the report: %s"
+            % timit_phone_path
+        )
+    with open(timit_phone_path, encoding="utf-8") as handle:
+        timit_phone = json.load(handle)
+
+    # Row order and banding for the TIMIT table; the two rate-matched
+    # comparators (phone-CTC and the Transformer) are the highlighted pair.
+    timit_display = (
+        ("fixed_k5", "Fixed k=5", False),
+        ("wavlm_phone_ctc", "Trained WavLM phone-CTC", True),
+        ("cnn_first_order_ar_bigru", "CNN first-order AR + BiGRU", False),
+        ("transformer_ar_local64_bigru", "Transformer local-64 AR + BiGRU", True),
+    )
+
+    def timit_rate_hz(key):
+        """Mean audio-token frequency over whatever seeds the system has."""
+        return float(np.mean([
+            per_seed["audio_frequency_hz"]
+            for per_seed in timit_phone["systems"][key]["per_seed"].values()
+        ]))
+
+    def timit_f1(key, tolerance):
+        return timit_phone["systems"][key]["summary"][tolerance]["f1"]
+
+    def timit_gain(key, reference, tolerance):
+        """F1-point gain over `reference`, from full-precision scores."""
+        return 100 * (timit_f1(key, tolerance)["mean"]
+                      - timit_f1(reference, tolerance)["mean"])
+
+    timit_agreement_rows = ""
+    for key, label, highlight in timit_display:
+        deterministic = timit_phone["systems"][key]["n"] == 1
+        timit_agreement_rows += (
+            '<tr style="background:var(--band)">' if highlight else "<tr>"
+        )
+        timit_agreement_rows += (
+            "<td>%s</td><td>%.2f Hz</td>" % (label, timit_rate_hz(key))
+        )
+        for tolerance in ("exact", "tol_20ms", "tol_40ms"):
+            score = timit_f1(key, tolerance)
+            timit_agreement_rows += (
+                "<td>%.1f%%</td>" % (100 * score["mean"]) if deterministic
+                else "<td>%.1f±%.1f%%</td>" % (100 * score["mean"],
+                                               100 * score["sd"])
+            )
+        timit_agreement_rows += "</tr>"
+    timit_n_utts = "{:,}".format(timit_phone["utterances"])
+
     phone_agreement_rows = ""
     for k in (3, 4, 5, 6, 8):
         result = fixed_phone["systems"]["fixed_k%d" % k]
@@ -3946,6 +4008,53 @@ def build(args):
                    100 * fixed_k4_phone_20, 100 * learned_phone_20,
                    fixed_k4_phone["actual_token_rate_hz"],
                    100 * (fixed_k4_phone["actual_token_rate_hz"] / learned_rate - 1)))
+            + hk.card(
+                "<table><thead><tr><th>boundary stream</th>"
+                "<th>audio-token frequency</th><th>exact F1</th>"
+                "<th>±20 ms F1</th><th>±40 ms F1</th>"
+                "</tr></thead><tbody>" + timit_agreement_rows + "</tbody></table>"
+                + '<p class="cap"><b>Cross-corpus check: TIMIT TEST.</b> Native TIMIT '
+                  '.PHN phone starts are mapped from sample indices to the 50-Hz WavLM '
+                  'frame grid; SA prompts are excluded (' + timit_n_utts + ' utterances). '
+                  'Scores are micro precision/recall/F1 under maximum ordered one-to-one '
+                  'matching, so each predicted and reference boundary can match at most '
+                  'once. Exact requires the same 20-ms frame; tolerances allow ±20 or '
+                  '±40 ms. Fixed and phone-CTC rows are deterministic; learned segmenters '
+                  'are three-seed mean ± sample SD. The phone-CTC system has a frozen '
+                  'WavLM-Large encoder and was trained with ordered phone sequences, but '
+                  'boundary inference is audio-only CTC decoding.</p>',
+                title="Native TIMIT phone-boundary agreement")
+            + hk.finding(
+                '<span class="pill">Cross-corpus</span> <b>The trained WavLM phone-CTC '
+                'source beats the rate-matched fixed grid.</b> At %.2f Hz versus %.2f Hz '
+                'for fixed k=5, it gains <b>%+.1f</b> exact-F1 points, <b>%+.1f</b> at '
+                '±20 ms, and <b>%+.1f</b> at ±40 ms. This is the appropriate CTC '
+                'comparator here: it is the project’s trained WavLM phone model, not an '
+                'external wav2vec2 CTC system.'
+                % (timit_rate_hz("wavlm_phone_ctc"), timit_rate_hz("fixed_k5"),
+                   timit_gain("wavlm_phone_ctc", "fixed_k5", "exact"),
+                   timit_gain("wavlm_phone_ctc", "fixed_k5", "tol_20ms"),
+                   timit_gain("wavlm_phone_ctc", "fixed_k5", "tol_40ms")))
+            + hk.finding(
+                '<span class="pill">Cross-corpus</span> <b>The Transformer improves '
+                'tolerance-scale agreement at nearly the same rate as phone-CTC.</b> At '
+                '%.2f Hz, its exact F1 changes by <b>%+.1f</b> points, then it gains '
+                '<b>%+.1f</b> at ±20 ms, and <b>%+.1f</b> at ±40 ms against the %.2f-Hz '
+                'WavLM phone-CTC source. The CNN has the best exact F1 (%.1f%%), but emits '
+                '%.0f%% more audio tokens than phone-CTC and does not improve tolerance '
+                'F1. Thus the TIMIT evidence supports more accurate near-boundary timing '
+                'for the Transformer, not a claim of exact phone segmentation.'
+                % (timit_rate_hz("transformer_ar_local64_bigru"),
+                   timit_gain("transformer_ar_local64_bigru",
+                              "wavlm_phone_ctc", "exact"),
+                   timit_gain("transformer_ar_local64_bigru",
+                              "wavlm_phone_ctc", "tol_20ms"),
+                   timit_gain("transformer_ar_local64_bigru",
+                              "wavlm_phone_ctc", "tol_40ms"),
+                   timit_rate_hz("wavlm_phone_ctc"),
+                   100 * timit_f1("cnn_first_order_ar_bigru", "exact")["mean"],
+                   100 * (timit_rate_hz("cnn_first_order_ar_bigru")
+                          / timit_rate_hz("wavlm_phone_ctc") - 1)))
             + "__PHONE_BOUNDARY_AGREEMENT_END__"
             + hk.card(
                 component_checks_fig(boundary_swap, cold_f1)
