@@ -1642,8 +1642,9 @@ def build(args):
     ls960_transformer = ls960_learned_stats("transformer_ar_local64_bigru")
     ls960_cnn = ls960_learned_stats("cnn_first_order_ar_bigru")
 
-    # Frozen audio-only phone-CTC boundaries with deterministic midpoint splits
-    # for predicted segments of at least eight 20-ms frames. Only the decoder
+    # Frozen audio-only boundaries for the transcript-free phone-CTC baseline.
+    # The stored stream adds a midpoint to predicted segments of at least eight
+    # 20-ms frames. Only the decoder
     # projection and LoRA parameters are adapted with regular CE on LS960.
     ls960_phone_ctc_root = os.path.join(
         RES, "speechllm_ls960_phone_ctc_longsplit8_mean_ce_1ep"
@@ -2830,8 +2831,8 @@ def build(args):
         '<tr><td>Character alignment (oracle)</td><td>char-CTC boundaries · mean pooling</td>'
         '<td>decoder CE on LS960</td><td>14.6 Hz</td><td>2.87 ± 0.08%%</td>'
         '<td>5.66 ± 0.15%%</td><td><span class="pill">3 / 3</span></td></tr>'
-        '<tr><td>Phone-CTC + long-segment split (baseline)</td>'
-        '<td>audio-only phone-CTC · ≥160 ms midpoint split · mean pooling</td>'
+        '<tr><td>Transcript-free phone-CTC baseline</td>'
+        '<td>audio-only phone-CTC boundaries · mean pooling</td>'
         '<td>decoder CE on LS960</td><td>%.1f / %.1f Hz</td>'
         '<td>%s</td><td>%s</td>'
         '<td><span class="pill">%d / 3</span></td></tr>'
@@ -2870,7 +2871,7 @@ def build(args):
         {"label": "Oracle baseline · character alignment",
          "clean": 2.87, "clean_sd": 0.08,
          "other": 5.66, "other_sd": 0.15, "color": "#1c4e80", "marker": "P"},
-        {"label": "Transcript-free baseline · phone-CTC + split",
+        {"label": "Transcript-free phone-CTC baseline",
          "clean": ls960_phone_ctc["test-clean"][0],
          "clean_sd": ls960_phone_ctc["test-clean"][1],
          "other": ls960_phone_ctc["test-other"][0],
@@ -2884,7 +2885,8 @@ def build(args):
     body += hk.section(
         "0b · LibriSpeech-960h scale-up — three seeds complete",
         lead="All rows train on train-clean-100, train-clean-360, and train-other-500. "
-             "The fixed, oracle, transcript-free CTC, and no-downsampling baselines are complete for three seeds. "
+             "The fixed and oracle baselines, the transcript-free phone-CTC baseline, "
+             "and no-downsampling baseline are complete for three seeds. "
              "The corrected learned-policy study has %d/3 Transformer seeds and %d/3 CNN "
              "seeds; ± is sample SD across the completed seeds." %
              (ls960_transformer["n"], ls960_cnn["n"]),
@@ -2941,7 +2943,7 @@ def build(args):
                 '<b>The learned Transformer AR + BiGRU system clearly outperforms the '
                 'transcript-free phone-CTC baseline at essentially the same audio-token '
                 'frequency.</b> Transformer AR + BiGRU reaches %s clean and %s other at %s, '
-                'versus %s/%s at %.1f / %.1f Hz for phone-CTC + long-segment split. The '
+                'versus %s/%s at %.1f / %.1f Hz for the transcript-free phone-CTC baseline. The '
                 'learned system delivers a <b>%.1f%% / %.1f%% relative WER reduction</b> '
                 '(%.2f / %.2f absolute points) on test-clean/test-other. This sizeable '
                 'relative gain at a matched token rate demonstrates the effectiveness of '
@@ -3147,7 +3149,7 @@ def build(args):
     body += "__PHONE_BOUNDARY_AGREEMENT_SECTION__"
     body += "__INFERENCE_EFFICIENCY_SECTION__"
 
-    # Rate-raised phone-CTC baseline. Checkpoint rank differs by seed, so recover
+    # Transcript-free phone-CTC baseline. Checkpoint rank differs by seed, so recover
     # the retained rank whose metadata names epoch 3 rather than assuming rank 0.
     phone_ctc_longsplit_root = os.path.join(
         attribution_root, "wavlm_phone_ctc_longsplit8_bigru_3ep"
@@ -3255,9 +3257,9 @@ def build(args):
             "color": "#1c4e80", "marker": "P",
         },
         {
-            "family": "CTC baseline", "label": "Phone-CTC + split · BiGRU",
-            "system": "Phone-CTC + long-segment split",
-            "configuration": "audio-only CTC runs + ≥160 ms midpoint · BiGRU residual",
+            "family": "CTC baseline", "label": "Transcript-free phone-CTC baseline",
+            "system": "Transcript-free phone-CTC baseline",
+            "configuration": "audio-only phone-CTC boundaries · BiGRU residual",
             "decoder": "best char init · BiGRU/decoder CE",
             "frequency": phone_ctc_longsplit_hz["test-clean"],
             "other_frequency": phone_ctc_longsplit_hz["test-other"],
@@ -3412,7 +3414,7 @@ def build(args):
            + (wavlm_phone_n,))
     )
     wavlm_baseline_rows += (
-        '<tr style="background:var(--band)"><td><b>phone-CTC + long-segment split + BiGRU</b></td>'
+        '<tr style="background:var(--band)"><td><b>Transcript-free phone-CTC baseline</b></td>'
         '<td>%.1f / %.1f Hz</td><td>%.2f ± %.2f%%</td>'
         '<td><b>%.2f ± %.2f%%</b></td><td><b>%.2f ± %.2f%%</b></td>'
         '<td><span class="pill">n=%d</span></td></tr>'
@@ -3458,7 +3460,7 @@ def build(args):
     body += hk.section(
         "1 · WavLM-Large results — LibriSpeech-100h",
         lead="The full CNN/Transformer × NLL-frozen/NLL-multitask/CER-multitask grid and "
-             "all fixed-pooling, no-downsampling, alignment, and rate-raised phone-CTC controls finished "
+             "all fixed-pooling, no-downsampling, alignment, and transcript-free phone-CTC baseline runs finished "
              "for seeds 3407/3408/3409. "
              "Both local-history Transformer AR rows are complete, while the CNN AR mean and "
              "BiGRU rows currently have one and two complete seeds. Values are corpus WER from "
@@ -3565,8 +3567,8 @@ def build(args):
             )
             + hk.finding(
                 "<b>The learned Transformer AR + BiGRU system also outperforms the "
-                "rate-matched phone-CTC baseline in the 100h study.</b> "
-                "At %.1f / %.1f Hz, phone-CTC + long-segment split + BiGRU reaches "
+                "transcript-free phone-CTC baseline in the 100h study.</b> "
+                "At %.1f / %.1f Hz, the transcript-free phone-CTC baseline reaches "
                 "%.2f±%.2f clean and %.2f±%.2f other with regular decoder CE. The established "
                 "Transformer AR + BiGRU system reaches %.2f±%.2f / %.2f±%.2f, so its "
                 "advantage is %.2f clean and %.2f other WER points. CTC boundary "
