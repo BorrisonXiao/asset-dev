@@ -41,6 +41,13 @@ def main():
     .analysis-tabs{{display:flex;flex:0 0 auto;gap:6px;padding:7px 18px;overflow-x:auto;background:var(--surface);border-bottom:1px solid var(--border)}}
     .analysis-tabs a{{flex:0 0 auto;white-space:nowrap;padding:5px 11px;border-radius:7px;color:var(--muted);font-size:13px;text-decoration:none}}
     .analysis-tabs a[aria-current=page]{{background:var(--accent-soft);color:var(--accent);font-weight:650}}
+    @media(max-width:620px){{
+      .report-bar{{flex-wrap:wrap;gap:5px 12px;padding:8px 12px}}
+      .report-bar strong{{display:none}}
+      .report-bar a{{font-size:12px}}
+      .analysis-tabs{{flex-wrap:wrap;gap:3px;padding:6px 12px}}
+      .analysis-tabs a{{font-size:12px;padding:4px 8px}}
+    }}
   </style>
 </head>
 <body class="report-shell">
