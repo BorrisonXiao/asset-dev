@@ -1,0 +1,185 @@
+{
+  "pages_commit": "45ceb4e2670d0c6591589b5018c3f4519e0e9549",
+  "version": "20260913-expresso-patterns",
+  "workflow_runs": [
+    {
+      "id": 34781281482,
+      "name": "pages build and deployment",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "45ceb4e2670d0c6591589b5018c3f4519e0e9549",
+      "url": "https://github.com/BorrisonXiao/jsalt26-downsampling/actions/runs/34781281482"
+    }
+  ],
+  "files": [
+    {
+      "path": "research/index.html",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/index.html?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 3125,
+      "sha256": "440430fe0ad071fe359eef7ff784af2b6b4d0da2c91d465b53cfe0eace4dfb45",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries.html",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries.html?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 2129,
+      "sha256": "2bcb938fe77aff7bdf16d5b33f7dbbc777ef655b4bc37872ec402e7b0a40d405",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries-standalone.html",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries-standalone.html?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 3991398,
+      "sha256": "a3e2f9183b0cabae86f479eb4adb3cd825dc0910f057d270a377e6b5a3c4ef1e",
+      "matches_local": true
+    },
+    {
+      "path": "reports/segmenter-training.html",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/reports/segmenter-training.html?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 1045,
+      "sha256": "581b79e29282cb84571431b35959edf21f428cac00a99eccf998c28ca79c1ea0",
+      "matches_local": true
+    },
+    {
+      "path": "reports/segmenter-training-standalone.html",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/reports/segmenter-training-standalone.html?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 2106133,
+      "sha256": "ef9afabe671e98bfc2d5690b3e8803fa01e4f2e7b3f536d00587722a4e85e96c",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries-performance-audit.html",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries-performance-audit.html?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 1208133,
+      "sha256": "2aae6c0b57806ea6e9e04aac59c734ccd7660e47635a40b3a6ee4bc44309c38f",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries-assets/boundary_overview.pdf",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries-assets/boundary_overview.pdf?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 25440,
+      "sha256": "3a560b079db34b6c9de8997642265dbcad3884a29a8e4baa23a4ea03ff4668ad",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries-assets/controlled_acoustic_probes.pdf",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries-assets/controlled_acoustic_probes.pdf?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 28896,
+      "sha256": "56637b6831820b59675802812cb380b9dfe85bb7fa63b0dab18bdcb22e11b4b4",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries-assets/cross_task_agreement.pdf",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries-assets/cross_task_agreement.pdf?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 22728,
+      "sha256": "d4dd84321338733b28aa012011f166b1b8358ea06f4be85ccb272a535f1a92ec",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries-assets/example_1_ex01_default_00163.pdf",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries-assets/example_1_ex01_default_00163.pdf?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 1055797,
+      "sha256": "6b0cec2f7365b32ea5cd5e5304785b9ff63ca284e835a1bef813bcd3ef95dbb4",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries-assets/example_2_ex01_whisper_00163.pdf",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries-assets/example_2_ex01_whisper_00163.pdf?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 1276134,
+      "sha256": "98a31ec3a978b58383950f85b161d201b9b587cc984c5019546bda951b3cbec1",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries-assets/example_3_ex01_laughing_00163.pdf",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries-assets/example_3_ex01_laughing_00163.pdf?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 1167651,
+      "sha256": "71606695ad6183cc230a77a3c90dd847fb3419bd2528bea93f7a532cfd0292e1",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries-assets/example_4_ex02_laughing_00089.pdf",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries-assets/example_4_ex02_laughing_00089.pdf?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 2320005,
+      "sha256": "e0cfe92e48b2ab5914d7f874945237de70675829ad2b5c89da25264643c695c1",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries-assets/numerical-evidence.zip",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries-assets/numerical-evidence.zip?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 195672,
+      "sha256": "d36b46c3143113e4daf1e39030fcf6ce1fc24f97516dbcb9b29153a873621ea7",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries-assets/pattern-evidence.zip",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries-assets/pattern-evidence.zip?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 7089646,
+      "sha256": "882db6329e75bc16611b53b0c9bb758aaa8a0550f88621ba43ac56e70f772442",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries-assets/pause_example.pdf",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries-assets/pause_example.pdf?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 82689,
+      "sha256": "3854ff0d52994ca4932910338b648f9426425451b35bb77d40c0ce0a904d81bb",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries-assets/same_audio_example.pdf",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries-assets/same_audio_example.pdf?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 57866,
+      "sha256": "cd21570da9ea257df15c1229ba1fed8ffc7b4acc8e28ab4eed0617d8bca03bd1",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries-assets/same_text_example.pdf",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries-assets/same_text_example.pdf?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 25504,
+      "sha256": "31514c96ce00f13688728cae730110ae87bae5da4bb5adb44350f1efdbce6ef0",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries-assets/style_agreement.pdf",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries-assets/style_agreement.pdf?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 24696,
+      "sha256": "76ed94ddd0bf4d7592db88ee3c8e1a2ae6cfd1cdcd7b5d620b17ee23f0cba312",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries-assets/task_results.csv",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries-assets/task_results.csv?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 1847,
+      "sha256": "d7223ddcf35e649f8f174bdd11689da097fe64ae2f7c15b4eac8977ac941de47",
+      "matches_local": true
+    },
+    {
+      "path": "research/nonasr-task-boundaries-assets/transition_preferences.pdf",
+      "url": "https://borrisonxiao.github.io/jsalt26-downsampling/research/nonasr-task-boundaries-assets/transition_preferences.pdf?v=20260913-expresso-patterns&verify=1789331916",
+      "status": 200,
+      "bytes": 21205,
+      "sha256": "5e03554e6c7951463fc596883420a6597da76dd84c00ea00a1d8ee376b6f9cd5",
+      "matches_local": true
+    }
+  ],
+  "passed": true
+}

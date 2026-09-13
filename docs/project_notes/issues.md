@@ -840,4 +840,4 @@ Completed the author's requested deeper segmentation analysis on 1,709 utterance
 
 ## 2026-09-13 — Expresso policy-pattern follow-up
 
-Completed same-audio directional-retention and non-nesting analysis on420 utterances,360 same-speaker/text rendition pairs with alignment/rate controls,480 controlled acoustic probes on six policies, and48 batch-sensitivity repeats. Prepared eight figures (two interactive explorers) and evidence downloads for the existing Analysis03 URL. Recognition accuracy is supporting material. No manuscript edits. Publication and live checks pending in this entry.
+Completed same-audio directional-retention and non-nesting analysis on420 utterances,360 same-speaker/text rendition pairs with alignment/rate controls,480 controlled acoustic probes on six policies, and48 batch-sensitivity repeats. Prepared eight figures (two interactive explorers) and evidence downloads for the existing Analysis03 URL. Recognition accuracy is supporting material. No manuscript edits. Published source66ae664c1 and Pages45ceb4e; deployment34781281482 succeeded. Final byte-level live verification is recorded under html_checks/live_validation.json.
