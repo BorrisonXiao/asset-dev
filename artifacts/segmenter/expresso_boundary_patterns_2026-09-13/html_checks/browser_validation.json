@@ -1,0 +1,50 @@
+[
+  {
+    "width": 1280,
+    "theme": "light",
+    "metrics": {
+      "viewport": 1280,
+      "scroll": 1280,
+      "brokenImages": 0
+    },
+    "errors": [],
+    "explorers_checked": true,
+    "download_checked": true
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "metrics": {
+      "viewport": 390,
+      "scroll": 390,
+      "brokenImages": 0
+    },
+    "errors": [],
+    "explorers_checked": true,
+    "download_checked": true
+  },
+  {
+    "width": 1280,
+    "theme": "dark",
+    "metrics": {
+      "viewport": 1280,
+      "scroll": 1280,
+      "brokenImages": 0
+    },
+    "errors": [],
+    "explorers_checked": true,
+    "download_checked": true
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "metrics": {
+      "viewport": 390,
+      "scroll": 390,
+      "brokenImages": 0
+    },
+    "errors": [],
+    "explorers_checked": true,
+    "download_checked": true
+  }
+]

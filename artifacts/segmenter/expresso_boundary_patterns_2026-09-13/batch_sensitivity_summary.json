@@ -1,0 +1,377 @@
+{
+  "tracks": 288,
+  "exact_tracks": 276,
+  "changed": [
+    {
+      "uid": "ex03_default_00376__duration_080",
+      "policy": "emotion_3407",
+      "symmetric_cut_difference": 1,
+      "f1": 0.9333333333333333
+    },
+    {
+      "uid": "ex03_default_00376__original",
+      "policy": "intent_3408_last",
+      "symmetric_cut_difference": 3,
+      "f1": 0.96
+    },
+    {
+      "uid": "ex03_default_00376__pitch_down3",
+      "policy": "intent_3408_last",
+      "symmetric_cut_difference": 1,
+      "f1": 0.96
+    },
+    {
+      "uid": "ex03_default_00376__duration_125",
+      "policy": "emotion_3408",
+      "symmetric_cut_difference": 3,
+      "f1": 0.9565217391304348
+    },
+    {
+      "uid": "ex01_default_00146__original",
+      "policy": "asr_3408",
+      "symmetric_cut_difference": 1,
+      "f1": 0.9803921568627451
+    },
+    {
+      "uid": "ex01_default_00146__original",
+      "policy": "emotion_3407",
+      "symmetric_cut_difference": 1,
+      "f1": 0.9696969696969697
+    },
+    {
+      "uid": "ex01_default_00146__pitch_up3",
+      "policy": "emotion_3408",
+      "symmetric_cut_difference": 1,
+      "f1": 0.9629629629629629
+    },
+    {
+      "uid": "ex01_default_00299__original",
+      "policy": "asr_3408",
+      "symmetric_cut_difference": 2,
+      "f1": 1.0
+    },
+    {
+      "uid": "ex01_default_00299__sham",
+      "policy": "intent_3408_last",
+      "symmetric_cut_difference": 1,
+      "f1": 0.975609756097561
+    },
+    {
+      "uid": "ex01_default_00146__duration_125",
+      "policy": "emotion_3407",
+      "symmetric_cut_difference": 4,
+      "f1": 0.9473684210526315
+    },
+    {
+      "uid": "ex01_default_00146__duration_125",
+      "policy": "emotion_3408",
+      "symmetric_cut_difference": 2,
+      "f1": 0.9375
+    },
+    {
+      "uid": "ex03_default_00037__duration_125",
+      "policy": "emotion_3409",
+      "symmetric_cut_difference": 3,
+      "f1": 0.972972972972973
+    }
+  ],
+  "records": 48,
+  "source_utterances": 6,
+  "max_full_panel_f1_change": 0.0010721247563352243,
+  "aggregate_changes": [
+    {
+      "policy": "asr_3408",
+      "condition": "sham",
+      "original_mean": 0.9856603234410294,
+      "substituted_mean": 0.9853335260554085,
+      "change": -0.00032679738562091387
+    },
+    {
+      "policy": "asr_3408",
+      "condition": "pitch_down3",
+      "original_mean": 0.9789540413864775,
+      "substituted_mean": 0.9789540413864775,
+      "change": 0.0
+    },
+    {
+      "policy": "asr_3408",
+      "condition": "pitch_up3",
+      "original_mean": 0.9787262352121768,
+      "substituted_mean": 0.9787262352121768,
+      "change": 0.0
+    },
+    {
+      "policy": "asr_3408",
+      "condition": "duration_080",
+      "original_mean": 0.8827801187570117,
+      "substituted_mean": 0.8827801187570117,
+      "change": 0.0
+    },
+    {
+      "policy": "asr_3408",
+      "condition": "duration_125",
+      "original_mean": 0.8984854839138682,
+      "substituted_mean": 0.8984854839138682,
+      "change": 0.0
+    },
+    {
+      "policy": "asr_3408",
+      "condition": "pitch_flat",
+      "original_mean": 0.969596250403279,
+      "substituted_mean": 0.969596250403279,
+      "change": 0.0
+    },
+    {
+      "policy": "asr_3408",
+      "condition": "envelope_compress",
+      "original_mean": 0.9892102235849047,
+      "substituted_mean": 0.9888708570690675,
+      "change": -0.0003393665158372139
+    },
+    {
+      "policy": "emotion_3407",
+      "condition": "sham",
+      "original_mean": 0.9674259839542773,
+      "substituted_mean": 0.966950642302465,
+      "change": -0.0004753416518122888
+    },
+    {
+      "policy": "emotion_3407",
+      "condition": "pitch_down3",
+      "original_mean": 0.9502064155050494,
+      "substituted_mean": 0.9502064155050494,
+      "change": 0.0
+    },
+    {
+      "policy": "emotion_3407",
+      "condition": "pitch_up3",
+      "original_mean": 0.953021007308723,
+      "substituted_mean": 0.953021007308723,
+      "change": 0.0
+    },
+    {
+      "policy": "emotion_3407",
+      "condition": "duration_080",
+      "original_mean": 0.8211351248160911,
+      "substituted_mean": 0.8200630000597559,
+      "change": -0.0010721247563352243
+    },
+    {
+      "policy": "emotion_3407",
+      "condition": "duration_125",
+      "original_mean": 0.8470788507443072,
+      "substituted_mean": 0.8461529248183813,
+      "change": -0.0009259259259258856
+    },
+    {
+      "policy": "emotion_3407",
+      "condition": "pitch_flat",
+      "original_mean": 0.9485540423686672,
+      "substituted_mean": 0.9485540423686672,
+      "change": 0.0
+    },
+    {
+      "policy": "emotion_3407",
+      "condition": "envelope_compress",
+      "original_mean": 0.9725476161551168,
+      "substituted_mean": 0.9720425656500662,
+      "change": -0.0005050505050505638
+    },
+    {
+      "policy": "emotion_3408",
+      "condition": "sham",
+      "original_mean": 0.9532089078445167,
+      "substituted_mean": 0.9532089078445167,
+      "change": 0.0
+    },
+    {
+      "policy": "emotion_3408",
+      "condition": "pitch_down3",
+      "original_mean": 0.9413497403897473,
+      "substituted_mean": 0.9413497403897473,
+      "change": 0.0
+    },
+    {
+      "policy": "emotion_3408",
+      "condition": "pitch_up3",
+      "original_mean": 0.9196779074925511,
+      "substituted_mean": 0.9190210930426332,
+      "change": -0.0006568144499178308
+    },
+    {
+      "policy": "emotion_3408",
+      "condition": "duration_080",
+      "original_mean": 0.7757508808582119,
+      "substituted_mean": 0.7757508808582119,
+      "change": 0.0
+    },
+    {
+      "policy": "emotion_3408",
+      "condition": "duration_125",
+      "original_mean": 0.8308298490839107,
+      "substituted_mean": 0.8315316034698756,
+      "change": 0.0007017543859649811
+    },
+    {
+      "policy": "emotion_3408",
+      "condition": "pitch_flat",
+      "original_mean": 0.9163129514573534,
+      "substituted_mean": 0.9163129514573534,
+      "change": 0.0
+    },
+    {
+      "policy": "emotion_3408",
+      "condition": "envelope_compress",
+      "original_mean": 0.9623304093217548,
+      "substituted_mean": 0.9623304093217548,
+      "change": 0.0
+    },
+    {
+      "policy": "emotion_3409",
+      "condition": "sham",
+      "original_mean": 0.9313421676144927,
+      "substituted_mean": 0.9313421676144927,
+      "change": 0.0
+    },
+    {
+      "policy": "emotion_3409",
+      "condition": "pitch_down3",
+      "original_mean": 0.9248126989010055,
+      "substituted_mean": 0.9248126989010055,
+      "change": 0.0
+    },
+    {
+      "policy": "emotion_3409",
+      "condition": "pitch_up3",
+      "original_mean": 0.9046091057961895,
+      "substituted_mean": 0.9046091057961895,
+      "change": 0.0
+    },
+    {
+      "policy": "emotion_3409",
+      "condition": "duration_080",
+      "original_mean": 0.7498822318325682,
+      "substituted_mean": 0.7498822318325682,
+      "change": 0.0
+    },
+    {
+      "policy": "emotion_3409",
+      "condition": "duration_125",
+      "original_mean": 0.8141528879437107,
+      "substituted_mean": 0.8138025375933604,
+      "change": -0.0003503503503502481
+    },
+    {
+      "policy": "emotion_3409",
+      "condition": "pitch_flat",
+      "original_mean": 0.9016895837482489,
+      "substituted_mean": 0.9016895837482489,
+      "change": 0.0
+    },
+    {
+      "policy": "emotion_3409",
+      "condition": "envelope_compress",
+      "original_mean": 0.9532281331578079,
+      "substituted_mean": 0.9532281331578079,
+      "change": 0.0
+    },
+    {
+      "policy": "intent_3408_last",
+      "condition": "sham",
+      "original_mean": 0.9686982811190359,
+      "substituted_mean": 0.9684381185174099,
+      "change": -0.0002601626016259795
+    },
+    {
+      "policy": "intent_3408_last",
+      "condition": "pitch_down3",
+      "original_mean": 0.9598495552875831,
+      "substituted_mean": 0.9587957418923062,
+      "change": -0.0010538133952768813
+    },
+    {
+      "policy": "intent_3408_last",
+      "condition": "pitch_up3",
+      "original_mean": 0.9544259993143125,
+      "substituted_mean": 0.9540194952492719,
+      "change": -0.00040650406504061376
+    },
+    {
+      "policy": "intent_3408_last",
+      "condition": "duration_080",
+      "original_mean": 0.8409782604124171,
+      "substituted_mean": 0.8406363800705368,
+      "change": -0.00034188034188031846
+    },
+    {
+      "policy": "intent_3408_last",
+      "condition": "duration_125",
+      "original_mean": 0.856800933926688,
+      "substituted_mean": 0.8564642335899877,
+      "change": -0.00033670033670030186
+    },
+    {
+      "policy": "intent_3408_last",
+      "condition": "pitch_flat",
+      "original_mean": 0.9293737862558723,
+      "substituted_mean": 0.929780290320913,
+      "change": 0.0004065040650407248
+    },
+    {
+      "policy": "intent_3408_last",
+      "condition": "envelope_compress",
+      "original_mean": 0.9789977290208511,
+      "substituted_mean": 0.9796643956875177,
+      "change": 0.0006666666666665932
+    },
+    {
+      "policy": "speaker_count_3408_last",
+      "condition": "sham",
+      "original_mean": 0.9701609756857725,
+      "substituted_mean": 0.9701609756857725,
+      "change": 0.0
+    },
+    {
+      "policy": "speaker_count_3408_last",
+      "condition": "pitch_down3",
+      "original_mean": 0.955953281302794,
+      "substituted_mean": 0.955953281302794,
+      "change": 0.0
+    },
+    {
+      "policy": "speaker_count_3408_last",
+      "condition": "pitch_up3",
+      "original_mean": 0.9715811166726648,
+      "substituted_mean": 0.9715811166726648,
+      "change": 0.0
+    },
+    {
+      "policy": "speaker_count_3408_last",
+      "condition": "duration_080",
+      "original_mean": 0.8873603448629905,
+      "substituted_mean": 0.8873603448629905,
+      "change": 0.0
+    },
+    {
+      "policy": "speaker_count_3408_last",
+      "condition": "duration_125",
+      "original_mean": 0.9257342288926094,
+      "substituted_mean": 0.9257342288926094,
+      "change": 0.0
+    },
+    {
+      "policy": "speaker_count_3408_last",
+      "condition": "pitch_flat",
+      "original_mean": 0.9497482609903685,
+      "substituted_mean": 0.9497482609903685,
+      "change": 0.0
+    },
+    {
+      "policy": "speaker_count_3408_last",
+      "condition": "envelope_compress",
+      "original_mean": 0.9706855981306189,
+      "substituted_mean": 0.9706855981306189,
+      "change": 0.0
+    }
+  ]
+}

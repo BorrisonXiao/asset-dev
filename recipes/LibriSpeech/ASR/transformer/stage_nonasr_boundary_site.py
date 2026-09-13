@@ -10,7 +10,7 @@ from pathlib import Path
 import re
 import shutil
 
-VERSION = "20260913-nonasr-boundaries"
+VERSION = "20260913-expresso-patterns"
 SLUG = "nonasr-task-boundaries"
 ROOT = Path(__file__).resolve().parents[4]
 
@@ -19,7 +19,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--site', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--report', type=Path, default=ROOT / 'artifacts/segmenter/nonasr_boundary_audit_2026-09-12/html/nonasr-task-boundaries-standalone.html')
+    parser.add_argument('--report', type=Path, default=ROOT / 'artifacts/segmenter/expresso_boundary_patterns_2026-09-13/html/nonasr-task-boundaries-standalone.html')
     parser.add_argument('--training-report', type=Path, default=ROOT / 'artifacts/segmenter/report.html')
     args = parser.parse_args()
     if args.site.resolve() == args.output.resolve():
@@ -34,7 +34,7 @@ def main():
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Single-task results and shared-audio boundary analysis on CREMA-D, Expresso and LibriSpeech.">
+  <meta name="description" content="Same-audio task comparisons and same-text expressive boundary patterns on Expresso, with controlled acoustic probes.">
   <title>Non-ASR boundaries · Analyses · JSALT 2026</title>
   <link rel="stylesheet" href="../assets/site.css">
   <style>
@@ -65,7 +65,7 @@ def main():
     <a href="bilevel-segmenter-decoder.html">02 · Bilevel optimization</a>
     <a href="{SLUG}.html" aria-current="page">03 · Non-ASR boundaries</a>
   </nav>
-  <iframe class="report-frame" src="{SLUG}-standalone.html?v={VERSION}" title="Non-ASR task results and boundary analysis"></iframe>
+  <iframe class="report-frame" src="{SLUG}-standalone.html?v={VERSION}" title="Expresso task and expressive boundary patterns"></iframe>
 </body>
 </html>
 '''
@@ -74,14 +74,16 @@ def main():
     content = index.read_text()
     card = '''          <a class="card card-link" href="nonasr-task-boundaries.html">
             <span class="tag green">Analysis 03</span>
-            <h3>Non-ASR task adaptation and speech boundaries</h3>
-            <p>54 audited task results and 2,216 utterances from CREMA-D, Expresso and LibriSpeech: token rates, shared boundaries, phone and voicing controls, quiet gaps, checkpoint selection, and proposed paper changes.</p>
-            <p class="item-meta">13 September 2026 · Completed analysis · 6 figures</p>
+            <h3>Expresso: task policies and expressive boundary patterns</h3>
+            <p>Explore 420 same-audio and same-text renditions, 480 controlled acoustic probes, task-specific transition preferences, and interactive boundary timelines. Earlier performance audit retained as supporting evidence.</p>
+            <p class="item-meta">13 September 2026 · Completed analysis · 8 figures with 2 interactive explorers</p>
           </a>
 '''
     if f'href="{SLUG}.html"' not in content:
         assert content.count('<div class="card-grid">') == 1
         content = content.replace('<div class="card-grid">', '<div class="card-grid">\n' + card, 1)
+    else:
+        content = re.sub(r'<a class="card card-link" href="nonasr-task-boundaries\.html">.*?</a>', card.strip(), content, flags=re.S)
     index.write_text(content)
     training_wrapper = args.output / 'reports/segmenter-training.html'
     content = training_wrapper.read_text()
@@ -94,6 +96,10 @@ def main():
     shutil.copyfile(args.training_report, args.output / 'reports/segmenter-training-standalone.html')
     changed = ['research/index.html', f'research/{SLUG}.html', f'research/{SLUG}-standalone.html',
                'reports/segmenter-training.html', 'reports/segmenter-training-standalone.html']
+    archive = args.report.parent / f'{SLUG}-performance-audit.html'
+    if archive.exists():
+        shutil.copyfile(archive, research / archive.name)
+        changed.append(str((research / archive.name).relative_to(args.output)))
     changed.extend(str(p.relative_to(args.output)) for p in sorted((research / asset_dir.name).iterdir()) if p.is_file())
     (args.output.parent / 'publication_files.json').write_text(json.dumps(changed, indent=2) + '\n')
     print(json.dumps({'staged_site': str(args.output), 'publication_files': len(changed), 'version': VERSION}, indent=2))

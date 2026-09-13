@@ -1,0 +1,38 @@
+{
+  "natural_utterances": 420,
+  "paired_comparisons": 360,
+  "controlled_inputs": 480,
+  "batch_check_inputs": 48,
+  "valid_ordered_internal_cuts": true,
+  "input_hashes_verified": 6,
+  "matching_cross_check": true,
+  "time_warp_inverses": true,
+  "same_text_coverage": {
+    "asr_3408": {
+      "eligible_cuts": 19381,
+      "total_cuts": 20539,
+      "fraction": 0.9436194556697015,
+      "both_empty": 0
+    },
+    "emotion_3408": {
+      "eligible_cuts": 9430,
+      "total_cuts": 9922,
+      "fraction": 0.9504132231404959,
+      "both_empty": 0
+    },
+    "intent_3408_last": {
+      "eligible_cuts": 13217,
+      "total_cuts": 13929,
+      "fraction": 0.9488836240936176,
+      "both_empty": 0
+    },
+    "speaker_count_3408_last": {
+      "eligible_cuts": 5614,
+      "total_cuts": 5921,
+      "fraction": 0.948150650228002,
+      "both_empty": 0
+    }
+  },
+  "paper_snapshot_files_checked": 54,
+  "max_batch_aggregate_change": 0.0010721247563352243
+}

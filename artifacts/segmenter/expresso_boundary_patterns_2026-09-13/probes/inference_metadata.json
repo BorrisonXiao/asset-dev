@@ -1,0 +1,47 @@
+{
+  "device": "NVIDIA A100-SXM4-80GB",
+  "torch": "2.7.1+cu118",
+  "batch_size": 8,
+  "seconds": 144.51115661486983,
+  "selection_sha256": "faf5605f9fa3998c6b14108c3a14c9c2e013eb34801b58d405a92b2fc7a3e05d",
+  "checkpoints": {
+    "asr_3408": "bb26a223c4aa73f3d369ebe52cb72221646fcf2ba6f6f5354f2ac99cd85e94a7",
+    "emotion_3407": "f09866eb564b6498b72540c3e1e79b9001a34f063aec0379b0b67e624669e792",
+    "emotion_3408": "83a355e2fc0b22b543a78c36353d404067cc690b4ec320f88fcc7305454d124c",
+    "emotion_3409": "1c5d0ac95cb06676757d1d41537324b826906ce5f4fbcd1895b5346cb6ebbab6",
+    "intent_3408_last": "d3e209a4e75e03bb1c5800f2ee98cd9cc53049cdbeaa9b6100f85809b3cef76f",
+    "speaker_count_3408_last": "f86ede901857ebbc0f9d4186540597792744a3b0bf70522013b23a6a1410ef62"
+  },
+  "batch_checks": [
+    {
+      "uid": "ex01_default_00255__duration_080",
+      "policy": "asr_3408",
+      "different_frames": 0
+    },
+    {
+      "uid": "ex01_default_00255__duration_080",
+      "policy": "emotion_3407",
+      "different_frames": 0
+    },
+    {
+      "uid": "ex01_default_00255__duration_080",
+      "policy": "emotion_3408",
+      "different_frames": 0
+    },
+    {
+      "uid": "ex01_default_00255__duration_080",
+      "policy": "emotion_3409",
+      "different_frames": 0
+    },
+    {
+      "uid": "ex01_default_00255__duration_080",
+      "policy": "intent_3408_last",
+      "different_frames": 0
+    },
+    {
+      "uid": "ex01_default_00255__duration_080",
+      "policy": "speaker_count_3408_last",
+      "different_frames": 0
+    }
+  ]
+}

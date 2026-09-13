@@ -1,0 +1,8 @@
+{
+  "artifacts/segmenter/nonasr_boundary_audit_2026-09-12/expresso/selection.json": "5a02c6738401978ed59e26ed1fcd70244a76568d5b694c7490920b98a71daa9e",
+  "artifacts/segmenter/nonasr_boundary_audit_2026-09-12/expresso/references.json": "b08abf64890eee50b700c7ee98cf5cdf8123564d1efb973fc565ec268ca016e6",
+  "artifacts/segmenter/nonasr_boundary_audit_2026-09-12/expresso/predictions.jsonl": "6b6c74a7f669d3131a6e0844118c3e876b89244f7920fa3273c1998183e1dbab",
+  "artifacts/segmenter/nonasr_boundary_audit_2026-09-12/expresso/prosody.jsonl": "cb006a57873a2784ff9de9ce9933998197625ca88a54aa51d537b15cf3f953fb",
+  "artifacts/segmenter/nonasr_boundary_audit_2026-09-12/expresso/asr_boundary_confidence.json": "716348320af75a7a2b23c58dbc87de13f47628bc254f0a422c036318f8255aef",
+  "artifacts/segmenter/nonasr_boundary_audit_2026-09-12/checkpoint_audit.json": "052f62cc406da514f1b965eed12af609c24a0f3d4b7671cd19167721302b9cd3"
+}

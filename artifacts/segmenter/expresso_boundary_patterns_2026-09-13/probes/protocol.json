@@ -1,0 +1,15 @@
+{
+  "parselmouth": "0.4.7",
+  "resynthesis": "Praat overlap-add; pitch floor75Hz ceiling600Hz;10ms analysis",
+  "pitch_semitones": [
+    -3,
+    3
+  ],
+  "duration_factors": [
+    0.8,
+    1.25
+  ],
+  "flatten": "median pitch-tier frequency",
+  "envelope": "25ms Gaussian RMS; gain=(75th percentile RMS / RMS)^0.5 clipped to[0.5,2]",
+  "controls": "pitch/duration compared with sham; envelope compared with original; no claim of perceptual emotion constancy"
+}
