@@ -2,6 +2,10 @@
 
 Project configuration, constants, and frequently-needed non-sensitive information. `HF_TOKEN`/credentials are never stored here — see `.env`/cluster environment.
 
+## Report writing preferences
+
+- **2026-09-13 — Natural text flow:** The author explicitly requests, “Do NOT do manual line breaks in the report, let the text roll out.” Use normal paragraphs and let the browser wrap prose, headings and captions within the report column. Avoid forced `<br>` breaks, preserved newlines, balanced headings and narrower text-only width limits that artificially determine line endings. Apply this preference to future report updates.
+
 ## Research Objective
 
 - The learned-segmenter project is explicitly an **RL improvement project**: learn

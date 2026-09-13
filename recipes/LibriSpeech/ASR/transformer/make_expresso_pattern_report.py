@@ -5,10 +5,14 @@ import argparse,base64,hashlib,html,io,json,shutil,statistics,sys,zipfile
 from pathlib import Path
 from analyze_expresso_patterns import ROOT,OLD,OUT,PRIMARY,EMOTIONS,STYLES,block,features
 from make_nonasr_boundary_report import Report,CSS,esc,hk,ASSETS
-VERSION='20260913-expresso-patterns'
+VERSION='20260913-expresso-natural-wrap'
 LABELS={'asr_3408':'ASR parent','emotion_3408':'Emotion 3408','emotion_3407':'Emotion 3407','emotion_3409':'Emotion 3409','intent_3408_last':'Intent · last step','speaker_count_3408_last':'Count · last step'}
 RECIPE=Path(__file__).resolve().parent
 EXTRA_CSS='''
+/* Let report text flow across its container; leave line endings to the browser. */
+.wrap h1,.wrap h2,.wrap h3,.wrap p,.wrap blockquote,.wrap figcaption,.wrap caption,.wrap summary{
+  max-width:none;white-space:normal;text-wrap:wrap;
+}
 .controls{display:flex;flex-wrap:wrap;gap:12px;padding:14px;background:var(--surface-2);border-radius:8px;margin:12px 0}.controls label{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--text-secondary)}.controls label.check{flex-direction:row;align-items:center}.controls select{max-width:min(620px,85vw);border:1px solid var(--border);background:var(--surface-1);color:var(--text-primary);padding:8px;border-radius:5px;font:inherit}.explorer svg{display:block;min-width:850px;width:100%;height:auto}.explorer .figure-scroll{background:var(--surface-1)}.svgt{fill:var(--text-primary);font:12px system-ui,sans-serif}.svgt.small{font-size:10px}.status{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted)}.obs{border-left:3px solid var(--series-asr);padding:2px 0 2px 16px;margin:20px 0}.sources li{margin:13px 0}.stat-row .tile .v{font-size:26px}.explorer{padding:14px;border:1px solid var(--border);border-radius:10px;margin:18px 0}table td{white-space:normal!important}.evidence-note{font-size:13px;color:var(--text-secondary)}
 '''
 

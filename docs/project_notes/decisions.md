@@ -1664,3 +1664,9 @@ with best-checkpoint selection standing in for early stopping.
 
 
 **ADR-058 measured outcome and publication:** The420-utterance audit shows directional retention: countlast74.8%/2.1% at consonant→vowel/vowel→consonant parent cuts, emotion3408 75.2%/36.5%. Same-text emotion agreement remains67.7–75.2% across the three main affective renditions after local phone mapping, above within-phone placement controls.480 controlled inputs show duration-dependent allocation (×1.25 duration→1.170 emotion token ratio), with most cuts preserved under pitch shifts. These motivate a proposal about selective transition retention and temporal flexibility, not a new unit identity or causal task-reward claim. Published as the existing Analysis03 URL with eight figures, two interactive explorers, eight tables, PDF/numerical/script downloads, and the earlier performance audit as supporting material. Source66ae664c1; Pages45ceb4e; workflow34781281482 succeeded. All54 manuscript snapshot files remain unchanged.
+
+### ADR-059: Let report text wrap naturally (2026-09-13)
+
+- The author requests no manual line breaks in reports and asks that this preference persist in project memory.
+- Use semantic paragraphs with normal browser wrapping for prose, headings and captions. Remove artificial text-only width caps and balanced heading wrapping; do not insert forced HTML line breaks or preserve source newlines for layout.
+- Apply this to the Expresso analysis generator and republish the same sub-tab. This is a presentation-only change; findings, figures, tables and manuscript text are unchanged.

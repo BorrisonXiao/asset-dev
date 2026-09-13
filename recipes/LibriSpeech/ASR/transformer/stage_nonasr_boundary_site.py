@@ -10,7 +10,7 @@ from pathlib import Path
 import re
 import shutil
 
-VERSION = "20260913-expresso-patterns"
+VERSION = "20260913-expresso-natural-wrap"
 SLUG = "nonasr-task-boundaries"
 ROOT = Path(__file__).resolve().parents[4]
 

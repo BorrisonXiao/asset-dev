@@ -27,6 +27,10 @@ code{font-size:.86em;overflow-wrap:anywhere}li{margin:7px 0}.sources a{overflow-
 @media(max-width:620px){.wrap{padding:0 16px}.section{padding:25px 0}.stat-row{grid-template-columns:1fr 1fr}.tile{padding:13px}.tile .v{font-size:25px}.grid2{grid-template-columns:1fr}td,thead th{padding:8px 10px}figure{padding:8px}}
 @media print{details>*{display:block!important}.filter{display:none!important}[hidden]{display:block!important}.wrap{max-width:none}.table-scroll{overflow:visible}figure,table{break-inside:avoid}.jump{display:none}}
 
+/* Let report text flow across its container; leave line endings to the browser. */
+.wrap h1,.wrap h2,.wrap h3,.wrap p,.wrap blockquote,.wrap figcaption,.wrap caption,.wrap summary{
+  max-width:none;white-space:normal;text-wrap:wrap;
+}
 .controls{display:flex;flex-wrap:wrap;gap:12px;padding:14px;background:var(--surface-2);border-radius:8px;margin:12px 0}.controls label{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--text-secondary)}.controls label.check{flex-direction:row;align-items:center}.controls select{max-width:min(620px,85vw);border:1px solid var(--border);background:var(--surface-1);color:var(--text-primary);padding:8px;border-radius:5px;font:inherit}.explorer svg{display:block;min-width:850px;width:100%;height:auto}.explorer .figure-scroll{background:var(--surface-1)}.svgt{fill:var(--text-primary);font:12px system-ui,sans-serif}.svgt.small{font-size:10px}.status{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted)}.obs{border-left:3px solid var(--series-asr);padding:2px 0 2px 16px;margin:20px 0}.sources li{margin:13px 0}.stat-row .tile .v{font-size:26px}.explorer{padding:14px;border:1px solid var(--border);border-radius:10px;margin:18px 0}table td{white-space:normal!important}.evidence-note{font-size:13px;color:var(--text-secondary)}
 </style></head><body><style>
 :root{color-scheme:light;--surface-0:#f6f5f1;--surface-1:#fcfcfb;--surface-2:#edebe3;
@@ -130,4 +134,4 @@ v.mapped_style.forEach((t,j)=>cut(svg,t,x,y,matched.has(j)?'var(--series-asr)':'
 for(const id of ['audio-group','audio-style'])$(id).addEventListener('change',windows);for(const id of ['audio-window','audio-seeds'])$(id).addEventListener('change',audio);for(const id of ['text-group','text-policy','text-styles'])$(id).addEventListener('change',textview);
 windows();textview();document.querySelectorAll('.explorer').forEach(e=>e.hidden=false);
 })();
-</script><footer>Generated from retained evidence · manuscript unchanged · 20260913-expresso-patterns</footer></div></body></html>
+</script><footer>Generated from retained evidence · manuscript unchanged · 20260913-expresso-natural-wrap</footer></div></body></html>

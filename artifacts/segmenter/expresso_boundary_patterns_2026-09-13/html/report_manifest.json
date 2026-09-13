@@ -1,5 +1,5 @@
 {
-  "version": "20260913-expresso-patterns",
+  "version": "20260913-expresso-natural-wrap",
   "tables": 8,
   "figures": 8,
   "source_sha256": {
@@ -40,7 +40,7 @@
     "recipes/LibriSpeech/ASR/transformer/audit_nonasr_boundaries.py": "a002b0513abea0ba0f5125373baa1e1d15458ab754c00a6fc2fa38844ac43885",
     "recipes/LibriSpeech/ASR/transformer/expresso_pattern_explorer.js": "5fb5090fa6682a1172a750cb6392fdc134b9ae64d88308a9ed5c1b9f5e4f2c6a",
     "recipes/LibriSpeech/ASR/transformer/extend_expresso_patterns.py": "7d5604fdf761d6a055ccb0ff727851fce05f19d7da788029b67752d00fcea9fc",
-    "recipes/LibriSpeech/ASR/transformer/make_expresso_pattern_report.py": "7f9dc8606af81e4e78b63f97328151fccffc9961684a5845b890d77ccb4936a0",
+    "recipes/LibriSpeech/ASR/transformer/make_expresso_pattern_report.py": "48c6ecde94917b7e66f0db8c7f7216a66d9acc0cdd42f623ee896567ebfe7f70",
     "recipes/LibriSpeech/ASR/transformer/plot_expresso_patterns.py": "9af08ec67b6caa108130cb831e73bde3531a5f8542fc0f8888edda56be0096ea",
     "recipes/LibriSpeech/ASR/transformer/probe_expresso_acoustics.py": "1bb582eca84d0518c4b0ee2ddb3d220379e40ecf1d0d88ac5c75fc248eefb663",
     "recipes/LibriSpeech/ASR/transformer/run_expresso_patterns.slurm": "d7a7c440c137d1cc4ef2312682b71f0a94810db39a4850c85a7810c9c37029d5",
