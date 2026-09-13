@@ -1,0 +1,20 @@
+[
+  {
+    "uid": "1075_IEO_HAP_HI",
+    "system": "asr_3408",
+    "repeat_differing_frames": 0,
+    "batched_or_parent_differing_frames": 0
+  },
+  {
+    "uid": "1075_IEO_HAP_HI",
+    "system": "emotion_3408",
+    "repeat_differing_frames": 0,
+    "batched_or_parent_differing_frames": 0
+  },
+  {
+    "uid": "1075_IEO_HAP_HI",
+    "system": "frozen_emotion_3408",
+    "repeat_differing_frames": 0,
+    "batched_or_parent_differing_frames": 0
+  }
+]

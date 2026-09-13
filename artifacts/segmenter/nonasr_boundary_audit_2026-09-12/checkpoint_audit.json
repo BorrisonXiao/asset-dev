@@ -1,0 +1,4218 @@
+{
+  "runs": [
+    {
+      "task": "emotion",
+      "arm": "nods_50hz",
+      "seed": 3407,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1200,
+        "phase": "bridge",
+        "acc_emotion": 0.6352201257861635,
+        "macro_f1_emotion": 0.36993981599708303,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 50.0,
+        "f_audio_hz_std_emotion": 0.0
+      },
+      "selected_step": 1200,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/nods_50hz/3407/save/CKPT+2026-09-04+16-30-34+00",
+      "checkpoint_metadata": {
+        "WER": 59.793645378295054,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 1200,
+        "unixtime": 1788553834.5076382,
+        "validation_reason": "interval",
+        "validation_step": 1200
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 1200,
+        "phase": "bridge",
+        "acc_emotion": 0.7052631578947368,
+        "macro_f1_emotion": 0.4020635462170494,
+        "n_emotion": 665,
+        "f_audio_hz_emotion": 50.0,
+        "f_audio_hz_std_emotion": 0.0
+      },
+      "rate_channel": "auto",
+      "rate_bands": "",
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/nods_50hz/3407/task_metrics.jsonl",
+      "result_sha256": "09529621ce66de7d900413aca198b46a1049ea0dd804de6b8d1a1aee6f8cd1c6",
+      "hparams_sha256": "0a9d1b01a01b986cb9197a89009d5549f6bdc059f89a00a01a84a16e2c554375"
+    },
+    {
+      "task": "emotion",
+      "arm": "nods_50hz",
+      "seed": 3408,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1080,
+        "phase": "bridge",
+        "acc_emotion": 0.7099930118798043,
+        "macro_f1_emotion": 0.47417836508181255,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 50.0,
+        "f_audio_hz_std_emotion": 0.0
+      },
+      "selected_step": 1080,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/nods_50hz/3408/save/CKPT+2026-09-04+16-27-53+00",
+      "checkpoint_metadata": {
+        "WER": 55.37147637022781,
+        "end-of-epoch": false,
+        "epoch": 9,
+        "optimizer_step": 1080,
+        "unixtime": 1788553673.4291925,
+        "validation_reason": "interval",
+        "validation_step": 1080
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 9,
+        "optimizer_step": 1080,
+        "phase": "bridge",
+        "acc_emotion": 0.7368421052631579,
+        "macro_f1_emotion": 0.44628523629772193,
+        "n_emotion": 665,
+        "f_audio_hz_emotion": 50.0,
+        "f_audio_hz_std_emotion": 0.0
+      },
+      "rate_channel": "auto",
+      "rate_bands": "",
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/nods_50hz/3408/task_metrics.jsonl",
+      "result_sha256": "81f39dad1beef00b45fc9248818b20c0e3e5abad14f186dd23ff2a1663e4883e",
+      "hparams_sha256": "66cd3e9e2f5df8e7fa59debb7533f2f3cda7d49edbdfa081de40189ddb3c51c4"
+    },
+    {
+      "task": "emotion",
+      "arm": "nods_50hz",
+      "seed": 3409,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1080,
+        "phase": "bridge",
+        "acc_emotion": 0.6820405310971349,
+        "macro_f1_emotion": 0.3690541079204641,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 50.0,
+        "f_audio_hz_std_emotion": 0.0
+      },
+      "selected_step": 1080,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/nods_50hz/3409/save/CKPT+2026-09-04+16-27-43+00",
+      "checkpoint_metadata": {
+        "WER": 58.85871789381576,
+        "end-of-epoch": false,
+        "epoch": 9,
+        "optimizer_step": 1080,
+        "unixtime": 1788553663.5183206,
+        "validation_reason": "interval",
+        "validation_step": 1080
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 9,
+        "optimizer_step": 1080,
+        "phase": "bridge",
+        "acc_emotion": 0.7413533834586467,
+        "macro_f1_emotion": 0.41141282106184235,
+        "n_emotion": 665,
+        "f_audio_hz_emotion": 50.0,
+        "f_audio_hz_std_emotion": 0.0
+      },
+      "rate_channel": "auto",
+      "rate_bands": "",
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/nods_50hz/3409/task_metrics.jsonl",
+      "result_sha256": "1aa6e1e215a0e634eb644260de3deae328a95f4a0785dd718baa14d12898da3f",
+      "hparams_sha256": "97a750918814160856f6010400628b4b3d2d9fdb4cb864cbbc5fe769ecb23a83"
+    },
+    {
+      "task": "emotion",
+      "arm": "fixed_25hz",
+      "seed": 3407,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1080,
+        "phase": "bridge",
+        "acc_emotion": 0.6876310272536688,
+        "macro_f1_emotion": 0.4382679452852076,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 25.110092759132385,
+        "f_audio_hz_std_emotion": 0.10714024538174272
+      },
+      "selected_step": 1080,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_25hz/3407/save/CKPT+2026-09-04+16-43-47+00",
+      "checkpoint_metadata": {
+        "WER": 55.36974815462716,
+        "end-of-epoch": false,
+        "epoch": 9,
+        "optimizer_step": 1080,
+        "unixtime": 1788554627.2842479,
+        "validation_reason": "interval",
+        "validation_step": 1080
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 9,
+        "optimizer_step": 1080,
+        "phase": "bridge",
+        "acc_emotion": 0.7473684210526316,
+        "macro_f1_emotion": 0.44630251845372837,
+        "n_emotion": 665,
+        "f_audio_hz_emotion": 25.108063220977783,
+        "f_audio_hz_std_emotion": 0.10780745651572943
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_25hz/3407/task_metrics.jsonl",
+      "result_sha256": "cb9c759dbdbcde19ff4a9b3847addc3fd84bdf57f91f63f3df39d211e094a446",
+      "hparams_sha256": "24a648d9a764d82f138ba96dba2267c9a9371b0db8e27e773d01aeb483830db9"
+    },
+    {
+      "task": "emotion",
+      "arm": "fixed_25hz",
+      "seed": 3408,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1200,
+        "phase": "bridge",
+        "acc_emotion": 0.7071977638015374,
+        "macro_f1_emotion": 0.43173521130609244,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 25.110092759132385,
+        "f_audio_hz_std_emotion": 0.10714024538174272
+      },
+      "selected_step": 1200,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_25hz/3408/save/CKPT+2026-09-04+16-45-32+00",
+      "checkpoint_metadata": {
+        "WER": 57.466969073259634,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 1200,
+        "unixtime": 1788554732.178279,
+        "validation_reason": "interval",
+        "validation_step": 1200
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 1200,
+        "phase": "bridge",
+        "acc_emotion": 0.7458646616541353,
+        "macro_f1_emotion": 0.42533030926740373,
+        "n_emotion": 665,
+        "f_audio_hz_emotion": 25.108063220977783,
+        "f_audio_hz_std_emotion": 0.10780745651572943
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_25hz/3408/task_metrics.jsonl",
+      "result_sha256": "6dcb4a4a7e48fed336748dd3756b24e67ae42ddc98bb3608d6e9324f6c39a365",
+      "hparams_sha256": "2a701a21bc9e155a0a48efc164b3fa49db22de8f9a64c13b68790aeb92f7a72d"
+    },
+    {
+      "task": "emotion",
+      "arm": "fixed_25hz",
+      "seed": 3409,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 960,
+        "phase": "bridge",
+        "acc_emotion": 0.6778476589797344,
+        "macro_f1_emotion": 0.39514783257570474,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 25.110092759132385,
+        "f_audio_hz_std_emotion": 0.10714024538174272
+      },
+      "selected_step": 960,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_25hz/3409/save/CKPT+2026-09-04+16-43-10+00",
+      "checkpoint_metadata": {
+        "WER": 56.37321723173698,
+        "end-of-epoch": false,
+        "epoch": 8,
+        "optimizer_step": 960,
+        "unixtime": 1788554590.4351745,
+        "validation_reason": "interval",
+        "validation_step": 960
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 8,
+        "optimizer_step": 960,
+        "phase": "bridge",
+        "acc_emotion": 0.7383458646616541,
+        "macro_f1_emotion": 0.4362678276826302,
+        "n_emotion": 665,
+        "f_audio_hz_emotion": 25.108063220977783,
+        "f_audio_hz_std_emotion": 0.10780745651572943
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_25hz/3409/task_metrics.jsonl",
+      "result_sha256": "e4ad1a91c0da5875fbcbf39aa44b74e026c456e5e6d781e0f0294c031597be2b",
+      "hparams_sha256": "1d3ebbee8f72a98174ccfd53e2361a29bdeaaa5f9a5c4f295d8ece96717e0833"
+    },
+    {
+      "task": "emotion",
+      "arm": "fixed_10hz",
+      "seed": 3407,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 960,
+        "phase": "bridge",
+        "acc_emotion": 0.710691823899371,
+        "macro_f1_emotion": 0.4654688787504524,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 10.191283375024796,
+        "f_audio_hz_std_emotion": 0.12049374636262655
+      },
+      "selected_step": 960,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_10hz/3407/save/CKPT+2026-09-04+16-54-57+00",
+      "checkpoint_metadata": {
+        "WER": 51.85730667662381,
+        "end-of-epoch": false,
+        "epoch": 8,
+        "optimizer_step": 960,
+        "unixtime": 1788555297.9271395,
+        "validation_reason": "interval",
+        "validation_step": 960
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 8,
+        "optimizer_step": 960,
+        "phase": "bridge",
+        "acc_emotion": 0.7533834586466165,
+        "macro_f1_emotion": 0.4814269332337619,
+        "n_emotion": 665,
+        "f_audio_hz_emotion": 10.19604578614235,
+        "f_audio_hz_std_emotion": 0.11892856564372778
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_10hz/3407/task_metrics.jsonl",
+      "result_sha256": "63b5af0e2273b4199be9882167ab98ce8b4586bc4ef1d7deed9a87ee2467fa9c",
+      "hparams_sha256": "7359cbfc525184eff3e452dd21e979481bee73506229de0364f070ab22b6bc2a"
+    },
+    {
+      "task": "emotion",
+      "arm": "fixed_10hz",
+      "seed": 3408,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1200,
+        "phase": "bridge",
+        "acc_emotion": 0.6359189378057303,
+        "macro_f1_emotion": 0.40038544446313057,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 10.191283375024796,
+        "f_audio_hz_std_emotion": 0.12049374636262655
+      },
+      "selected_step": 1200,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_10hz/3408/save/CKPT+2026-09-04+16-55-53+00",
+      "checkpoint_metadata": {
+        "WER": 56.14850704376422,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 1200,
+        "unixtime": 1788555353.132841,
+        "validation_reason": "interval",
+        "validation_step": 1200
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 1200,
+        "phase": "bridge",
+        "acc_emotion": 0.706766917293233,
+        "macro_f1_emotion": 0.4385149295623578,
+        "n_emotion": 665,
+        "f_audio_hz_emotion": 10.19604578614235,
+        "f_audio_hz_std_emotion": 0.11892856564372778
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_10hz/3408/task_metrics.jsonl",
+      "result_sha256": "c32b0061743f1c5962b41f76ac1fe41390ac132e9a6f15a3b05ccd8dc619516b",
+      "hparams_sha256": "e5cf23ffbca58d5c84227274298ab8ad2e29109806706aeb6a9231158c76e78b"
+    },
+    {
+      "task": "emotion",
+      "arm": "fixed_10hz",
+      "seed": 3409,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1200,
+        "phase": "bridge",
+        "acc_emotion": 0.7155835080363382,
+        "macro_f1_emotion": 0.43552281709170965,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 10.191283375024796,
+        "f_audio_hz_std_emotion": 0.12049374636262655
+      },
+      "selected_step": 1200,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_10hz/3409/save/CKPT+2026-09-04+16-56-32+00",
+      "checkpoint_metadata": {
+        "WER": 59.43722823731123,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 1200,
+        "unixtime": 1788555392.1855345,
+        "validation_reason": "interval",
+        "validation_step": 1200
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 1200,
+        "phase": "bridge",
+        "acc_emotion": 0.7383458646616541,
+        "macro_f1_emotion": 0.40562771762688765,
+        "n_emotion": 665,
+        "f_audio_hz_emotion": 10.19604578614235,
+        "f_audio_hz_std_emotion": 0.11892856564372778
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_10hz/3409/task_metrics.jsonl",
+      "result_sha256": "2311a60825d124e44bf9fa078677c968cea548f3a0de60ba6605b5d1aee8ad89",
+      "hparams_sha256": "c5c5b7e32e2428b55f3026ce889369add36a7c09e003fe4343bc8f936e1bc839"
+    },
+    {
+      "task": "emotion",
+      "arm": "fixed_5hz",
+      "seed": 3407,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 960,
+        "phase": "bridge",
+        "acc_emotion": 0.6757512229210343,
+        "macro_f1_emotion": 0.454712681862046,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 5.197164788842201,
+        "f_audio_hz_std_emotion": 0.12045754119753838
+      },
+      "selected_step": 960,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_5hz/3407/save/CKPT+2026-09-04+17-03-04+00",
+      "checkpoint_metadata": {
+        "WER": 55.42094148968424,
+        "end-of-epoch": false,
+        "epoch": 8,
+        "optimizer_step": 960,
+        "unixtime": 1788555784.3128796,
+        "validation_reason": "interval",
+        "validation_step": 960
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 8,
+        "optimizer_step": 960,
+        "phase": "bridge",
+        "acc_emotion": 0.7007518796992481,
+        "macro_f1_emotion": 0.44579058510315767,
+        "n_emotion": 665,
+        "f_audio_hz_emotion": 5.201707407832146,
+        "f_audio_hz_std_emotion": 0.12061586603522301
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_5hz/3407/task_metrics.jsonl",
+      "result_sha256": "335bc50c6d284ab14829433610a3c357a5cef9ef129f17147303e9906c18f6f9",
+      "hparams_sha256": "aa22db9432b80889c77a3effd4529276567b225ac2be536f832488d61dc81a4a"
+    },
+    {
+      "task": "emotion",
+      "arm": "fixed_5hz",
+      "seed": 3408,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1200,
+        "phase": "bridge",
+        "acc_emotion": 0.663172606568833,
+        "macro_f1_emotion": 0.41164499766996765,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 5.197164788842201,
+        "f_audio_hz_std_emotion": 0.12045754119753838
+      },
+      "selected_step": 1200,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_5hz/3408/save/CKPT+2026-09-04+17-05-26+00",
+      "checkpoint_metadata": {
+        "WER": 56.238229907487394,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 1200,
+        "unixtime": 1788555926.7258759,
+        "validation_reason": "interval",
+        "validation_step": 1200
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 1200,
+        "phase": "bridge",
+        "acc_emotion": 0.7112781954887218,
+        "macro_f1_emotion": 0.4376177009251261,
+        "n_emotion": 665,
+        "f_audio_hz_emotion": 5.201707407832146,
+        "f_audio_hz_std_emotion": 0.12061586603522301
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_5hz/3408/task_metrics.jsonl",
+      "result_sha256": "16c0fbe0d5c54167e3503a259bad885c00a00a6a0b88741e55d89c1a14302e7b",
+      "hparams_sha256": "9b06f17ef885e1cd4feb35c4d73228b0b337390cc6c85e9da9e93a2087ed9d6b"
+    },
+    {
+      "task": "emotion",
+      "arm": "fixed_5hz",
+      "seed": 3409,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 840,
+        "phase": "bridge",
+        "acc_emotion": 0.6575821104122991,
+        "macro_f1_emotion": 0.39049152339907395,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 5.197164788842201,
+        "f_audio_hz_std_emotion": 0.12045754119753838
+      },
+      "selected_step": 840,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_5hz/3409/save/CKPT+2026-09-04+17-03-23+00",
+      "checkpoint_metadata": {
+        "WER": 58.90819037647037,
+        "end-of-epoch": false,
+        "epoch": 7,
+        "optimizer_step": 840,
+        "unixtime": 1788555803.2988672,
+        "validation_reason": "interval",
+        "validation_step": 840
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 7,
+        "optimizer_step": 840,
+        "phase": "bridge",
+        "acc_emotion": 0.7157894736842105,
+        "macro_f1_emotion": 0.4109180962352963,
+        "n_emotion": 665,
+        "f_audio_hz_emotion": 5.201707407832146,
+        "f_audio_hz_std_emotion": 0.12061586603522301
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/fixed_5hz/3409/task_metrics.jsonl",
+      "result_sha256": "04a415ec632b70e798338adc7fa7e2bdd9439b24577090731f4a84b2be4884f9",
+      "hparams_sha256": "06114953bc7ae0d33e8e4b97724c1aa82397af31f2a2302c35d1b4e673f4d293"
+    },
+    {
+      "task": "emotion",
+      "arm": "learned_frozen",
+      "seed": 3407,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 960,
+        "phase": "bridge",
+        "acc_emotion": 0.6855345911949685,
+        "macro_f1_emotion": 0.42698111847089093,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 8.56056958436966,
+        "f_audio_hz_std_emotion": 2.3301301524043083
+      },
+      "selected_step": 960,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/learned_frozen/3407/save/CKPT+2026-09-04+17-18-43+00",
+      "checkpoint_metadata": {
+        "WER": 55.849300456057115,
+        "end-of-epoch": false,
+        "epoch": 8,
+        "optimizer_step": 960,
+        "unixtime": 1788556723.533325,
+        "validation_reason": "interval",
+        "validation_step": 960
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 8,
+        "optimizer_step": 960,
+        "phase": "bridge",
+        "acc_emotion": 0.7413533834586467,
+        "macro_f1_emotion": 0.44150699543942884,
+        "n_emotion": 665,
+        "f_audio_hz_emotion": 8.397453278303146,
+        "f_audio_hz_std_emotion": 2.6002487167716026
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/learned_frozen/3407/task_metrics.jsonl",
+      "result_sha256": "eb9dccadd585071122db68112e391c5adac1a0dc5ec94c109b1c14803e19dfee",
+      "hparams_sha256": "8eeb01ea8ca2e45e2fc33fb244672f5628df4ef1791737353403085249988253"
+    },
+    {
+      "task": "emotion",
+      "arm": "learned_frozen",
+      "seed": 3408,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1080,
+        "phase": "bridge",
+        "acc_emotion": 0.7016072676450035,
+        "macro_f1_emotion": 0.4340039839715915,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 8.56056958436966,
+        "f_audio_hz_std_emotion": 2.3301301524043083
+      },
+      "selected_step": 1080,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/learned_frozen/3408/save/CKPT+2026-09-04+17-21-19+00",
+      "checkpoint_metadata": {
+        "WER": 55.296877877249486,
+        "end-of-epoch": false,
+        "epoch": 9,
+        "optimizer_step": 1080,
+        "unixtime": 1788556879.8964515,
+        "validation_reason": "interval",
+        "validation_step": 1080
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 9,
+        "optimizer_step": 1080,
+        "phase": "bridge",
+        "acc_emotion": 0.762406015037594,
+        "macro_f1_emotion": 0.4470312212275052,
+        "n_emotion": 665,
+        "f_audio_hz_emotion": 8.397453278303146,
+        "f_audio_hz_std_emotion": 2.6002487167716026
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/learned_frozen/3408/task_metrics.jsonl",
+      "result_sha256": "604cbbe2a95089231d18a157d1f4b004190e246d3c628ee723ceba04c27db86f",
+      "hparams_sha256": "6a1b0b2e3315ef606920ba606b8edb61eec6317253828bdf02826e26b6a186bd"
+    },
+    {
+      "task": "emotion",
+      "arm": "learned_frozen",
+      "seed": 3409,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 960,
+        "phase": "bridge",
+        "acc_emotion": 0.7365478686233403,
+        "macro_f1_emotion": 0.4317435610155204,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 8.56056958436966,
+        "f_audio_hz_std_emotion": 2.3301301524043083
+      },
+      "selected_step": 960,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/learned_frozen/3409/save/CKPT+2026-09-04+17-20-53+00",
+      "checkpoint_metadata": {
+        "WER": 56.988464436977026,
+        "end-of-epoch": false,
+        "epoch": 8,
+        "optimizer_step": 960,
+        "unixtime": 1788556853.2948446,
+        "validation_reason": "interval",
+        "validation_step": 960
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 8,
+        "optimizer_step": 960,
+        "phase": "bridge",
+        "acc_emotion": 0.7714285714285715,
+        "macro_f1_emotion": 0.43011535563022973,
+        "n_emotion": 665,
+        "f_audio_hz_emotion": 8.397453278303146,
+        "f_audio_hz_std_emotion": 2.6002487167716026
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/learned_frozen/3409/task_metrics.jsonl",
+      "result_sha256": "5457bd36c69e95dfc9ead0a0ab904b15089427315c05dd5c5a3f9f1727b2f6eb",
+      "hparams_sha256": "b3e124ab4e929c3de2007428996be380e6be4a923f04db359d49021fc6b9e864"
+    },
+    {
+      "task": "emotion",
+      "arm": "learned_grpo",
+      "seed": 3407,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1200,
+        "phase": "unfreeze",
+        "acc_emotion": 0.6701607267645003,
+        "macro_f1_emotion": 0.4366229827207457,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 4.499094560742378,
+        "f_audio_hz_std_emotion": 1.320796925574541
+      },
+      "selected_step": 1200,
+      "actual_training_phase": "unfreeze",
+      "final_block_updates": 480,
+      "bridge_steps": 240,
+      "film_steps": 480,
+      "phase_recorded_in_test": "unfreeze",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/learned_grpo/3407/save/CKPT+2026-09-04+21-39-33+00",
+      "checkpoint_metadata": {
+        "WER": 54.17128697693015,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 1200,
+        "unixtime": 1788572373.8200629,
+        "validation_reason": "interval",
+        "validation_step": 1200
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 1200,
+        "phase": "unfreeze",
+        "acc_emotion": 0.736,
+        "macro_f1_emotion": 0.4582871302306985,
+        "n_emotion": 500,
+        "f_audio_hz_emotion": 4.357588291168213,
+        "f_audio_hz_std_emotion": 1.400101464241743
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/learned_grpo/3407/task_metrics.jsonl",
+      "result_sha256": "c3eedb44e8f4397c3a4e4c1a50b3269e4d58fa89b4398f9b1335bec4a97a52a6",
+      "hparams_sha256": "8611ee3c88b4de3308494eabb6ff06ad9954e344d109da538c3ce8597fae6c94"
+    },
+    {
+      "task": "emotion",
+      "arm": "learned_grpo",
+      "seed": 3408,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1200,
+        "phase": "unfreeze",
+        "acc_emotion": 0.6813417190775681,
+        "macro_f1_emotion": 0.4820035253590261,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 3.9628442376852036,
+        "f_audio_hz_std_emotion": 1.214791927486658
+      },
+      "selected_step": 1200,
+      "actual_training_phase": "unfreeze",
+      "final_block_updates": 480,
+      "bridge_steps": 240,
+      "film_steps": 480,
+      "phase_recorded_in_test": "unfreeze",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/learned_grpo/3408/save/CKPT+2026-09-04+21-40-14+00",
+      "checkpoint_metadata": {
+        "WER": 50.372116366609674,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 1200,
+        "unixtime": 1788572414.4842143,
+        "validation_reason": "interval",
+        "validation_step": 1200
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 1200,
+        "phase": "unfreeze",
+        "acc_emotion": 0.734,
+        "macro_f1_emotion": 0.4962788363339032,
+        "n_emotion": 500,
+        "f_audio_hz_emotion": 3.7721212953329086,
+        "f_audio_hz_std_emotion": 1.2782061472535133
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/learned_grpo/3408/task_metrics.jsonl",
+      "result_sha256": "72dd1fc31dbdc4b4a09973a2e8df36d7725b25a718a822ff9ffb97e5d5e6ffa3",
+      "hparams_sha256": "acb4ba722302e9ca6e1b253754f582ddabe70bc5e8d49adc95b81289898455dd"
+    },
+    {
+      "task": "emotion",
+      "arm": "learned_grpo",
+      "seed": 3409,
+      "metric": "macro_f1_emotion",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1200,
+        "phase": "unfreeze",
+        "acc_emotion": 0.6939203354297694,
+        "macro_f1_emotion": 0.39403834866325366,
+        "n_emotion": 1431,
+        "f_audio_hz_emotion": 3.9834465831518173,
+        "f_audio_hz_std_emotion": 1.2532424181699753
+      },
+      "selected_step": 1200,
+      "actual_training_phase": "unfreeze",
+      "final_block_updates": 480,
+      "bridge_steps": 240,
+      "film_steps": 480,
+      "phase_recorded_in_test": "unfreeze",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/learned_grpo/3409/save/CKPT+2026-09-04+21-40-15+00",
+      "checkpoint_metadata": {
+        "WER": 56.40545633629623,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 1200,
+        "unixtime": 1788572416.0072737,
+        "validation_reason": "interval",
+        "validation_step": 1200
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 1200,
+        "phase": "unfreeze",
+        "acc_emotion": 0.766,
+        "macro_f1_emotion": 0.4359454366370376,
+        "n_emotion": 500,
+        "f_audio_hz_emotion": 3.812410682439804,
+        "f_audio_hz_std_emotion": 1.32495928555727
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/learned_grpo/3409/task_metrics.jsonl",
+      "result_sha256": "3d8cab0397901f869736d91188db16dc8fd09a3573125ec369415a9c32597038",
+      "hparams_sha256": "fe88c0a204e00e7e77658fe70bfbc38e688294618bfb585d846764a78349d68e"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "nods_50hz",
+      "seed": 3407,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1300,
+        "phase": "bridge",
+        "acc_speaker_count": 0.7345,
+        "macro_f1_speaker_count": 0.7185183953058586,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 50.0,
+        "f_audio_hz_std_speaker_count": 0.0
+      },
+      "selected_step": 1300,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/nods_50hz/3407/save/CKPT+2026-09-04+22-06-21+00",
+      "checkpoint_metadata": {
+        "WER": 20.333333333333336,
+        "end-of-epoch": false,
+        "epoch": 5,
+        "optimizer_step": 1300,
+        "unixtime": 1788573981.172339,
+        "validation_reason": "interval",
+        "validation_step": 1300
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 5,
+        "optimizer_step": 1300,
+        "phase": "bridge",
+        "acc_speaker_count": 0.7966666666666666,
+        "macro_f1_speaker_count": 0.7921397259328293,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 50.0,
+        "f_audio_hz_std_speaker_count": 0.0
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/nods_50hz/3407/task_metrics.jsonl",
+      "result_sha256": "a4e011b99ad895b0be1c8390f10b1d04588413610686f5dcb5c82ca69714d9ec",
+      "hparams_sha256": "a46bbf7bd693872dfc1fba24e1c0ad1da3f4fa664718a5f8b4f677f35e4d205b"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "nods_50hz",
+      "seed": 3408,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 2600,
+        "phase": "bridge",
+        "acc_speaker_count": 0.787,
+        "macro_f1_speaker_count": 0.7756378115727733,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 50.0,
+        "f_audio_hz_std_speaker_count": 0.0
+      },
+      "selected_step": 2600,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/nods_50hz/3408/save/CKPT+2026-09-04+22-36-39+00",
+      "checkpoint_metadata": {
+        "WER": 17.333333333333336,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 2600,
+        "unixtime": 1788575799.4997823,
+        "validation_reason": "interval",
+        "validation_step": 2600
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 2600,
+        "phase": "bridge",
+        "acc_speaker_count": 0.8266666666666667,
+        "macro_f1_speaker_count": 0.8245354493489028,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 50.0,
+        "f_audio_hz_std_speaker_count": 0.0
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/nods_50hz/3408/task_metrics.jsonl",
+      "result_sha256": "4aa41f8ffe6f1180d46531dd6dfc5d6170ac4eec54f6a8155de9dc466e1ab810",
+      "hparams_sha256": "c7a5fd34f2fe847f2375bbfde7963041dc9193f38cacc4de294eb5fc00bbc103"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "nods_50hz",
+      "seed": 3409,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 2340,
+        "phase": "bridge",
+        "acc_speaker_count": 0.651,
+        "macro_f1_speaker_count": 0.6137666914791239,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 50.0,
+        "f_audio_hz_std_speaker_count": 0.0
+      },
+      "selected_step": 2340,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/nods_50hz/3409/save/CKPT+2026-09-04+22-26-59+00",
+      "checkpoint_metadata": {
+        "WER": 30.666666666666664,
+        "end-of-epoch": false,
+        "epoch": 9,
+        "optimizer_step": 2340,
+        "unixtime": 1788575219.780811,
+        "validation_reason": "interval",
+        "validation_step": 2340
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 9,
+        "optimizer_step": 2340,
+        "phase": "bridge",
+        "acc_speaker_count": 0.6933333333333334,
+        "macro_f1_speaker_count": 0.6744827958979698,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 50.0,
+        "f_audio_hz_std_speaker_count": 0.0
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/nods_50hz/3409/task_metrics.jsonl",
+      "result_sha256": "aecc2427eb15b91de8163352d6cb9e0e806ea8cbf7abed0ccb48a99275bcc267",
+      "hparams_sha256": "ec8bdaa3a0a0fbcc085f5b252d05258132eef55e48f29ca509353871ddd9bf33"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "fixed_25hz",
+      "seed": 3407,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1040,
+        "phase": "bridge",
+        "acc_speaker_count": 0.733,
+        "macro_f1_speaker_count": 0.7223752315001752,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 25.100401043891907,
+        "f_audio_hz_std_speaker_count": 0.0
+      },
+      "selected_step": 1040,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_25hz/3407/save/CKPT+2026-09-04+22-46-50+00",
+      "checkpoint_metadata": {
+        "WER": 19.666666666666664,
+        "end-of-epoch": false,
+        "epoch": 4,
+        "optimizer_step": 1040,
+        "unixtime": 1788576410.4927146,
+        "validation_reason": "interval",
+        "validation_step": 1040
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 4,
+        "optimizer_step": 1040,
+        "phase": "bridge",
+        "acc_speaker_count": 0.8033333333333333,
+        "macro_f1_speaker_count": 0.8015513574149729,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 25.100404024124146,
+        "f_audio_hz_std_speaker_count": 2.9827187830733237e-06
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_25hz/3407/task_metrics.jsonl",
+      "result_sha256": "eb6a4c7d2b2389f00e1348f43b42821bba28eee74d52b771ccee6b4c5f7e7f4b",
+      "hparams_sha256": "80fec049e1d591ae49557baaa0989d4fa227c4776ddad8445d2e7e80e3b6b7a2"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "fixed_25hz",
+      "seed": 3408,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1820,
+        "phase": "bridge",
+        "acc_speaker_count": 0.841,
+        "macro_f1_speaker_count": 0.8386319745206915,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 25.100401043891907,
+        "f_audio_hz_std_speaker_count": 0.0
+      },
+      "selected_step": 1820,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_25hz/3408/save/CKPT+2026-09-04+22-56-22+00",
+      "checkpoint_metadata": {
+        "WER": 9.499999999999996,
+        "end-of-epoch": false,
+        "epoch": 7,
+        "optimizer_step": 1820,
+        "unixtime": 1788576982.7298386,
+        "validation_reason": "interval",
+        "validation_step": 1820
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 7,
+        "optimizer_step": 1820,
+        "phase": "bridge",
+        "acc_speaker_count": 0.905,
+        "macro_f1_speaker_count": 0.9066100666096709,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 25.100404024124146,
+        "f_audio_hz_std_speaker_count": 2.9827187830733237e-06
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_25hz/3408/task_metrics.jsonl",
+      "result_sha256": "c32a80e671ba8b573c2d319798def2ebc35bef5d7d46edc02778fd830d7a518c",
+      "hparams_sha256": "617a85bfb9cd9b435e71ef94cd6293c7450065f2e3acaf917d44ecf183bec967"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "fixed_25hz",
+      "seed": 3409,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 2080,
+        "phase": "bridge",
+        "acc_speaker_count": 0.7465,
+        "macro_f1_speaker_count": 0.7308938006752699,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 25.100401043891907,
+        "f_audio_hz_std_speaker_count": 0.0
+      },
+      "selected_step": 2080,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_25hz/3409/save/CKPT+2026-09-04+23-06-02+00",
+      "checkpoint_metadata": {
+        "WER": 21.166666666666668,
+        "end-of-epoch": false,
+        "epoch": 8,
+        "optimizer_step": 2080,
+        "unixtime": 1788577562.055482,
+        "validation_reason": "interval",
+        "validation_step": 2080
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 8,
+        "optimizer_step": 2080,
+        "phase": "bridge",
+        "acc_speaker_count": 0.7883333333333333,
+        "macro_f1_speaker_count": 0.7841916334635752,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 25.100404024124146,
+        "f_audio_hz_std_speaker_count": 2.9827187830733237e-06
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_25hz/3409/task_metrics.jsonl",
+      "result_sha256": "1eddb045b901566da933b5e83b527a2b8d6c20de0e7c0dd75982ef564862ae0e",
+      "hparams_sha256": "dcfb8f5bdbb27500eb2474c2abe4ef15553508b449a7ea2b418b16f504d04229"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "fixed_10hz",
+      "seed": 3407,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1560,
+        "phase": "bridge",
+        "acc_speaker_count": 0.715,
+        "macro_f1_speaker_count": 0.703124385050386,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 10.04016250371933,
+        "f_audio_hz_std_speaker_count": 1.4904887990496718e-06
+      },
+      "selected_step": 1560,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_10hz/3407/save/CKPT+2026-09-04+23-18-26+00",
+      "checkpoint_metadata": {
+        "WER": 19.166666666666664,
+        "end-of-epoch": false,
+        "epoch": 6,
+        "optimizer_step": 1560,
+        "unixtime": 1788578306.7047448,
+        "validation_reason": "interval",
+        "validation_step": 1560
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 6,
+        "optimizer_step": 1560,
+        "phase": "bridge",
+        "acc_speaker_count": 0.8083333333333333,
+        "macro_f1_speaker_count": 0.8089886365084163,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 10.04016175866127,
+        "f_audio_hz_std_speaker_count": 7.456796957683309e-07
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_10hz/3407/task_metrics.jsonl",
+      "result_sha256": "e01811660589138582e7928a1e23f4b755a86c3dfbd6440410168caf8a809338",
+      "hparams_sha256": "6ffbe0963d49f53271326bf5df0730d4c2e75445cb2a9bc0c92f06a17e65f8cc"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "fixed_10hz",
+      "seed": 3408,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 2600,
+        "phase": "bridge",
+        "acc_speaker_count": 0.757,
+        "macro_f1_speaker_count": 0.732932729215716,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 10.04016250371933,
+        "f_audio_hz_std_speaker_count": 1.4904887990496718e-06
+      },
+      "selected_step": 2600,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_10hz/3408/save/CKPT+2026-09-04+23-26-36+00",
+      "checkpoint_metadata": {
+        "WER": 18.999999999999993,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 2600,
+        "unixtime": 1788578796.4570763,
+        "validation_reason": "interval",
+        "validation_step": 2600
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 2600,
+        "phase": "bridge",
+        "acc_speaker_count": 0.81,
+        "macro_f1_speaker_count": 0.7967634033789898,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 10.04016175866127,
+        "f_audio_hz_std_speaker_count": 7.456796957683309e-07
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_10hz/3408/task_metrics.jsonl",
+      "result_sha256": "ac38702a633e0c7a02b9a37fd316743a6a9764e25651597df42980c67cb10534",
+      "hparams_sha256": "384f444e2d2a31b061e35b9972ba23c5fae713aae291b3f8f8905db850c73a21"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "fixed_10hz",
+      "seed": 3409,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1040,
+        "phase": "bridge",
+        "acc_speaker_count": 0.7325,
+        "macro_f1_speaker_count": 0.7134151690686192,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 10.04016250371933,
+        "f_audio_hz_std_speaker_count": 1.4904887990496718e-06
+      },
+      "selected_step": 1040,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_10hz/3409/save/CKPT+2026-09-04+23-22-41+00",
+      "checkpoint_metadata": {
+        "WER": 19.999999999999996,
+        "end-of-epoch": false,
+        "epoch": 4,
+        "optimizer_step": 1040,
+        "unixtime": 1788578561.0356922,
+        "validation_reason": "interval",
+        "validation_step": 1040
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 4,
+        "optimizer_step": 1040,
+        "phase": "bridge",
+        "acc_speaker_count": 0.8,
+        "macro_f1_speaker_count": 0.7901455393649146,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 10.04016175866127,
+        "f_audio_hz_std_speaker_count": 7.456796957683309e-07
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_10hz/3409/task_metrics.jsonl",
+      "result_sha256": "5035f58b39d1238f91ae32497103698f41cbcbcab7b163e80a022f2b1a151692",
+      "hparams_sha256": "d6c001269984dd3f2c4ce7c2bfe89ee187ad38f8478362b224c36dcda1d997e9"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "fixed_5hz",
+      "seed": 3407,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1560,
+        "phase": "bridge",
+        "acc_speaker_count": 0.6975,
+        "macro_f1_speaker_count": 0.6829007867723156,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 5.020081251859665,
+        "f_audio_hz_std_speaker_count": 7.452443995248359e-07
+      },
+      "selected_step": 1560,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_5hz/3407/save/CKPT+2026-09-04+23-37-02+00",
+      "checkpoint_metadata": {
+        "WER": 23.5,
+        "end-of-epoch": false,
+        "epoch": 6,
+        "optimizer_step": 1560,
+        "unixtime": 1788579422.4853091,
+        "validation_reason": "interval",
+        "validation_step": 1560
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 6,
+        "optimizer_step": 1560,
+        "phase": "bridge",
+        "acc_speaker_count": 0.765,
+        "macro_f1_speaker_count": 0.7626641458899523,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 5.020080879330635,
+        "f_audio_hz_std_speaker_count": 3.7283984788416547e-07
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_5hz/3407/task_metrics.jsonl",
+      "result_sha256": "bf897b37328f1070af7a2fc5ec17c450c6defbb7e2edcad746c96284d3694f7a",
+      "hparams_sha256": "3a5f8a4e15ef0a4cd83c57b6962df50674c0d61ab89ddc19aef8acdee0368583"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "fixed_5hz",
+      "seed": 3408,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 2600,
+        "phase": "bridge",
+        "acc_speaker_count": 0.761,
+        "macro_f1_speaker_count": 0.7403105898307556,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 5.020081251859665,
+        "f_audio_hz_std_speaker_count": 7.452443995248359e-07
+      },
+      "selected_step": 2600,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_5hz/3408/save/CKPT+2026-09-04+23-44-20+00",
+      "checkpoint_metadata": {
+        "WER": 18.333333333333336,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 2600,
+        "unixtime": 1788579860.1795764,
+        "validation_reason": "interval",
+        "validation_step": 2600
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 2600,
+        "phase": "bridge",
+        "acc_speaker_count": 0.8166666666666667,
+        "macro_f1_speaker_count": 0.8058172458172457,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 5.020080879330635,
+        "f_audio_hz_std_speaker_count": 3.7283984788416547e-07
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_5hz/3408/task_metrics.jsonl",
+      "result_sha256": "e6435ed69a07509396513d550fbfc367900b576a0f1a3e8c98065506d2572675",
+      "hparams_sha256": "e6160be5a301c9ad5aedd9818af26b01e01e5954b27c9eb3e06d4410ee5329ff"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "fixed_5hz",
+      "seed": 3409,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1040,
+        "phase": "bridge",
+        "acc_speaker_count": 0.75,
+        "macro_f1_speaker_count": 0.7331403172133645,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 5.020081251859665,
+        "f_audio_hz_std_speaker_count": 7.452443995248359e-07
+      },
+      "selected_step": 1040,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_5hz/3409/save/CKPT+2026-09-04+23-43-17+00",
+      "checkpoint_metadata": {
+        "WER": 19.833333333333336,
+        "end-of-epoch": false,
+        "epoch": 4,
+        "optimizer_step": 1040,
+        "unixtime": 1788579797.584308,
+        "validation_reason": "interval",
+        "validation_step": 1040
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 4,
+        "optimizer_step": 1040,
+        "phase": "bridge",
+        "acc_speaker_count": 0.8016666666666666,
+        "macro_f1_speaker_count": 0.7932678683809906,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 5.020080879330635,
+        "f_audio_hz_std_speaker_count": 3.7283984788416547e-07
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/fixed_5hz/3409/task_metrics.jsonl",
+      "result_sha256": "4174c429230ee65be98955a134aacbcce71aeac795cb26eb17615e09d5ff0153",
+      "hparams_sha256": "19a115d349bcd8a49b6fd71e406aeaabd3627605e1f7f7ad8c5981c83cda5e57"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "learned_frozen",
+      "seed": 3407,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1560,
+        "phase": "bridge",
+        "acc_speaker_count": 0.718,
+        "macro_f1_speaker_count": 0.7081706924489788,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 10.57349368929863,
+        "f_audio_hz_std_speaker_count": 5.391538515686989
+      },
+      "selected_step": 1560,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/learned_frozen/3407/save/CKPT+2026-09-05+00-13-39+00",
+      "checkpoint_metadata": {
+        "WER": 19.666666666666664,
+        "end-of-epoch": false,
+        "epoch": 6,
+        "optimizer_step": 1560,
+        "unixtime": 1788581619.2908046,
+        "validation_reason": "interval",
+        "validation_step": 1560
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 6,
+        "optimizer_step": 1560,
+        "phase": "bridge",
+        "acc_speaker_count": 0.8033333333333333,
+        "macro_f1_speaker_count": 0.8042169746497663,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 10.98795160651207,
+        "f_audio_hz_std_speaker_count": 5.547818168997765
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/learned_frozen/3407/task_metrics.jsonl",
+      "result_sha256": "0051eebc9eb3b309a671457b689b5f7c8aefa37473b049e59192b1ac710c2e9e",
+      "hparams_sha256": "4c82997c586bc39230db55121eff1d0c727b81092735a8ae5023e6ccbdb9b210"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "learned_frozen",
+      "seed": 3408,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 2600,
+        "phase": "bridge",
+        "acc_speaker_count": 0.728,
+        "macro_f1_speaker_count": 0.7013800815441262,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 10.57349368929863,
+        "f_audio_hz_std_speaker_count": 5.391538515686989
+      },
+      "selected_step": 2600,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/learned_frozen/3408/save/CKPT+2026-09-05+00-33-21+00",
+      "checkpoint_metadata": {
+        "WER": 22.166666666666668,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 2600,
+        "unixtime": 1788582801.0922492,
+        "validation_reason": "interval",
+        "validation_step": 2600
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 2600,
+        "phase": "bridge",
+        "acc_speaker_count": 0.7783333333333333,
+        "macro_f1_speaker_count": 0.7646463309481171,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 10.98795160651207,
+        "f_audio_hz_std_speaker_count": 5.547818168997765
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/learned_frozen/3408/task_metrics.jsonl",
+      "result_sha256": "73b96bef38bb2c2d0f6c5209f3cdc11b4d12469c2f2a1f32d3333d7ce63653ae",
+      "hparams_sha256": "14d267eecf551136708949693615d5ef3fbf71cd3c147a716c52ec360895e97d"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "learned_frozen",
+      "seed": 3409,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1040,
+        "phase": "bridge",
+        "acc_speaker_count": 0.7395,
+        "macro_f1_speaker_count": 0.7241928624807854,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 10.57349368929863,
+        "f_audio_hz_std_speaker_count": 5.391538515686989
+      },
+      "selected_step": 1040,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/learned_frozen/3409/save/CKPT+2026-09-05+00-15-02+00",
+      "checkpoint_metadata": {
+        "WER": 19.333333333333336,
+        "end-of-epoch": false,
+        "epoch": 4,
+        "optimizer_step": 1040,
+        "unixtime": 1788581702.253347,
+        "validation_reason": "interval",
+        "validation_step": 1040
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 4,
+        "optimizer_step": 1040,
+        "phase": "bridge",
+        "acc_speaker_count": 0.8066666666666666,
+        "macro_f1_speaker_count": 0.8008736059658202,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 10.98795160651207,
+        "f_audio_hz_std_speaker_count": 5.547818168997765
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/learned_frozen/3409/task_metrics.jsonl",
+      "result_sha256": "e6221a5b6dfaece5511bf1d9da713e8e1333958b6d093162e708595ba50a6069",
+      "hparams_sha256": "3a2a443eb52bf86d0c26d233f31dcd7ce216c7eb203dc7c910edcb319c35062b"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "learned_grpo",
+      "seed": 3407,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1560,
+        "phase": "unfreeze",
+        "acc_speaker_count": 0.7285,
+        "macro_f1_speaker_count": 0.7196249986404033,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 9.666064381599426,
+        "f_audio_hz_std_speaker_count": 4.957452788949013
+      },
+      "selected_step": 1560,
+      "actual_training_phase": "film",
+      "final_block_updates": 0,
+      "bridge_steps": 520,
+      "film_steps": 1040,
+      "phase_recorded_in_test": "unfreeze",
+      "phase_record_is_stale": true,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/learned_grpo/3407/save/CKPT+2026-09-05+01-35-06+00",
+      "checkpoint_metadata": {
+        "WER": 18.999999999999993,
+        "end-of-epoch": false,
+        "epoch": 6,
+        "optimizer_step": 1560,
+        "unixtime": 1788586506.8419771,
+        "validation_reason": "interval",
+        "validation_step": 1560
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 6,
+        "optimizer_step": 1560,
+        "phase": "film",
+        "acc_speaker_count": 0.81,
+        "macro_f1_speaker_count": 0.8107291353777741,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 10.077643394470215,
+        "f_audio_hz_std_speaker_count": 5.11859729886055
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/learned_grpo/3407/task_metrics.jsonl",
+      "result_sha256": "579048349fe8a59d7008709d1aa466986fc97ffa10a797044d84fd38a08f9771",
+      "hparams_sha256": "65a1d6b73c4f9ae79cee14a729585ea7b27dd697a4d2292f9942225710968c27"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "learned_grpo",
+      "seed": 3408,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1300,
+        "phase": "unfreeze",
+        "acc_speaker_count": 0.71,
+        "macro_f1_speaker_count": 0.6915054637906513,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 9.841666370630264,
+        "f_audio_hz_std_speaker_count": 5.051136016845703
+      },
+      "selected_step": 1300,
+      "actual_training_phase": "film",
+      "final_block_updates": 0,
+      "bridge_steps": 520,
+      "film_steps": 1040,
+      "phase_recorded_in_test": "unfreeze",
+      "phase_record_is_stale": true,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/learned_grpo/3408/save/CKPT+2026-09-05+01-28-28+00",
+      "checkpoint_metadata": {
+        "WER": 21.333333333333336,
+        "end-of-epoch": false,
+        "epoch": 5,
+        "optimizer_step": 1300,
+        "unixtime": 1788586108.8073115,
+        "validation_reason": "interval",
+        "validation_step": 1300
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 5,
+        "optimizer_step": 1300,
+        "phase": "film",
+        "acc_speaker_count": 0.7866666666666666,
+        "macro_f1_speaker_count": 0.780776843146957,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 10.245984047651291,
+        "f_audio_hz_std_speaker_count": 5.205392464995384
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/learned_grpo/3408/task_metrics.jsonl",
+      "result_sha256": "7a1136d3e58f23f8f9648ebe3591d66c1227ae8e70c18e04be083d9e70fa2254",
+      "hparams_sha256": "ae7e489c4634a7c7f37f318043a49f1116307916c1874a5605e2b2bd8a63a49f"
+    },
+    {
+      "task": "speaker_count",
+      "arm": "learned_grpo",
+      "seed": 3409,
+      "metric": "acc_speaker_count",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 1040,
+        "phase": "unfreeze",
+        "acc_speaker_count": 0.7335,
+        "macro_f1_speaker_count": 0.7178927963553873,
+        "n_speaker_count": 2000,
+        "f_audio_hz_speaker_count": 10.042168945074081,
+        "f_audio_hz_std_speaker_count": 5.1560405641794205
+      },
+      "selected_step": 1040,
+      "actual_training_phase": "film",
+      "final_block_updates": 0,
+      "bridge_steps": 520,
+      "film_steps": 1040,
+      "phase_recorded_in_test": "unfreeze",
+      "phase_record_is_stale": true,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/learned_grpo/3409/save/CKPT+2026-09-05+01-33-27+00",
+      "checkpoint_metadata": {
+        "WER": 20.499999999999996,
+        "end-of-epoch": false,
+        "epoch": 4,
+        "optimizer_step": 1040,
+        "unixtime": 1788586407.957138,
+        "validation_reason": "interval",
+        "validation_step": 1040
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 4,
+        "optimizer_step": 1040,
+        "phase": "film",
+        "acc_speaker_count": 0.795,
+        "macro_f1_speaker_count": 0.7895381341818553,
+        "n_speaker_count": 600,
+        "f_audio_hz_speaker_count": 10.445448756217957,
+        "f_audio_hz_std_speaker_count": 5.30601367354393
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/learned_grpo/3409/task_metrics.jsonl",
+      "result_sha256": "b54641101bd96e41530c1abfdbf0e7a3d43e030018f8b5cd4fced60363b45969",
+      "hparams_sha256": "0cec3b4d4667eadb0af5a809d59272e06f93abad0420d91a6c0b5dfc0e7f0002"
+    },
+    {
+      "task": "intent",
+      "arm": "nods_50hz",
+      "seed": 3407,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.9952544160295281,
+        "macro_f1_intent": 0.9947934712830795,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 50.0,
+        "f_audio_hz_std_intent": 0.0
+      },
+      "selected_step": 900,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/nods_50hz/3407/save/CKPT+2026-09-04+20-13-38+00",
+      "checkpoint_metadata": {
+        "WER": 2.749999999999997,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 900,
+        "unixtime": 1788567218.775588,
+        "validation_reason": "interval",
+        "validation_step": 900
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.9725,
+        "macro_f1_intent": 0.9677953389187585,
+        "n_intent": 400,
+        "f_audio_hz_intent": 50.0,
+        "f_audio_hz_std_intent": 0.0
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/nods_50hz/3407/task_metrics.jsonl",
+      "result_sha256": "2777ebe939431f95bfa3bb242e37ed477b9d4b7a74b03c5c63b0092bdedf110b",
+      "hparams_sha256": "e38847c42912d096dc56fc73364c80cb15ad9d60dc6a90e15958dfe979e23c48"
+    },
+    {
+      "task": "intent",
+      "arm": "nods_50hz",
+      "seed": 3408,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.9923543369364619,
+        "macro_f1_intent": 0.9886040056751009,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 50.0,
+        "f_audio_hz_std_intent": 0.0
+      },
+      "selected_step": 900,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/nods_50hz/3408/save/CKPT+2026-09-04+20-13-41+00",
+      "checkpoint_metadata": {
+        "WER": 2.749999999999997,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 900,
+        "unixtime": 1788567221.9429755,
+        "validation_reason": "interval",
+        "validation_step": 900
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.9725,
+        "macro_f1_intent": 0.9700182552895683,
+        "n_intent": 400,
+        "f_audio_hz_intent": 50.0,
+        "f_audio_hz_std_intent": 0.0
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/nods_50hz/3408/task_metrics.jsonl",
+      "result_sha256": "bfc180f1af207eb67b9125697062c81550093f7d4bb6c1e346e967d20e99c2cd",
+      "hparams_sha256": "fe4d575ce2a38a677c5a9c70bd15a2f03f949c52d1597bcaf798d1da60ddf495"
+    },
+    {
+      "task": "intent",
+      "arm": "nods_50hz",
+      "seed": 3409,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 450,
+        "phase": "bridge",
+        "acc_intent": 0.9952544160295281,
+        "macro_f1_intent": 0.9949054259314308,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 50.0,
+        "f_audio_hz_std_intent": 0.0
+      },
+      "selected_step": 450,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/nods_50hz/3409/save/CKPT+2026-09-04+20-02-31+00",
+      "checkpoint_metadata": {
+        "WER": 2.2499999999999964,
+        "end-of-epoch": false,
+        "epoch": 5,
+        "optimizer_step": 450,
+        "unixtime": 1788566551.0582952,
+        "validation_reason": "interval",
+        "validation_step": 450
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 5,
+        "optimizer_step": 450,
+        "phase": "bridge",
+        "acc_intent": 0.9775,
+        "macro_f1_intent": 0.9738840161016455,
+        "n_intent": 400,
+        "f_audio_hz_intent": 50.0,
+        "f_audio_hz_std_intent": 0.0
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/nods_50hz/3409/task_metrics.jsonl",
+      "result_sha256": "a033b546720ca9c411c2b1b7224dc8108fc290dcd4ff4c8ad87e37d11e9cd39a",
+      "hparams_sha256": "2fdf190026aab2d9ff038f8a086ed4dec5f080f8edb703b3fbc8c463fead35cb"
+    },
+    {
+      "task": "intent",
+      "arm": "fixed_25hz",
+      "seed": 3407,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 810,
+        "phase": "bridge",
+        "acc_intent": 0.9955180595834432,
+        "macro_f1_intent": 0.9952874774687015,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 25.096172094345093,
+        "f_audio_hz_std_intent": 0.11607881169766188
+      },
+      "selected_step": 810,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_25hz/3407/save/CKPT+2026-09-04+20-33-15+00",
+      "checkpoint_metadata": {
+        "WER": 2.749999999999997,
+        "end-of-epoch": false,
+        "epoch": 9,
+        "optimizer_step": 810,
+        "unixtime": 1788568395.4256308,
+        "validation_reason": "interval",
+        "validation_step": 810
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 9,
+        "optimizer_step": 810,
+        "phase": "bridge",
+        "acc_intent": 0.9725,
+        "macro_f1_intent": 0.9677889818167854,
+        "n_intent": 400,
+        "f_audio_hz_intent": 25.134778022766113,
+        "f_audio_hz_std_intent": 0.1262648031115532
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_25hz/3407/task_metrics.jsonl",
+      "result_sha256": "b1f6031bed7227495300f63700f14b63ed34e2e5101933e9cb330f115e456d63",
+      "hparams_sha256": "7b4d7a31e694e1478582a1b36cf9738e6f70d7b03a1b65e4d4fa820713c6f7d6"
+    },
+    {
+      "task": "intent",
+      "arm": "fixed_25hz",
+      "seed": 3408,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.994990772475613,
+        "macro_f1_intent": 0.9949590667456549,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 25.096172094345093,
+        "f_audio_hz_std_intent": 0.11607881169766188
+      },
+      "selected_step": 900,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_25hz/3408/save/CKPT+2026-09-04+20-34-53+00",
+      "checkpoint_metadata": {
+        "WER": 2.500000000000002,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 900,
+        "unixtime": 1788568493.9269555,
+        "validation_reason": "interval",
+        "validation_step": 900
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.975,
+        "macro_f1_intent": 0.9655439749178286,
+        "n_intent": 400,
+        "f_audio_hz_intent": 25.134778022766113,
+        "f_audio_hz_std_intent": 0.1262648031115532
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_25hz/3408/task_metrics.jsonl",
+      "result_sha256": "f8edbcd34871fb988de83c3110e5a31b4badbfb7e8dfc69e04fc97a518ebe37c",
+      "hparams_sha256": "721225b8c7c87c42e1699f08b63e296b8ec9b3dba58e298d4361c68e1534d149"
+    },
+    {
+      "task": "intent",
+      "arm": "fixed_25hz",
+      "seed": 3409,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.994990772475613,
+        "macro_f1_intent": 0.9945725500288459,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 25.096172094345093,
+        "f_audio_hz_std_intent": 0.11607881169766188
+      },
+      "selected_step": 900,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_25hz/3409/save/CKPT+2026-09-04+20-34-58+00",
+      "checkpoint_metadata": {
+        "WER": 2.2499999999999964,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 900,
+        "unixtime": 1788568498.4987445,
+        "validation_reason": "interval",
+        "validation_step": 900
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.9775,
+        "macro_f1_intent": 0.9745039641210538,
+        "n_intent": 400,
+        "f_audio_hz_intent": 25.134778022766113,
+        "f_audio_hz_std_intent": 0.1262648031115532
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_25hz/3409/task_metrics.jsonl",
+      "result_sha256": "dc465f9f5517bb696cf2f81447ebb61f0aca3461f1602980950835483f6f0aa3",
+      "hparams_sha256": "ac27f6c15317bdf0b0cd28473ad3b581898d0487d62d381568df2552b42531c1"
+    },
+    {
+      "task": "intent",
+      "arm": "fixed_10hz",
+      "seed": 3407,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.994990772475613,
+        "macro_f1_intent": 0.9944701473837639,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 10.18345132470131,
+        "f_audio_hz_std_intent": 0.13767174677923322
+      },
+      "selected_step": 900,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_10hz/3407/save/CKPT+2026-09-04+20-48-32+00",
+      "checkpoint_metadata": {
+        "WER": 2.500000000000002,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 900,
+        "unixtime": 1788569312.333458,
+        "validation_reason": "interval",
+        "validation_step": 900
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.975,
+        "macro_f1_intent": 0.9669678834365331,
+        "n_intent": 400,
+        "f_audio_hz_intent": 10.19379198551178,
+        "f_audio_hz_std_intent": 0.14705981593579054
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_10hz/3407/task_metrics.jsonl",
+      "result_sha256": "2d965ec8cb20f0792e884ab92435570feb111fc6fbbca64e33e5797208544cdb",
+      "hparams_sha256": "f10dac9418caae2de6a13007ea53c8c419d935af0d1ef7b9414673c6816d7c0b"
+    },
+    {
+      "task": "intent",
+      "arm": "fixed_10hz",
+      "seed": 3408,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.9941998418138677,
+        "macro_f1_intent": 0.9935644613623572,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 10.18345132470131,
+        "f_audio_hz_std_intent": 0.13767174677923322
+      },
+      "selected_step": 900,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_10hz/3408/save/CKPT+2026-09-04+20-47-50+00",
+      "checkpoint_metadata": {
+        "WER": 2.2499999999999964,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 900,
+        "unixtime": 1788569270.8957665,
+        "validation_reason": "interval",
+        "validation_step": 900
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.9775,
+        "macro_f1_intent": 0.9732351108631887,
+        "n_intent": 400,
+        "f_audio_hz_intent": 10.19379198551178,
+        "f_audio_hz_std_intent": 0.14705981593579054
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_10hz/3408/task_metrics.jsonl",
+      "result_sha256": "80bc8fc5728832a3f745cb68784347a8da6dcdc96fe83809516bf94ec65eccb5",
+      "hparams_sha256": "fae4044e893c3595328289bbfb06ecd9112a15944854d92439959df62f7effaa"
+    },
+    {
+      "task": "intent",
+      "arm": "fixed_10hz",
+      "seed": 3409,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.9947271289216979,
+        "macro_f1_intent": 0.9946333000164093,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 10.18345132470131,
+        "f_audio_hz_std_intent": 0.13767174677923322
+      },
+      "selected_step": 900,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_10hz/3409/save/CKPT+2026-09-04+20-47-51+00",
+      "checkpoint_metadata": {
+        "WER": 2.2499999999999964,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 900,
+        "unixtime": 1788569271.777802,
+        "validation_reason": "interval",
+        "validation_step": 900
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.9775,
+        "macro_f1_intent": 0.9775153865558948,
+        "n_intent": 400,
+        "f_audio_hz_intent": 10.19379198551178,
+        "f_audio_hz_std_intent": 0.14705981593579054
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_10hz/3409/task_metrics.jsonl",
+      "result_sha256": "32ce75a4fc59b9a0da07f36e088693b5174e6c7fecb71686fdc5b241698ba06f",
+      "hparams_sha256": "f34e6ef36d302774f589df70cdae829b56be8b8c8d66ac532b9eab5c375f84e3"
+    },
+    {
+      "task": "intent",
+      "arm": "fixed_5hz",
+      "seed": 3407,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.9960453466912734,
+        "macro_f1_intent": 0.99586448932802,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 5.190598964691162,
+        "f_audio_hz_std_intent": 0.14464682899415493
+      },
+      "selected_step": 900,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_5hz/3407/save/CKPT+2026-09-04+20-57-37+00",
+      "checkpoint_metadata": {
+        "WER": 2.749999999999997,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 900,
+        "unixtime": 1788569857.6826744,
+        "validation_reason": "interval",
+        "validation_step": 900
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.9725,
+        "macro_f1_intent": 0.9703860452142755,
+        "n_intent": 400,
+        "f_audio_hz_intent": 5.2074141800403595,
+        "f_audio_hz_std_intent": 0.14988613547757268
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_5hz/3407/task_metrics.jsonl",
+      "result_sha256": "369782adea01cf77a4461a8be7d0a214070f0ecb1f5efec892df3a2ef92ea8a8",
+      "hparams_sha256": "4432fec872e747701648fb03b0b3e00a9131f4901e4966ca1d3847bdd3ddbb7f"
+    },
+    {
+      "task": "intent",
+      "arm": "fixed_5hz",
+      "seed": 3408,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 720,
+        "phase": "bridge",
+        "acc_intent": 0.9934089111521224,
+        "macro_f1_intent": 0.9935399300699399,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 5.190598964691162,
+        "f_audio_hz_std_intent": 0.14464682899415493
+      },
+      "selected_step": 720,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_5hz/3408/save/CKPT+2026-09-04+20-56-20+00",
+      "checkpoint_metadata": {
+        "WER": 3.0000000000000027,
+        "end-of-epoch": false,
+        "epoch": 8,
+        "optimizer_step": 720,
+        "unixtime": 1788569780.3533971,
+        "validation_reason": "interval",
+        "validation_step": 720
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 8,
+        "optimizer_step": 720,
+        "phase": "bridge",
+        "acc_intent": 0.97,
+        "macro_f1_intent": 0.9635126734679228,
+        "n_intent": 400,
+        "f_audio_hz_intent": 5.2074141800403595,
+        "f_audio_hz_std_intent": 0.14988613547757268
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_5hz/3408/task_metrics.jsonl",
+      "result_sha256": "33d8db25abec5be8a81a6b08118d58ee1006d28973d21fd1d593be0acf6c4736",
+      "hparams_sha256": "c3b167a30bac1684bcb6a8330e8b71a6eca4cc5474e5c1e958499103448f1bb1"
+    },
+    {
+      "task": "intent",
+      "arm": "fixed_5hz",
+      "seed": 3409,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 810,
+        "phase": "bridge",
+        "acc_intent": 0.9941998418138677,
+        "macro_f1_intent": 0.9941663662182826,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 5.190598964691162,
+        "f_audio_hz_std_intent": 0.14464682899415493
+      },
+      "selected_step": 810,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_5hz/3409/save/CKPT+2026-09-04+20-57-38+00",
+      "checkpoint_metadata": {
+        "WER": 3.0000000000000027,
+        "end-of-epoch": false,
+        "epoch": 9,
+        "optimizer_step": 810,
+        "unixtime": 1788569858.006579,
+        "validation_reason": "interval",
+        "validation_step": 810
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 9,
+        "optimizer_step": 810,
+        "phase": "bridge",
+        "acc_intent": 0.97,
+        "macro_f1_intent": 0.9701662461426388,
+        "n_intent": 400,
+        "f_audio_hz_intent": 5.2074141800403595,
+        "f_audio_hz_std_intent": 0.14988613547757268
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/fixed_5hz/3409/task_metrics.jsonl",
+      "result_sha256": "11ef0a07d5cd3b150e1e4367154962481e19e3deac2b7873eef5c8e1f8e8bc8d",
+      "hparams_sha256": "36d11a2340eedc5f6ce72d890f1e8412375d15b791dbb745bf22f5242a5c1ee8"
+    },
+    {
+      "task": "intent",
+      "arm": "learned_frozen",
+      "seed": 3407,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 810,
+        "phase": "bridge",
+        "acc_intent": 0.9941998418138677,
+        "macro_f1_intent": 0.9937774480204381,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 7.549402862787247,
+        "f_audio_hz_std_intent": 2.046476863324642
+      },
+      "selected_step": 810,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/learned_frozen/3407/save/CKPT+2026-09-04+21-12-53+00",
+      "checkpoint_metadata": {
+        "WER": 2.0000000000000018,
+        "end-of-epoch": false,
+        "epoch": 9,
+        "optimizer_step": 810,
+        "unixtime": 1788570773.3116324,
+        "validation_reason": "interval",
+        "validation_step": 810
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 9,
+        "optimizer_step": 810,
+        "phase": "bridge",
+        "acc_intent": 0.98,
+        "macro_f1_intent": 0.9738638324215204,
+        "n_intent": 400,
+        "f_audio_hz_intent": 8.357811719179153,
+        "f_audio_hz_std_intent": 2.103549800813198
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/learned_frozen/3407/task_metrics.jsonl",
+      "result_sha256": "9fc199bb6b3d4b06cc9b833c522c904cbfe46de58c71c5b891519b7df10763bc",
+      "hparams_sha256": "cc97989b10c3d28fd066e73f75c664b5448fc4bbe771b68abecd8d08d03ad206"
+    },
+    {
+      "task": "intent",
+      "arm": "learned_frozen",
+      "seed": 3408,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.994990772475613,
+        "macro_f1_intent": 0.9947955276321828,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 7.549402862787247,
+        "f_audio_hz_std_intent": 2.046476863324642
+      },
+      "selected_step": 900,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/learned_frozen/3408/save/CKPT+2026-09-04+21-14-29+00",
+      "checkpoint_metadata": {
+        "WER": 2.0000000000000018,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 900,
+        "unixtime": 1788570869.864104,
+        "validation_reason": "interval",
+        "validation_step": 900
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 900,
+        "phase": "bridge",
+        "acc_intent": 0.98,
+        "macro_f1_intent": 0.9745224615423226,
+        "n_intent": 400,
+        "f_audio_hz_intent": 8.357811719179153,
+        "f_audio_hz_std_intent": 2.103549800813198
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/learned_frozen/3408/task_metrics.jsonl",
+      "result_sha256": "80af3ae2ecfc6a246efb408b3d67ff398e4c3cc1c976873c4aae3faf020b0b2f",
+      "hparams_sha256": "a90d6f931a33b83fbc209c41a76798b86cdca9f66b5d0c03c07361c69c19bf79"
+    },
+    {
+      "task": "intent",
+      "arm": "learned_frozen",
+      "seed": 3409,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 540,
+        "phase": "bridge",
+        "acc_intent": 0.9931452675982072,
+        "macro_f1_intent": 0.9930943981919489,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 7.549402862787247,
+        "f_audio_hz_std_intent": 2.046476863324642
+      },
+      "selected_step": 540,
+      "actual_training_phase": "bridge",
+      "final_block_updates": 0,
+      "bridge_steps": 1000000,
+      "film_steps": 0,
+      "phase_recorded_in_test": "bridge",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/learned_frozen/3409/save/CKPT+2026-09-04+21-09-11+00",
+      "checkpoint_metadata": {
+        "WER": 2.500000000000002,
+        "end-of-epoch": false,
+        "epoch": 6,
+        "optimizer_step": 540,
+        "unixtime": 1788570551.6856997,
+        "validation_reason": "interval",
+        "validation_step": 540
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 6,
+        "optimizer_step": 540,
+        "phase": "bridge",
+        "acc_intent": 0.975,
+        "macro_f1_intent": 0.9704727496283235,
+        "n_intent": 400,
+        "f_audio_hz_intent": 8.357811719179153,
+        "f_audio_hz_std_intent": 2.103549800813198
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/learned_frozen/3409/task_metrics.jsonl",
+      "result_sha256": "8cd2f31672a6e7cb2be7cb2b75b764f904dd1571d5553be085c312603f4f345e",
+      "hparams_sha256": "cfaf91da52687b0eb7c526523598ccfb048b46658cf8fe8f5d50e14337e6330a"
+    },
+    {
+      "task": "intent",
+      "arm": "learned_grpo",
+      "seed": 3407,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 630,
+        "phase": "unfreeze",
+        "acc_intent": 0.9936725547060374,
+        "macro_f1_intent": 0.993476066211993,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 7.3499321937561035,
+        "f_audio_hz_std_intent": 2.008838951587677
+      },
+      "selected_step": 630,
+      "actual_training_phase": "unfreeze",
+      "final_block_updates": 90,
+      "bridge_steps": 180,
+      "film_steps": 360,
+      "phase_recorded_in_test": "unfreeze",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/learned_grpo/3407/save/CKPT+2026-09-05+00-48-08+00",
+      "checkpoint_metadata": {
+        "WER": 2.0000000000000018,
+        "end-of-epoch": false,
+        "epoch": 7,
+        "optimizer_step": 630,
+        "unixtime": 1788583688.878397,
+        "validation_reason": "interval",
+        "validation_step": 630
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 7,
+        "optimizer_step": 630,
+        "phase": "unfreeze",
+        "acc_intent": 0.98,
+        "macro_f1_intent": 0.9767951337957937,
+        "n_intent": 400,
+        "f_audio_hz_intent": 8.136263489723206,
+        "f_audio_hz_std_intent": 2.082235924899578
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/learned_grpo/3407/task_metrics.jsonl",
+      "result_sha256": "c9d7fb73e87bc5abb61d0942d2777ac3d48f364f679cfe651a10a63a81c82e2a",
+      "hparams_sha256": "d7f0507aa1a267cedff5dddee483489e8a11ccf40b1b16266765f45812209cde"
+    },
+    {
+      "task": "intent",
+      "arm": "learned_grpo",
+      "seed": 3408,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 450,
+        "phase": "unfreeze",
+        "acc_intent": 0.9894542578433957,
+        "macro_f1_intent": 0.990923691529675,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 7.546476274728775,
+        "f_audio_hz_std_intent": 2.046036534011364
+      },
+      "selected_step": 450,
+      "actual_training_phase": "film",
+      "final_block_updates": 0,
+      "bridge_steps": 180,
+      "film_steps": 360,
+      "phase_recorded_in_test": "unfreeze",
+      "phase_record_is_stale": true,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/learned_grpo/3408/save/CKPT+2026-09-05+00-44-11+00",
+      "checkpoint_metadata": {
+        "WER": 2.500000000000002,
+        "end-of-epoch": false,
+        "epoch": 5,
+        "optimizer_step": 450,
+        "unixtime": 1788583451.8971717,
+        "validation_reason": "interval",
+        "validation_step": 450
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 5,
+        "optimizer_step": 450,
+        "phase": "film",
+        "acc_intent": 0.975,
+        "macro_f1_intent": 0.9752313603660108,
+        "n_intent": 400,
+        "f_audio_hz_intent": 8.354990184307098,
+        "f_audio_hz_std_intent": 2.10300050675869
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/learned_grpo/3408/task_metrics.jsonl",
+      "result_sha256": "e83d33d511e4a0468b97801a36a8ccb19ba8f8d1117f007bb5b55c46a628e1ed",
+      "hparams_sha256": "72b3444b775e565997bf08eb3061d9fb83476af6e9bf3a9896d3fa28a8a2b28c"
+    },
+    {
+      "task": "intent",
+      "arm": "learned_grpo",
+      "seed": 3409,
+      "metric": "acc_intent",
+      "test": {
+        "stage": "TEST",
+        "epoch": null,
+        "optimizer_step": 900,
+        "phase": "unfreeze",
+        "acc_intent": 0.9947271289216979,
+        "macro_f1_intent": 0.994934240962073,
+        "n_intent": 3793,
+        "f_audio_hz_intent": 5.646281689405441,
+        "f_audio_hz_std_intent": 1.2663297355175018
+      },
+      "selected_step": 900,
+      "actual_training_phase": "unfreeze",
+      "final_block_updates": 360,
+      "bridge_steps": 180,
+      "film_steps": 360,
+      "phase_recorded_in_test": "unfreeze",
+      "phase_record_is_stale": false,
+      "selected_checkpoint": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/learned_grpo/3409/save/CKPT+2026-09-05+01-05-52+00",
+      "checkpoint_metadata": {
+        "WER": 1.749999999999996,
+        "end-of-epoch": false,
+        "epoch": 10,
+        "optimizer_step": 900,
+        "unixtime": 1788584752.0319605,
+        "validation_reason": "interval",
+        "validation_step": 900
+      },
+      "selection_validation": {
+        "stage": "VALID",
+        "epoch": 10,
+        "optimizer_step": 900,
+        "phase": "unfreeze",
+        "acc_intent": 0.9825,
+        "macro_f1_intent": 0.9786554821543739,
+        "n_intent": 400,
+        "f_audio_hz_intent": 6.0464248061180115,
+        "f_audio_hz_std_intent": 1.3362270779907703
+      },
+      "rate_channel": "auto",
+      "rate_bands": {
+        "asr": [
+          "0.12",
+          "0.18"
+        ],
+        "st_en_de": [
+          "0.12",
+          "0.18"
+        ],
+        "emotion": [
+          "0.04",
+          "0.10"
+        ],
+        "speaker_count": [
+          "0.06",
+          "0.12"
+        ],
+        "intent": [
+          "0.08",
+          "0.14"
+        ]
+      },
+      "global_rate_band": [
+        0.15,
+        0.25
+      ],
+      "warm_start": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00",
+      "result_source": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/learned_grpo/3409/task_metrics.jsonl",
+      "result_sha256": "f660d48d3c566aea8137db78da33e99feec3de2ca5cc0a82510d3e519e35dcce",
+      "hparams_sha256": "6a889f64f7fd66860e44cee9ec0e49a16eb903ef42a03f056e261f807e1efede"
+    }
+  ],
+  "checkpoints": {
+    "asr_3407": {
+      "path": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3407/save/CKPT+2026-08-25+03-01-20+00/segmenter.ckpt",
+      "sha256": "fb5fa5b19cab1135082169264b1ebbf9b86e241f7086fbbbaa3be4b79c97239b",
+      "task": "asr",
+      "task_id": 0,
+      "seed": 3407,
+      "num_tasks": 1,
+      "role": "asr_seed_control"
+    },
+    "asr_3408": {
+      "path": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00/segmenter.ckpt",
+      "sha256": "bb26a223c4aa73f3d369ebe52cb72221646fcf2ba6f6f5354f2ac99cd85e94a7",
+      "task": "asr",
+      "task_id": 0,
+      "seed": 3408,
+      "num_tasks": 1,
+      "role": "common_parent"
+    },
+    "asr_3409": {
+      "path": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3409/save/CKPT+2026-08-26+16-39-53+00/segmenter.ckpt",
+      "sha256": "18a2a5e785c82d46a72b4541712a9049f7c49d4358274718e71a90f5586a2c54",
+      "task": "asr",
+      "task_id": 0,
+      "seed": 3409,
+      "num_tasks": 1,
+      "role": "asr_seed_control"
+    },
+    "frozen_emotion_3408": {
+      "path": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/learned_frozen/3408/save/CKPT+2026-09-04+17-21-19+00/segmenter.ckpt",
+      "sha256": "727484bf217ba2532cb1541020923b9ba4c92415cfbec704c913df9c0854bdbd",
+      "task": "emotion",
+      "task_id": 2,
+      "seed": 3408,
+      "num_tasks": 5,
+      "role": "identity_control",
+      "step": 1080,
+      "training_phase": "bridge",
+      "final_block_updates": 0
+    },
+    "emotion_3407": {
+      "path": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/learned_grpo/3407/save/CKPT+2026-09-04+21-39-33+00/segmenter.ckpt",
+      "sha256": "f09866eb564b6498b72540c3e1e79b9001a34f063aec0379b0b67e624669e792",
+      "task": "emotion",
+      "task_id": 2,
+      "seed": 3407,
+      "num_tasks": 5,
+      "role": "selected",
+      "step": 1200,
+      "training_phase": "unfreeze",
+      "final_block_updates": 480
+    },
+    "emotion_3408": {
+      "path": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/learned_grpo/3408/save/CKPT+2026-09-04+21-40-14+00/segmenter.ckpt",
+      "sha256": "83a355e2fc0b22b543a78c36353d404067cc690b4ec320f88fcc7305454d124c",
+      "task": "emotion",
+      "task_id": 2,
+      "seed": 3408,
+      "num_tasks": 5,
+      "role": "selected",
+      "step": 1200,
+      "training_phase": "unfreeze",
+      "final_block_updates": 480
+    },
+    "emotion_3409": {
+      "path": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/emotion/learned_grpo/3409/save/CKPT+2026-09-04+21-40-15+00/segmenter.ckpt",
+      "sha256": "1c5d0ac95cb06676757d1d41537324b826906ce5f4fbcd1895b5346cb6ebbab6",
+      "task": "emotion",
+      "task_id": 2,
+      "seed": 3409,
+      "num_tasks": 5,
+      "role": "selected",
+      "step": 1200,
+      "training_phase": "unfreeze",
+      "final_block_updates": 480
+    },
+    "speaker_count_3407": {
+      "path": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/learned_grpo/3407/save/CKPT+2026-09-05+01-35-06+00/segmenter.ckpt",
+      "sha256": "e815e1dced6967a4764765ed3955ca9b6ac82d10edf75cd757768f03bbd67065",
+      "task": "speaker_count",
+      "task_id": 3,
+      "seed": 3407,
+      "num_tasks": 5,
+      "role": "selected",
+      "step": 1560,
+      "training_phase": "film",
+      "final_block_updates": 0
+    },
+    "speaker_count_3408": {
+      "path": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/learned_grpo/3408/save/CKPT+2026-09-05+01-28-28+00/segmenter.ckpt",
+      "sha256": "9622229bd73b5d593de24f39213ab26309354fed598c3ddbfa2816b75e19020f",
+      "task": "speaker_count",
+      "task_id": 3,
+      "seed": 3408,
+      "num_tasks": 5,
+      "role": "selected",
+      "step": 1300,
+      "training_phase": "film",
+      "final_block_updates": 0
+    },
+    "speaker_count_3408_last": {
+      "path": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/learned_grpo/3408/save/CKPT+2026-09-05+01-56-55+00/segmenter.ckpt",
+      "sha256": "f86ede901857ebbc0f9d4186540597792744a3b0bf70522013b23a6a1410ef62",
+      "task": "speaker_count",
+      "task_id": 3,
+      "seed": 3408,
+      "num_tasks": 5,
+      "role": "last_step_sensitivity",
+      "step": 2600,
+      "training_phase": "unfreeze",
+      "final_block_updates": 1040
+    },
+    "speaker_count_3409": {
+      "path": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/speaker_count/learned_grpo/3409/save/CKPT+2026-09-05+01-33-27+00/segmenter.ckpt",
+      "sha256": "8d28e328b780ba6e1290fd04d9b61bd758ad8c9fce216dfd6450de4ea9dd3d31",
+      "task": "speaker_count",
+      "task_id": 3,
+      "seed": 3409,
+      "num_tasks": 5,
+      "role": "selected",
+      "step": 1040,
+      "training_phase": "film",
+      "final_block_updates": 0
+    },
+    "intent_3407": {
+      "path": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/learned_grpo/3407/save/CKPT+2026-09-05+00-48-08+00/segmenter.ckpt",
+      "sha256": "411666edf1b1951e2ec2e774464867e5fd9d456145a34b7756d68a222e56e1e9",
+      "task": "intent",
+      "task_id": 4,
+      "seed": 3407,
+      "num_tasks": 5,
+      "role": "selected",
+      "step": 630,
+      "training_phase": "unfreeze",
+      "final_block_updates": 90
+    },
+    "intent_3408": {
+      "path": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/learned_grpo/3408/save/CKPT+2026-09-05+00-44-11+00/segmenter.ckpt",
+      "sha256": "8aca3aa2591356ab4d61ed737083a03f1a45b8940b396d411337f94144ae5a99",
+      "task": "intent",
+      "task_id": 4,
+      "seed": 3408,
+      "num_tasks": 5,
+      "role": "selected",
+      "step": 450,
+      "training_phase": "film",
+      "final_block_updates": 0
+    },
+    "intent_3408_last": {
+      "path": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/learned_grpo/3408/save/CKPT+2026-09-05+00-54-14+00/segmenter.ckpt",
+      "sha256": "d3e209a4e75e03bb1c5800f2ee98cd9cc53049cdbeaa9b6100f85809b3cef76f",
+      "task": "intent",
+      "task_id": 4,
+      "seed": 3408,
+      "num_tasks": 5,
+      "role": "last_step_sensitivity",
+      "step": 900,
+      "training_phase": "unfreeze",
+      "final_block_updates": 360
+    },
+    "intent_3409": {
+      "path": "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_singletask_nonasr/intent/learned_grpo/3409/save/CKPT+2026-09-05+01-05-52+00/segmenter.ckpt",
+      "sha256": "6e4f5023ba728d63cf55bd9767f091fdc9ed7bf1ab2300f2b7b0c576986e50d0",
+      "task": "intent",
+      "task_id": 4,
+      "seed": 3409,
+      "num_tasks": 5,
+      "role": "selected",
+      "step": 900,
+      "training_phase": "unfreeze",
+      "final_block_updates": 360
+    }
+  }
+}

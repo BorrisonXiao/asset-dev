@@ -1,0 +1,131 @@
+{
+  "entries": [
+    {
+      "word": "allegiant",
+      "phones": [
+        "AH0",
+        "L",
+        "IY1",
+        "JH",
+        "AH0",
+        "N",
+        "T"
+      ],
+      "source": "MFA english_us_arpa G2P"
+    },
+    {
+      "word": "blindsided",
+      "phones": [
+        "B",
+        "L",
+        "AY1",
+        "N",
+        "D",
+        "S",
+        "AY2",
+        "D",
+        "IH0",
+        "D"
+      ],
+      "source": "CMUdict"
+    },
+    {
+      "word": "breakouts",
+      "phones": [
+        "B",
+        "R",
+        "EY1",
+        "K",
+        "AW2",
+        "T",
+        "S"
+      ],
+      "source": "CMUdict"
+    },
+    {
+      "word": "kayda",
+      "phones": [
+        "K",
+        "EY1",
+        "D",
+        "AH0"
+      ],
+      "source": "MFA english_us_arpa G2P"
+    },
+    {
+      "word": "neurosurgeon",
+      "phones": [
+        "N",
+        "UH1",
+        "R",
+        "OW0",
+        "S",
+        "ER2",
+        "JH",
+        "AH0",
+        "N"
+      ],
+      "source": "CMUdict"
+    },
+    {
+      "word": "scorecards",
+      "phones": [
+        "S",
+        "K",
+        "AO1",
+        "R",
+        "K",
+        "AA2",
+        "R",
+        "D",
+        "Z"
+      ],
+      "source": "CMUdict"
+    },
+    {
+      "word": "steffy",
+      "phones": [
+        "S",
+        "T",
+        "EH1",
+        "F",
+        "IY0"
+      ],
+      "source": "CMUdict"
+    },
+    {
+      "word": "webmd",
+      "phones": [
+        "W",
+        "EH1",
+        "B",
+        "EH1",
+        "M",
+        "D",
+        "IY1"
+      ],
+      "source": "CMUdict composition: web + em + dee"
+    },
+    {
+      "word": "webpage",
+      "phones": [
+        "W",
+        "EH1",
+        "B",
+        "P",
+        "IH0",
+        "JH"
+      ],
+      "source": "CMUdict"
+    }
+  ],
+  "cmudict_source": "https://github.com/cmusphinx/cmudict",
+  "cmudict_sha256": "81917843c7f44ce2b094ac63873c2c7a4cf802040792c455ba3ca406891c3d22",
+  "new_entry_probabilities": [
+    1.0,
+    0.5,
+    1.0,
+    1.0
+  ],
+  "sensitivity": "Also report the 371 Expresso utterances with complete original-dictionary coverage"
+}

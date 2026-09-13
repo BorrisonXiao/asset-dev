@@ -1,0 +1,12 @@
+{
+  "tool": "praat-parselmouth",
+  "version": "0.4.7",
+  "algorithm": "Praat autocorrelation pitch",
+  "time_step": 0.01,
+  "pitch_floor": 75,
+  "pitch_ceiling": 600,
+  "silence_threshold": 0.03,
+  "voicing_threshold": 0.45,
+  "voicing_smoothing": "five-frame (50-ms) median filter",
+  "interpretation": "Automatic acoustic diagnostics; not manual voicing or prosodic annotations"
+}

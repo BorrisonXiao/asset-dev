@@ -1,0 +1,3362 @@
+[
+  {
+    "uid": "ex01_confused_00028",
+    "style": "confused",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2800000000000001
+  },
+  {
+    "uid": "ex01_confused_00146",
+    "style": "confused",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18999999999999995
+  },
+  {
+    "uid": "ex01_confused_00156",
+    "style": "confused",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.333
+  },
+  {
+    "uid": "ex01_confused_00163",
+    "style": "confused",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12399999999999994
+  },
+  {
+    "uid": "ex01_confused_00168",
+    "style": "confused",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17600000000000005
+  },
+  {
+    "uid": "ex01_confused_00255",
+    "style": "confused",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.33000000000000007
+  },
+  {
+    "uid": "ex01_confused_00264",
+    "style": "confused",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15399999999999991
+  },
+  {
+    "uid": "ex01_confused_00279",
+    "style": "confused",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16000000000000006
+  },
+  {
+    "uid": "ex01_confused_00284",
+    "style": "confused",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.21200000000000002
+  },
+  {
+    "uid": "ex01_confused_00299",
+    "style": "confused",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14999999999999994
+  },
+  {
+    "uid": "ex01_confused_00301",
+    "style": "confused",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.35400000000000004
+  },
+  {
+    "uid": "ex01_confused_00319",
+    "style": "confused",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1920000000000002
+  },
+  {
+    "uid": "ex01_confused_00328",
+    "style": "confused",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.22199999999999992
+  },
+  {
+    "uid": "ex01_confused_00333",
+    "style": "confused",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14699999999999996
+  },
+  {
+    "uid": "ex01_confused_00370",
+    "style": "confused",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.46399999999999997
+  },
+  {
+    "uid": "ex01_default_00028",
+    "style": "default",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16599999999999993
+  },
+  {
+    "uid": "ex01_default_00146",
+    "style": "default",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13700000000000018
+  },
+  {
+    "uid": "ex01_default_00156",
+    "style": "default",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20999999999999996
+  },
+  {
+    "uid": "ex01_default_00163",
+    "style": "default",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14699999999999996
+  },
+  {
+    "uid": "ex01_default_00168",
+    "style": "default",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13999999999999999
+  },
+  {
+    "uid": "ex01_default_00255",
+    "style": "default",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12499999999999994
+  },
+  {
+    "uid": "ex01_default_00264",
+    "style": "default",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19199999999999995
+  },
+  {
+    "uid": "ex01_default_00279",
+    "style": "default",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1630000000000001
+  },
+  {
+    "uid": "ex01_default_00284",
+    "style": "default",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15000000000000002
+  },
+  {
+    "uid": "ex01_default_00299",
+    "style": "default",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1200000000000001
+  },
+  {
+    "uid": "ex01_default_00301",
+    "style": "default",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14500000000000007
+  },
+  {
+    "uid": "ex01_default_00319",
+    "style": "default",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1530000000000002
+  },
+  {
+    "uid": "ex01_default_00328",
+    "style": "default",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1820000000000001
+  },
+  {
+    "uid": "ex01_default_00333",
+    "style": "default",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15000000000000002
+  },
+  {
+    "uid": "ex01_default_00370",
+    "style": "default",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.32000000000000006
+  },
+  {
+    "uid": "ex01_enunciated_00028",
+    "style": "enunciated",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.262
+  },
+  {
+    "uid": "ex01_enunciated_00146",
+    "style": "enunciated",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2190000000000002
+  },
+  {
+    "uid": "ex01_enunciated_00156",
+    "style": "enunciated",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.26299999999999985
+  },
+  {
+    "uid": "ex01_enunciated_00163",
+    "style": "enunciated",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.23
+  },
+  {
+    "uid": "ex01_enunciated_00168",
+    "style": "enunciated",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2959999999999999
+  },
+  {
+    "uid": "ex01_enunciated_00255",
+    "style": "enunciated",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.23499999999999996
+  },
+  {
+    "uid": "ex01_enunciated_00264",
+    "style": "enunciated",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.23199999999999996
+  },
+  {
+    "uid": "ex01_enunciated_00279",
+    "style": "enunciated",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.27299999999999996
+  },
+  {
+    "uid": "ex01_enunciated_00284",
+    "style": "enunciated",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.218
+  },
+  {
+    "uid": "ex01_enunciated_00299",
+    "style": "enunciated",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.27199999999999996
+  },
+  {
+    "uid": "ex01_enunciated_00301",
+    "style": "enunciated",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2810000000000001
+  },
+  {
+    "uid": "ex01_enunciated_00319",
+    "style": "enunciated",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2330000000000001
+  },
+  {
+    "uid": "ex01_enunciated_00328",
+    "style": "enunciated",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.26199999999999984
+  },
+  {
+    "uid": "ex01_enunciated_00333",
+    "style": "enunciated",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.3319999999999999
+  },
+  {
+    "uid": "ex01_enunciated_00370",
+    "style": "enunciated",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.43599999999999994
+  },
+  {
+    "uid": "ex01_happy_00028",
+    "style": "happy",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.153
+  },
+  {
+    "uid": "ex01_happy_00146",
+    "style": "happy",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20900000000000005
+  },
+  {
+    "uid": "ex01_happy_00156",
+    "style": "happy",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2199999999999998
+  },
+  {
+    "uid": "ex01_happy_00163",
+    "style": "happy",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17699999999999994
+  },
+  {
+    "uid": "ex01_happy_00168",
+    "style": "happy",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.136
+  },
+  {
+    "uid": "ex01_happy_00255",
+    "style": "happy",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.155
+  },
+  {
+    "uid": "ex01_happy_00264",
+    "style": "happy",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14600000000000007
+  },
+  {
+    "uid": "ex01_happy_00279",
+    "style": "happy",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17999999999999997
+  },
+  {
+    "uid": "ex01_happy_00284",
+    "style": "happy",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16199999999999998
+  },
+  {
+    "uid": "ex01_happy_00299",
+    "style": "happy",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14000000000000012
+  },
+  {
+    "uid": "ex01_happy_00301",
+    "style": "happy",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18300000000000013
+  },
+  {
+    "uid": "ex01_happy_00319",
+    "style": "happy",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12300000000000008
+  },
+  {
+    "uid": "ex01_happy_00328",
+    "style": "happy",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1560000000000002
+  },
+  {
+    "uid": "ex01_happy_00333",
+    "style": "happy",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17000000000000012
+  },
+  {
+    "uid": "ex01_happy_00370",
+    "style": "happy",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.33199999999999985
+  },
+  {
+    "uid": "ex01_laughing_00028",
+    "style": "laughing",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.22999999999999998
+  },
+  {
+    "uid": "ex01_laughing_00146",
+    "style": "laughing",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18999999999999995
+  },
+  {
+    "uid": "ex01_laughing_00156",
+    "style": "laughing",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17499999999999996
+  },
+  {
+    "uid": "ex01_laughing_00163",
+    "style": "laughing",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17999999999999994
+  },
+  {
+    "uid": "ex01_laughing_00168",
+    "style": "laughing",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2200000000000001
+  },
+  {
+    "uid": "ex01_laughing_00255",
+    "style": "laughing",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17499999999999993
+  },
+  {
+    "uid": "ex01_laughing_00264",
+    "style": "laughing",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19400000000000012
+  },
+  {
+    "uid": "ex01_laughing_00279",
+    "style": "laughing",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.22300000000000006
+  },
+  {
+    "uid": "ex01_laughing_00284",
+    "style": "laughing",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17000000000000007
+  },
+  {
+    "uid": "ex01_laughing_00299",
+    "style": "laughing",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14000000000000012
+  },
+  {
+    "uid": "ex01_laughing_00301",
+    "style": "laughing",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19500000000000006
+  },
+  {
+    "uid": "ex01_laughing_00319",
+    "style": "laughing",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16399999999999978
+  },
+  {
+    "uid": "ex01_laughing_00328",
+    "style": "laughing",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18399999999999989
+  },
+  {
+    "uid": "ex01_laughing_00333",
+    "style": "laughing",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.167
+  },
+  {
+    "uid": "ex01_laughing_00370",
+    "style": "laughing",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.31799999999999984
+  },
+  {
+    "uid": "ex01_sad_00028",
+    "style": "sad",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12300000000000005
+  },
+  {
+    "uid": "ex01_sad_00146",
+    "style": "sad",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16899999999999998
+  },
+  {
+    "uid": "ex01_sad_00156",
+    "style": "sad",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12899999999999998
+  },
+  {
+    "uid": "ex01_sad_00163",
+    "style": "sad",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13399999999999992
+  },
+  {
+    "uid": "ex01_sad_00168",
+    "style": "sad",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16999999999999998
+  },
+  {
+    "uid": "ex01_sad_00255",
+    "style": "sad",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16500000000000004
+  },
+  {
+    "uid": "ex01_sad_00264",
+    "style": "sad",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14400000000000007
+  },
+  {
+    "uid": "ex01_sad_00279",
+    "style": "sad",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1430000000000001
+  },
+  {
+    "uid": "ex01_sad_00284",
+    "style": "sad",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.166
+  },
+  {
+    "uid": "ex01_sad_00299",
+    "style": "sad",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12999999999999992
+  },
+  {
+    "uid": "ex01_sad_00301",
+    "style": "sad",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1350000000000001
+  },
+  {
+    "uid": "ex01_sad_00319",
+    "style": "sad",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12300000000000008
+  },
+  {
+    "uid": "ex01_sad_00328",
+    "style": "sad",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14400000000000007
+  },
+  {
+    "uid": "ex01_sad_00333",
+    "style": "sad",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17500000000000018
+  },
+  {
+    "uid": "ex01_sad_00370",
+    "style": "sad",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2680000000000001
+  },
+  {
+    "uid": "ex01_whisper_00028",
+    "style": "whisper",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19999999999999998
+  },
+  {
+    "uid": "ex01_whisper_00146",
+    "style": "whisper",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18000000000000005
+  },
+  {
+    "uid": "ex01_whisper_00156",
+    "style": "whisper",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15799999999999997
+  },
+  {
+    "uid": "ex01_whisper_00163",
+    "style": "whisper",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19199999999999998
+  },
+  {
+    "uid": "ex01_whisper_00168",
+    "style": "whisper",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.3410000000000001
+  },
+  {
+    "uid": "ex01_whisper_00255",
+    "style": "whisper",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17
+  },
+  {
+    "uid": "ex01_whisper_00264",
+    "style": "whisper",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17799999999999985
+  },
+  {
+    "uid": "ex01_whisper_00279",
+    "style": "whisper",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15299999999999997
+  },
+  {
+    "uid": "ex01_whisper_00284",
+    "style": "whisper",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15800000000000003
+  },
+  {
+    "uid": "ex01_whisper_00299",
+    "style": "whisper",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15999999999999995
+  },
+  {
+    "uid": "ex01_whisper_00301",
+    "style": "whisper",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1590000000000001
+  },
+  {
+    "uid": "ex01_whisper_00319",
+    "style": "whisper",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1499999999999999
+  },
+  {
+    "uid": "ex01_whisper_00328",
+    "style": "whisper",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18999999999999995
+  },
+  {
+    "uid": "ex01_whisper_00333",
+    "style": "whisper",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16800000000000004
+  },
+  {
+    "uid": "ex01_whisper_00370",
+    "style": "whisper",
+    "speaker": "ex01",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.21600000000000003
+  },
+  {
+    "uid": "ex02_confused_00028",
+    "style": "confused",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17600000000000018
+  },
+  {
+    "uid": "ex02_confused_00030",
+    "style": "confused",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2279999999999999
+  },
+  {
+    "uid": "ex02_confused_00058",
+    "style": "confused",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.21499999999999997
+  },
+  {
+    "uid": "ex02_confused_00073",
+    "style": "confused",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2340000000000001
+  },
+  {
+    "uid": "ex02_confused_00089",
+    "style": "confused",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16999999999999993
+  },
+  {
+    "uid": "ex02_confused_00096",
+    "style": "confused",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.178
+  },
+  {
+    "uid": "ex02_confused_00099",
+    "style": "confused",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.23999999999999932
+  },
+  {
+    "uid": "ex02_confused_00128",
+    "style": "confused",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2279999999999999
+  },
+  {
+    "uid": "ex02_confused_00150",
+    "style": "confused",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.24200000000000002
+  },
+  {
+    "uid": "ex02_confused_00157",
+    "style": "confused",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.275
+  },
+  {
+    "uid": "ex02_confused_00233",
+    "style": "confused",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.194
+  },
+  {
+    "uid": "ex02_confused_00261",
+    "style": "confused",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15499999999999997
+  },
+  {
+    "uid": "ex02_confused_00326",
+    "style": "confused",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15799999999999953
+  },
+  {
+    "uid": "ex02_confused_00348",
+    "style": "confused",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1599999999999999
+  },
+  {
+    "uid": "ex02_confused_00355",
+    "style": "confused",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19800000000000018
+  },
+  {
+    "uid": "ex02_default_00028",
+    "style": "default",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1430000000000001
+  },
+  {
+    "uid": "ex02_default_00030",
+    "style": "default",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13700000000000004
+  },
+  {
+    "uid": "ex02_default_00058",
+    "style": "default",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14000000000000007
+  },
+  {
+    "uid": "ex02_default_00073",
+    "style": "default",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15000000000000008
+  },
+  {
+    "uid": "ex02_default_00089",
+    "style": "default",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13
+  },
+  {
+    "uid": "ex02_default_00096",
+    "style": "default",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.11400000000000002
+  },
+  {
+    "uid": "ex02_default_00099",
+    "style": "default",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13999999999999968
+  },
+  {
+    "uid": "ex02_default_00128",
+    "style": "default",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14699999999999996
+  },
+  {
+    "uid": "ex02_default_00150",
+    "style": "default",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.126
+  },
+  {
+    "uid": "ex02_default_00157",
+    "style": "default",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15500000000000003
+  },
+  {
+    "uid": "ex02_default_00233",
+    "style": "default",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.10600000000000007
+  },
+  {
+    "uid": "ex02_default_00261",
+    "style": "default",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13999999999999996
+  },
+  {
+    "uid": "ex02_default_00326",
+    "style": "default",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.11000000000000006
+  },
+  {
+    "uid": "ex02_default_00348",
+    "style": "default",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1099999999999999
+  },
+  {
+    "uid": "ex02_default_00355",
+    "style": "default",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13400000000000006
+  },
+  {
+    "uid": "ex02_enunciated_00028",
+    "style": "enunciated",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2239999999999999
+  },
+  {
+    "uid": "ex02_enunciated_00030",
+    "style": "enunciated",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18000000000000016
+  },
+  {
+    "uid": "ex02_enunciated_00058",
+    "style": "enunciated",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.255
+  },
+  {
+    "uid": "ex02_enunciated_00073",
+    "style": "enunciated",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.22999999999999998
+  },
+  {
+    "uid": "ex02_enunciated_00089",
+    "style": "enunciated",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17999999999999972
+  },
+  {
+    "uid": "ex02_enunciated_00096",
+    "style": "enunciated",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.188
+  },
+  {
+    "uid": "ex02_enunciated_00099",
+    "style": "enunciated",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2400000000000002
+  },
+  {
+    "uid": "ex02_enunciated_00128",
+    "style": "enunciated",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.201
+  },
+  {
+    "uid": "ex02_enunciated_00150",
+    "style": "enunciated",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.224
+  },
+  {
+    "uid": "ex02_enunciated_00157",
+    "style": "enunciated",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.22499999999999998
+  },
+  {
+    "uid": "ex02_enunciated_00233",
+    "style": "enunciated",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17
+  },
+  {
+    "uid": "ex02_enunciated_00261",
+    "style": "enunciated",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19000000000000009
+  },
+  {
+    "uid": "ex02_enunciated_00326",
+    "style": "enunciated",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20600000000000013
+  },
+  {
+    "uid": "ex02_enunciated_00348",
+    "style": "enunciated",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15399999999999991
+  },
+  {
+    "uid": "ex02_enunciated_00355",
+    "style": "enunciated",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1860000000000001
+  },
+  {
+    "uid": "ex02_happy_00028",
+    "style": "happy",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13300000000000003
+  },
+  {
+    "uid": "ex02_happy_00030",
+    "style": "happy",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12000000000000008
+  },
+  {
+    "uid": "ex02_happy_00058",
+    "style": "happy",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17000000000000004
+  },
+  {
+    "uid": "ex02_happy_00073",
+    "style": "happy",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17400000000000002
+  },
+  {
+    "uid": "ex02_happy_00089",
+    "style": "happy",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1299999999999999
+  },
+  {
+    "uid": "ex02_happy_00096",
+    "style": "happy",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14399999999999996
+  },
+  {
+    "uid": "ex02_happy_00099",
+    "style": "happy",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15999999999999925
+  },
+  {
+    "uid": "ex02_happy_00128",
+    "style": "happy",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18000000000000013
+  },
+  {
+    "uid": "ex02_happy_00150",
+    "style": "happy",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.138
+  },
+  {
+    "uid": "ex02_happy_00157",
+    "style": "happy",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.185
+  },
+  {
+    "uid": "ex02_happy_00233",
+    "style": "happy",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.11200000000000003
+  },
+  {
+    "uid": "ex02_happy_00261",
+    "style": "happy",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17499999999999996
+  },
+  {
+    "uid": "ex02_happy_00326",
+    "style": "happy",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12000000000000008
+  },
+  {
+    "uid": "ex02_happy_00348",
+    "style": "happy",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14599999999999996
+  },
+  {
+    "uid": "ex02_happy_00355",
+    "style": "happy",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12799999999999997
+  },
+  {
+    "uid": "ex02_laughing_00028",
+    "style": "laughing",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20600000000000013
+  },
+  {
+    "uid": "ex02_laughing_00030",
+    "style": "laughing",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20099999999999998
+  },
+  {
+    "uid": "ex02_laughing_00058",
+    "style": "laughing",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.21000000000000008
+  },
+  {
+    "uid": "ex02_laughing_00073",
+    "style": "laughing",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.204
+  },
+  {
+    "uid": "ex02_laughing_00089",
+    "style": "laughing",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16999999999999993
+  },
+  {
+    "uid": "ex02_laughing_00096",
+    "style": "laughing",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17999999999999997
+  },
+  {
+    "uid": "ex02_laughing_00099",
+    "style": "laughing",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.26
+  },
+  {
+    "uid": "ex02_laughing_00128",
+    "style": "laughing",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18999999999999995
+  },
+  {
+    "uid": "ex02_laughing_00150",
+    "style": "laughing",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.23399999999999982
+  },
+  {
+    "uid": "ex02_laughing_00157",
+    "style": "laughing",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.29500000000000015
+  },
+  {
+    "uid": "ex02_laughing_00233",
+    "style": "laughing",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18399999999999997
+  },
+  {
+    "uid": "ex02_laughing_00261",
+    "style": "laughing",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.21499999999999997
+  },
+  {
+    "uid": "ex02_laughing_00326",
+    "style": "laughing",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14000000000000012
+  },
+  {
+    "uid": "ex02_laughing_00348",
+    "style": "laughing",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2019999999999999
+  },
+  {
+    "uid": "ex02_laughing_00355",
+    "style": "laughing",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18199999999999977
+  },
+  {
+    "uid": "ex02_sad_00028",
+    "style": "sad",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20999999999999996
+  },
+  {
+    "uid": "ex02_sad_00030",
+    "style": "sad",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20399999999999996
+  },
+  {
+    "uid": "ex02_sad_00058",
+    "style": "sad",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.22499999999999998
+  },
+  {
+    "uid": "ex02_sad_00073",
+    "style": "sad",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15800000000000022
+  },
+  {
+    "uid": "ex02_sad_00089",
+    "style": "sad",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13
+  },
+  {
+    "uid": "ex02_sad_00096",
+    "style": "sad",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17200000000000015
+  },
+  {
+    "uid": "ex02_sad_00099",
+    "style": "sad",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16999999999999993
+  },
+  {
+    "uid": "ex02_sad_00128",
+    "style": "sad",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16099999999999998
+  },
+  {
+    "uid": "ex02_sad_00150",
+    "style": "sad",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14600000000000002
+  },
+  {
+    "uid": "ex02_sad_00157",
+    "style": "sad",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18999999999999995
+  },
+  {
+    "uid": "ex02_sad_00233",
+    "style": "sad",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15199999999999994
+  },
+  {
+    "uid": "ex02_sad_00261",
+    "style": "sad",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18999999999999997
+  },
+  {
+    "uid": "ex02_sad_00326",
+    "style": "sad",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13799999999999976
+  },
+  {
+    "uid": "ex02_sad_00348",
+    "style": "sad",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12000000000000001
+  },
+  {
+    "uid": "ex02_sad_00355",
+    "style": "sad",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1290000000000001
+  },
+  {
+    "uid": "ex02_whisper_00028",
+    "style": "whisper",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.26399999999999996
+  },
+  {
+    "uid": "ex02_whisper_00030",
+    "style": "whisper",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14700000000000005
+  },
+  {
+    "uid": "ex02_whisper_00058",
+    "style": "whisper",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2500000000000001
+  },
+  {
+    "uid": "ex02_whisper_00073",
+    "style": "whisper",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1540000000000001
+  },
+  {
+    "uid": "ex02_whisper_00089",
+    "style": "whisper",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1299999999999999
+  },
+  {
+    "uid": "ex02_whisper_00096",
+    "style": "whisper",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14000000000000004
+  },
+  {
+    "uid": "ex02_whisper_00099",
+    "style": "whisper",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17999999999999972
+  },
+  {
+    "uid": "ex02_whisper_00128",
+    "style": "whisper",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18799999999999997
+  },
+  {
+    "uid": "ex02_whisper_00150",
+    "style": "whisper",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19399999999999998
+  },
+  {
+    "uid": "ex02_whisper_00157",
+    "style": "whisper",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20500000000000007
+  },
+  {
+    "uid": "ex02_whisper_00233",
+    "style": "whisper",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.21
+  },
+  {
+    "uid": "ex02_whisper_00261",
+    "style": "whisper",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.11499999999999996
+  },
+  {
+    "uid": "ex02_whisper_00326",
+    "style": "whisper",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1299999999999999
+  },
+  {
+    "uid": "ex02_whisper_00348",
+    "style": "whisper",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20399999999999996
+  },
+  {
+    "uid": "ex02_whisper_00355",
+    "style": "whisper",
+    "speaker": "ex02",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15600000000000014
+  },
+  {
+    "uid": "ex03_confused_00010",
+    "style": "confused",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.22000000000000003
+  },
+  {
+    "uid": "ex03_confused_00014",
+    "style": "confused",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20100000000000018
+  },
+  {
+    "uid": "ex03_confused_00037",
+    "style": "confused",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16000000000000014
+  },
+  {
+    "uid": "ex03_confused_00040",
+    "style": "confused",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.319
+  },
+  {
+    "uid": "ex03_confused_00104",
+    "style": "confused",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1499999999999999
+  },
+  {
+    "uid": "ex03_confused_00134",
+    "style": "confused",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17700000000000002
+  },
+  {
+    "uid": "ex03_confused_00143",
+    "style": "confused",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.384
+  },
+  {
+    "uid": "ex03_confused_00175",
+    "style": "confused",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.23199999999999993
+  },
+  {
+    "uid": "ex03_confused_00198",
+    "style": "confused",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.25
+  },
+  {
+    "uid": "ex03_confused_00205",
+    "style": "confused",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16999999999999954
+  },
+  {
+    "uid": "ex03_confused_00226",
+    "style": "confused",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18700000000000036
+  },
+  {
+    "uid": "ex03_confused_00269",
+    "style": "confused",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13800000000000018
+  },
+  {
+    "uid": "ex03_confused_00285",
+    "style": "confused",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13499999999999993
+  },
+  {
+    "uid": "ex03_confused_00343",
+    "style": "confused",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19600000000000004
+  },
+  {
+    "uid": "ex03_confused_00376",
+    "style": "confused",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16400000000000012
+  },
+  {
+    "uid": "ex03_default_00010",
+    "style": "default",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18999999999999995
+  },
+  {
+    "uid": "ex03_default_00014",
+    "style": "default",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15300000000000016
+  },
+  {
+    "uid": "ex03_default_00037",
+    "style": "default",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.11999999999999997
+  },
+  {
+    "uid": "ex03_default_00040",
+    "style": "default",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16399999999999998
+  },
+  {
+    "uid": "ex03_default_00104",
+    "style": "default",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.116
+  },
+  {
+    "uid": "ex03_default_00134",
+    "style": "default",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12600000000000008
+  },
+  {
+    "uid": "ex03_default_00143",
+    "style": "default",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.22999999999999998
+  },
+  {
+    "uid": "ex03_default_00175",
+    "style": "default",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12499999999999994
+  },
+  {
+    "uid": "ex03_default_00198",
+    "style": "default",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1200000000000001
+  },
+  {
+    "uid": "ex03_default_00205",
+    "style": "default",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1110000000000003
+  },
+  {
+    "uid": "ex03_default_00226",
+    "style": "default",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.11000000000000032
+  },
+  {
+    "uid": "ex03_default_00269",
+    "style": "default",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.10999999999999988
+  },
+  {
+    "uid": "ex03_default_00285",
+    "style": "default",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.10900000000000001
+  },
+  {
+    "uid": "ex03_default_00343",
+    "style": "default",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16199999999999995
+  },
+  {
+    "uid": "ex03_default_00376",
+    "style": "default",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1640000000000001
+  },
+  {
+    "uid": "ex03_enunciated_00010",
+    "style": "enunciated",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.25
+  },
+  {
+    "uid": "ex03_enunciated_00014",
+    "style": "enunciated",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.29100000000000004
+  },
+  {
+    "uid": "ex03_enunciated_00037",
+    "style": "enunciated",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.24700000000000005
+  },
+  {
+    "uid": "ex03_enunciated_00040",
+    "style": "enunciated",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.39300000000000007
+  },
+  {
+    "uid": "ex03_enunciated_00104",
+    "style": "enunciated",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.22599999999999998
+  },
+  {
+    "uid": "ex03_enunciated_00134",
+    "style": "enunciated",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.28500000000000014
+  },
+  {
+    "uid": "ex03_enunciated_00143",
+    "style": "enunciated",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.534
+  },
+  {
+    "uid": "ex03_enunciated_00175",
+    "style": "enunciated",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.285
+  },
+  {
+    "uid": "ex03_enunciated_00198",
+    "style": "enunciated",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2699999999999998
+  },
+  {
+    "uid": "ex03_enunciated_00205",
+    "style": "enunciated",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.23200000000000004
+  },
+  {
+    "uid": "ex03_enunciated_00226",
+    "style": "enunciated",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1600000000000001
+  },
+  {
+    "uid": "ex03_enunciated_00269",
+    "style": "enunciated",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.23700000000000027
+  },
+  {
+    "uid": "ex03_enunciated_00285",
+    "style": "enunciated",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.28000000000000025
+  },
+  {
+    "uid": "ex03_enunciated_00343",
+    "style": "enunciated",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2520000000000002
+  },
+  {
+    "uid": "ex03_enunciated_00376",
+    "style": "enunciated",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.26
+  },
+  {
+    "uid": "ex03_happy_00010",
+    "style": "happy",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18999999999999995
+  },
+  {
+    "uid": "ex03_happy_00014",
+    "style": "happy",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15500000000000008
+  },
+  {
+    "uid": "ex03_happy_00037",
+    "style": "happy",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.11699999999999991
+  },
+  {
+    "uid": "ex03_happy_00040",
+    "style": "happy",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2160000000000001
+  },
+  {
+    "uid": "ex03_happy_00104",
+    "style": "happy",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12799999999999992
+  },
+  {
+    "uid": "ex03_happy_00134",
+    "style": "happy",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1100000000000001
+  },
+  {
+    "uid": "ex03_happy_00143",
+    "style": "happy",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.30200000000000005
+  },
+  {
+    "uid": "ex03_happy_00175",
+    "style": "happy",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19999999999999996
+  },
+  {
+    "uid": "ex03_happy_00198",
+    "style": "happy",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15999999999999998
+  },
+  {
+    "uid": "ex03_happy_00205",
+    "style": "happy",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1310000000000003
+  },
+  {
+    "uid": "ex03_happy_00226",
+    "style": "happy",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1299999999999999
+  },
+  {
+    "uid": "ex03_happy_00269",
+    "style": "happy",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.10000000000000007
+  },
+  {
+    "uid": "ex03_happy_00285",
+    "style": "happy",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16400000000000003
+  },
+  {
+    "uid": "ex03_happy_00343",
+    "style": "happy",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.23800000000000004
+  },
+  {
+    "uid": "ex03_happy_00376",
+    "style": "happy",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1760000000000001
+  },
+  {
+    "uid": "ex03_laughing_00010",
+    "style": "laughing",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2939999999999997
+  },
+  {
+    "uid": "ex03_laughing_00014",
+    "style": "laughing",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19700000000000006
+  },
+  {
+    "uid": "ex03_laughing_00037",
+    "style": "laughing",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1400000000000001
+  },
+  {
+    "uid": "ex03_laughing_00040",
+    "style": "laughing",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2889999999999999
+  },
+  {
+    "uid": "ex03_laughing_00104",
+    "style": "laughing",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.182
+  },
+  {
+    "uid": "ex03_laughing_00134",
+    "style": "laughing",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14
+  },
+  {
+    "uid": "ex03_laughing_00143",
+    "style": "laughing",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.33399999999999996
+  },
+  {
+    "uid": "ex03_laughing_00175",
+    "style": "laughing",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2699999999999999
+  },
+  {
+    "uid": "ex03_laughing_00198",
+    "style": "laughing",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19999999999999996
+  },
+  {
+    "uid": "ex03_laughing_00205",
+    "style": "laughing",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17
+  },
+  {
+    "uid": "ex03_laughing_00226",
+    "style": "laughing",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1200000000000001
+  },
+  {
+    "uid": "ex03_laughing_00269",
+    "style": "laughing",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14899999999999997
+  },
+  {
+    "uid": "ex03_laughing_00285",
+    "style": "laughing",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.186
+  },
+  {
+    "uid": "ex03_laughing_00343",
+    "style": "laughing",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18399999999999994
+  },
+  {
+    "uid": "ex03_laughing_00376",
+    "style": "laughing",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17799999999999994
+  },
+  {
+    "uid": "ex03_sad_00010",
+    "style": "sad",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20000000000000018
+  },
+  {
+    "uid": "ex03_sad_00014",
+    "style": "sad",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.184
+  },
+  {
+    "uid": "ex03_sad_00037",
+    "style": "sad",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13999999999999999
+  },
+  {
+    "uid": "ex03_sad_00040",
+    "style": "sad",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19299999999999995
+  },
+  {
+    "uid": "ex03_sad_00104",
+    "style": "sad",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1700000000000003
+  },
+  {
+    "uid": "ex03_sad_00134",
+    "style": "sad",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15000000000000002
+  },
+  {
+    "uid": "ex03_sad_00143",
+    "style": "sad",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.39000000000000007
+  },
+  {
+    "uid": "ex03_sad_00175",
+    "style": "sad",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.32000000000000006
+  },
+  {
+    "uid": "ex03_sad_00198",
+    "style": "sad",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17999999999999994
+  },
+  {
+    "uid": "ex03_sad_00205",
+    "style": "sad",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16099999999999934
+  },
+  {
+    "uid": "ex03_sad_00226",
+    "style": "sad",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17000000000000015
+  },
+  {
+    "uid": "ex03_sad_00269",
+    "style": "sad",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1200000000000001
+  },
+  {
+    "uid": "ex03_sad_00285",
+    "style": "sad",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16700000000000004
+  },
+  {
+    "uid": "ex03_sad_00343",
+    "style": "sad",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.21599999999999986
+  },
+  {
+    "uid": "ex03_sad_00376",
+    "style": "sad",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.21399999999999997
+  },
+  {
+    "uid": "ex03_whisper_00010",
+    "style": "whisper",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20999999999999996
+  },
+  {
+    "uid": "ex03_whisper_00014",
+    "style": "whisper",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15500000000000005
+  },
+  {
+    "uid": "ex03_whisper_00037",
+    "style": "whisper",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12699999999999995
+  },
+  {
+    "uid": "ex03_whisper_00040",
+    "style": "whisper",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.242
+  },
+  {
+    "uid": "ex03_whisper_00104",
+    "style": "whisper",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14599999999999994
+  },
+  {
+    "uid": "ex03_whisper_00134",
+    "style": "whisper",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.139
+  },
+  {
+    "uid": "ex03_whisper_00143",
+    "style": "whisper",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.264
+  },
+  {
+    "uid": "ex03_whisper_00175",
+    "style": "whisper",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.22799999999999995
+  },
+  {
+    "uid": "ex03_whisper_00198",
+    "style": "whisper",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19999999999999996
+  },
+  {
+    "uid": "ex03_whisper_00205",
+    "style": "whisper",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13200000000000003
+  },
+  {
+    "uid": "ex03_whisper_00226",
+    "style": "whisper",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1200000000000001
+  },
+  {
+    "uid": "ex03_whisper_00269",
+    "style": "whisper",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1299999999999999
+  },
+  {
+    "uid": "ex03_whisper_00285",
+    "style": "whisper",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18299999999999997
+  },
+  {
+    "uid": "ex03_whisper_00343",
+    "style": "whisper",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17599999999999993
+  },
+  {
+    "uid": "ex03_whisper_00376",
+    "style": "whisper",
+    "speaker": "ex03",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.192
+  },
+  {
+    "uid": "ex04_confused_00004",
+    "style": "confused",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19300000000000003
+  },
+  {
+    "uid": "ex04_confused_00015",
+    "style": "confused",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2800000000000001
+  },
+  {
+    "uid": "ex04_confused_00080",
+    "style": "confused",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.272
+  },
+  {
+    "uid": "ex04_confused_00099",
+    "style": "confused",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19700000000000026
+  },
+  {
+    "uid": "ex04_confused_00147",
+    "style": "confused",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20299999999999996
+  },
+  {
+    "uid": "ex04_confused_00158",
+    "style": "confused",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16999999999999993
+  },
+  {
+    "uid": "ex04_confused_00183",
+    "style": "confused",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18
+  },
+  {
+    "uid": "ex04_confused_00206",
+    "style": "confused",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.23599999999999996
+  },
+  {
+    "uid": "ex04_confused_00209",
+    "style": "confused",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12
+  },
+  {
+    "uid": "ex04_confused_00254",
+    "style": "confused",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.194
+  },
+  {
+    "uid": "ex04_confused_00278",
+    "style": "confused",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.28800000000000026
+  },
+  {
+    "uid": "ex04_confused_00284",
+    "style": "confused",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2590000000000001
+  },
+  {
+    "uid": "ex04_confused_00295",
+    "style": "confused",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2300000000000002
+  },
+  {
+    "uid": "ex04_confused_00327",
+    "style": "confused",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.292
+  },
+  {
+    "uid": "ex04_confused_00334",
+    "style": "confused",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14999999999999974
+  },
+  {
+    "uid": "ex04_default_00004",
+    "style": "default",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13200000000000003
+  },
+  {
+    "uid": "ex04_default_00015",
+    "style": "default",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1400000000000001
+  },
+  {
+    "uid": "ex04_default_00080",
+    "style": "default",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.143
+  },
+  {
+    "uid": "ex04_default_00099",
+    "style": "default",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13000000000000012
+  },
+  {
+    "uid": "ex04_default_00147",
+    "style": "default",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16199999999999998
+  },
+  {
+    "uid": "ex04_default_00158",
+    "style": "default",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1299999999999999
+  },
+  {
+    "uid": "ex04_default_00183",
+    "style": "default",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14000000000000012
+  },
+  {
+    "uid": "ex04_default_00206",
+    "style": "default",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15799999999999997
+  },
+  {
+    "uid": "ex04_default_00209",
+    "style": "default",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.09000000000000002
+  },
+  {
+    "uid": "ex04_default_00254",
+    "style": "default",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.10999999999999999
+  },
+  {
+    "uid": "ex04_default_00278",
+    "style": "default",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15000000000000002
+  },
+  {
+    "uid": "ex04_default_00284",
+    "style": "default",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15200000000000002
+  },
+  {
+    "uid": "ex04_default_00295",
+    "style": "default",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16599999999999998
+  },
+  {
+    "uid": "ex04_default_00327",
+    "style": "default",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18600000000000005
+  },
+  {
+    "uid": "ex04_default_00334",
+    "style": "default",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.104
+  },
+  {
+    "uid": "ex04_enunciated_00004",
+    "style": "enunciated",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20199999999999999
+  },
+  {
+    "uid": "ex04_enunciated_00015",
+    "style": "enunciated",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2040000000000001
+  },
+  {
+    "uid": "ex04_enunciated_00080",
+    "style": "enunciated",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.25299999999999995
+  },
+  {
+    "uid": "ex04_enunciated_00099",
+    "style": "enunciated",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19900000000000018
+  },
+  {
+    "uid": "ex04_enunciated_00147",
+    "style": "enunciated",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.24600000000000016
+  },
+  {
+    "uid": "ex04_enunciated_00158",
+    "style": "enunciated",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20000000000000018
+  },
+  {
+    "uid": "ex04_enunciated_00183",
+    "style": "enunciated",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.23999999999999994
+  },
+  {
+    "uid": "ex04_enunciated_00206",
+    "style": "enunciated",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.3399999999999998
+  },
+  {
+    "uid": "ex04_enunciated_00209",
+    "style": "enunciated",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.188
+  },
+  {
+    "uid": "ex04_enunciated_00254",
+    "style": "enunciated",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19700000000000023
+  },
+  {
+    "uid": "ex04_enunciated_00278",
+    "style": "enunciated",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2679999999999999
+  },
+  {
+    "uid": "ex04_enunciated_00284",
+    "style": "enunciated",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.286
+  },
+  {
+    "uid": "ex04_enunciated_00295",
+    "style": "enunciated",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.27200000000000024
+  },
+  {
+    "uid": "ex04_enunciated_00327",
+    "style": "enunciated",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2880000000000001
+  },
+  {
+    "uid": "ex04_enunciated_00334",
+    "style": "enunciated",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.21599999999999991
+  },
+  {
+    "uid": "ex04_happy_00004",
+    "style": "happy",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13400000000000006
+  },
+  {
+    "uid": "ex04_happy_00015",
+    "style": "happy",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.11999999999999984
+  },
+  {
+    "uid": "ex04_happy_00080",
+    "style": "happy",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.163
+  },
+  {
+    "uid": "ex04_happy_00099",
+    "style": "happy",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.13800000000000007
+  },
+  {
+    "uid": "ex04_happy_00147",
+    "style": "happy",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18500000000000008
+  },
+  {
+    "uid": "ex04_happy_00158",
+    "style": "happy",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.11999999999999988
+  },
+  {
+    "uid": "ex04_happy_00183",
+    "style": "happy",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14800000000000035
+  },
+  {
+    "uid": "ex04_happy_00206",
+    "style": "happy",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.18799999999999997
+  },
+  {
+    "uid": "ex04_happy_00209",
+    "style": "happy",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.08799999999999991
+  },
+  {
+    "uid": "ex04_happy_00254",
+    "style": "happy",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.11000000000000007
+  },
+  {
+    "uid": "ex04_happy_00278",
+    "style": "happy",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1690000000000001
+  },
+  {
+    "uid": "ex04_happy_00284",
+    "style": "happy",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14700000000000005
+  },
+  {
+    "uid": "ex04_happy_00295",
+    "style": "happy",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15599999999999978
+  },
+  {
+    "uid": "ex04_happy_00327",
+    "style": "happy",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16600000000000004
+  },
+  {
+    "uid": "ex04_happy_00334",
+    "style": "happy",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1100000000000001
+  },
+  {
+    "uid": "ex04_laughing_00004",
+    "style": "laughing",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17900000000000027
+  },
+  {
+    "uid": "ex04_laughing_00015",
+    "style": "laughing",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16999999999999993
+  },
+  {
+    "uid": "ex04_laughing_00080",
+    "style": "laughing",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17800000000000005
+  },
+  {
+    "uid": "ex04_laughing_00099",
+    "style": "laughing",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17700000000000005
+  },
+  {
+    "uid": "ex04_laughing_00147",
+    "style": "laughing",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20299999999999996
+  },
+  {
+    "uid": "ex04_laughing_00158",
+    "style": "laughing",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1499999999999999
+  },
+  {
+    "uid": "ex04_laughing_00183",
+    "style": "laughing",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20900000000000002
+  },
+  {
+    "uid": "ex04_laughing_00206",
+    "style": "laughing",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.29
+  },
+  {
+    "uid": "ex04_laughing_00209",
+    "style": "laughing",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12000000000000008
+  },
+  {
+    "uid": "ex04_laughing_00254",
+    "style": "laughing",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15400000000000014
+  },
+  {
+    "uid": "ex04_laughing_00278",
+    "style": "laughing",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.221
+  },
+  {
+    "uid": "ex04_laughing_00284",
+    "style": "laughing",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2320000000000001
+  },
+  {
+    "uid": "ex04_laughing_00295",
+    "style": "laughing",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2000000000000001
+  },
+  {
+    "uid": "ex04_laughing_00327",
+    "style": "laughing",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.218
+  },
+  {
+    "uid": "ex04_laughing_00334",
+    "style": "laughing",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1400000000000003
+  },
+  {
+    "uid": "ex04_sad_00004",
+    "style": "sad",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1330000000000001
+  },
+  {
+    "uid": "ex04_sad_00015",
+    "style": "sad",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14800000000000033
+  },
+  {
+    "uid": "ex04_sad_00080",
+    "style": "sad",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.153
+  },
+  {
+    "uid": "ex04_sad_00099",
+    "style": "sad",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14000000000000012
+  },
+  {
+    "uid": "ex04_sad_00147",
+    "style": "sad",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17300000000000001
+  },
+  {
+    "uid": "ex04_sad_00158",
+    "style": "sad",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1299999999999999
+  },
+  {
+    "uid": "ex04_sad_00183",
+    "style": "sad",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.2080000000000001
+  },
+  {
+    "uid": "ex04_sad_00206",
+    "style": "sad",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.10100000000000006
+  },
+  {
+    "uid": "ex04_sad_00209",
+    "style": "sad",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.11799999999999994
+  },
+  {
+    "uid": "ex04_sad_00254",
+    "style": "sad",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.12700000000000003
+  },
+  {
+    "uid": "ex04_sad_00278",
+    "style": "sad",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1890000000000001
+  },
+  {
+    "uid": "ex04_sad_00284",
+    "style": "sad",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.19600000000000012
+  },
+  {
+    "uid": "ex04_sad_00295",
+    "style": "sad",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20800000000000002
+  },
+  {
+    "uid": "ex04_sad_00327",
+    "style": "sad",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.20000000000000012
+  },
+  {
+    "uid": "ex04_sad_00334",
+    "style": "sad",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15400000000000025
+  },
+  {
+    "uid": "ex04_whisper_00004",
+    "style": "whisper",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16200000000000006
+  },
+  {
+    "uid": "ex04_whisper_00015",
+    "style": "whisper",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15600000000000006
+  },
+  {
+    "uid": "ex04_whisper_00080",
+    "style": "whisper",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.201
+  },
+  {
+    "uid": "ex04_whisper_00099",
+    "style": "whisper",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1580000000000002
+  },
+  {
+    "uid": "ex04_whisper_00147",
+    "style": "whisper",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17899999999999996
+  },
+  {
+    "uid": "ex04_whisper_00158",
+    "style": "whisper",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16
+  },
+  {
+    "uid": "ex04_whisper_00183",
+    "style": "whisper",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.1779999999999998
+  },
+  {
+    "uid": "ex04_whisper_00206",
+    "style": "whisper",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15699999999999978
+  },
+  {
+    "uid": "ex04_whisper_00209",
+    "style": "whisper",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.14000000000000012
+  },
+  {
+    "uid": "ex04_whisper_00254",
+    "style": "whisper",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.15700000000000014
+  },
+  {
+    "uid": "ex04_whisper_00278",
+    "style": "whisper",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.26100000000000023
+  },
+  {
+    "uid": "ex04_whisper_00284",
+    "style": "whisper",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.22599999999999998
+  },
+  {
+    "uid": "ex04_whisper_00295",
+    "style": "whisper",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.17600000000000016
+  },
+  {
+    "uid": "ex04_whisper_00327",
+    "style": "whisper",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.21599999999999997
+  },
+  {
+    "uid": "ex04_whisper_00334",
+    "style": "whisper",
+    "speaker": "ex04",
+    "status": "aligned",
+    "unknown_phones": 0,
+    "phone_duration_p90": 0.16400000000000006
+  }
+]

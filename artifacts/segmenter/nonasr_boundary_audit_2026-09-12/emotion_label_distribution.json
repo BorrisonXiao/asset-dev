@@ -1,0 +1,13 @@
+{
+  "source": "/export/jsalt26/omnienc/users/cxiao/datasets/nonasr_manifests/cremad_emotion_test.csv",
+  "n": 1431,
+  "labels": {
+    "angry": 187,
+    "neutral": 883,
+    "fearful": 109,
+    "disgust": 107,
+    "happy": 80,
+    "sad": 65
+  },
+  "majority_accuracy": 0.6170510132774284
+}
