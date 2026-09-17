@@ -1,0 +1,126 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Adaptive frequency curriculum proposal</title><script>
+window.MathJax = {
+  tex: {inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']]},
+  svg: {fontCache: 'global'}
+};
+</script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head><body><style>
+:root{color-scheme:light;--surface-0:#f6f5f1;--surface-1:#fcfcfb;--surface-2:#edebe3;
+--border:#dfdcd1;--border-strong:#c7c3b5;--text-primary:#1c1b17;--text-secondary:#55524a;
+--text-muted:#8a8677;--series-sed:#2a78d6;--series-asr:#178a17;--series-speaker:#d55187;
+--pair-sed-asr:#e0692c;--pair-sed-speaker:#5647b0;--diverge-neg:#d83a3a;--grid:#e4e1d6;
+--w-muted:#9b9686;--band:rgba(90,88,78,.07);--ok:#178a17;--bad:#d83a3a;}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme=light])){color-scheme:dark;
+--surface-0:#141311;--surface-1:#1a1a19;--surface-2:#232120;--border:#38362f;
+--border-strong:#4a473d;--text-primary:#f3f1ea;--text-secondary:#c2beb0;--text-muted:#8f8c7e;
+--series-sed:#4a97ee;--series-asr:#3ec03e;--series-speaker:#e06a9c;--pair-sed-asr:#ec8148;
+--pair-sed-speaker:#8878e6;--diverge-neg:#ec6a6a;--grid:#322f29;--w-muted:#6f6c60;
+--band:rgba(200,197,186,.06);--ok:#3ec03e;--bad:#ec6a6a;}}
+:root[data-theme=dark]{color-scheme:dark;--surface-0:#141311;--surface-1:#1a1a19;
+--surface-2:#232120;--border:#38362f;--border-strong:#4a473d;--text-primary:#f3f1ea;
+--text-secondary:#c2beb0;--text-muted:#8f8c7e;--series-sed:#4a97ee;--series-asr:#3ec03e;
+--series-speaker:#e06a9c;--pair-sed-asr:#ec8148;--pair-sed-speaker:#8878e6;
+--diverge-neg:#ec6a6a;--grid:#322f29;--w-muted:#6f6c60;--band:rgba(200,197,186,.06);
+--ok:#3ec03e;--bad:#ec6a6a;}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:var(--surface-0);color:var(--text-primary);font-size:16px;line-height:1.55;
+font-family:Palatino,"Palatino Linotype","Iowan Old Style",Georgia,serif;-webkit-font-smoothing:antialiased}
+.sans{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.mono{font-family:ui-monospace,"SF Mono","Cascadia Code",Consolas,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:960px;margin:0 auto;padding:0 24px}
+header.hero{padding:44px 0 12px}
+h1{font-size:30px;line-height:1.15;margin:0 0 6px;text-wrap:balance}
+.sub{color:var(--text-secondary);font-size:16px}
+.kicker{font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);
+font-family:inherit;margin-bottom:10px}
+section{padding:22px 0;border-top:1px solid var(--border)}
+h2{font-size:21px;margin:0 0 4px;text-wrap:balance}
+.lead{color:var(--text-secondary);margin:0 0 16px}
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:6px 0 4px}
+.tile{background:var(--surface-1);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.tile .l{font-size:12px;letter-spacing:.03em;text-transform:uppercase;color:var(--text-muted)}
+.tile .v{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px}
+.tile .s{font-size:12.5px;color:var(--text-secondary);margin-top:2px}
+.card{background:var(--surface-1);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin:14px 0}
+.card h3{margin:0 0 8px;font-size:15.5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+.chart{width:100%;height:auto;display:block}
+.grid{stroke:var(--grid);stroke-width:1}
+.vmark{stroke:var(--text-muted);stroke-width:1.4;stroke-dasharray:4 4}
+text{fill:var(--text-secondary);font-family:inherit}
+.ax-y{font-size:10.5px;text-anchor:end}.ax-x{font-size:10.5px;text-anchor:middle}
+.ax-title{font-size:11px;text-anchor:middle;fill:var(--text-muted)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:8px 2px 2px;font-size:13px;color:var(--text-secondary)}
+.lg{display:inline-flex;align-items:center;gap:6px}.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.finding{border-left:3px solid var(--diverge-neg);background:var(--band);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:15px}
+.finding.ok{border-left-color:var(--ok)}.finding b{font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0}
+th,td{text-align:right;padding:6px 10px;border-bottom:1px solid var(--border)}
+th:first-child,td:first-child{text-align:left}
+thead th{color:var(--text-muted);font-weight:500;font-size:12.5px;text-transform:uppercase;letter-spacing:.03em}
+.fig{width:100%;border-radius:8px;display:block;border:1px solid var(--border)}
+.cap{font-size:13px;color:var(--text-secondary);margin:6px 2px 2px}.cap .mono{color:var(--text-primary)}
+.asset-label{margin:12px 2px 5px;color:var(--text-muted);font-size:12px;font-weight:600;
+letter-spacing:.06em;text-transform:uppercase}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;border:1px solid var(--border-strong)}
+.muted{color:var(--text-muted)}
+footer{padding:26px 0 60px;color:var(--text-muted);font-size:13px;border-top:1px solid var(--border)}
+.equation{overflow-x:auto;margin:14px 0;padding:14px 16px;border-radius:9px;
+background:var(--surface-2)}
+.equation mjx-container[display="true"]{margin:0!important}
+mjx-container{max-width:100%}
+</style><div class="wrap"><style>
+.wrap{max-width:1100px}
+a{color:var(--series-sed);text-decoration-thickness:1px;text-underline-offset:2px}
+.note{font-size:13px;color:var(--text-secondary)}
+.left-table th,.left-table td{text-align:left;vertical-align:top}
+.left-table th:first-child,.left-table td:first-child{width:20%}
+.matrix th,.matrix td{text-align:left;vertical-align:top}
+.matrix tr.recommended{background:var(--band)}
+.flow{display:grid;grid-template-columns:1fr 44px 1fr 44px 1fr;gap:8px;align-items:stretch;margin:14px 0}
+.flow-box{border:1px solid var(--border);border-radius:12px;padding:13px 14px;background:var(--surface-1)}
+.flow-box strong{display:block;font-size:14px;margin-bottom:4px}
+.flow-box span{display:block;color:var(--text-secondary);font-size:13px}
+.flow-arrow{display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:23px}
+.phase{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:start;margin:12px 0}
+.phase-num{width:36px;height:36px;border-radius:50%;border:1px solid var(--border-strong);display:flex;align-items:center;justify-content:center;font-weight:600;background:var(--surface-1)}
+.phase h3{margin:1px 0 4px;font-size:16px}.phase p{margin:0;color:var(--text-secondary)}
+.accept{color:var(--ok);font-weight:650}.reject{color:var(--bad);font-weight:650}
+code{font-family:ui-monospace,"SF Mono","Cascadia Code",Consolas,monospace;font-size:.92em}
+@media(max-width:900px){.flow{grid-template-columns:1fr}.flow-arrow{height:24px;transform:rotate(90deg)}}
+@media(max-width:760px){.wrap{padding:0 18px}.card{overflow-x:auto}}
+</style><header class="hero"><div class="kicker">Proposal · RL dynamic downsampling</div><h1>Adaptive frequency curriculum</h1><p class="sub">Let task quality lead, increase compression pressure only while held-out performance remains inside a quality floor, and stop at the lowest accepted audio-token frequency rather than guessing one fixed penalty in advance.</p></header><section><h2>0 · Decision summary</h2><div class="stat-row"><div class="tile"><div class="l">Status</div><div class="v">Proposal</div><div class="s">The EMA controller itself has not been run.</div></div><div class="tile"><div class="l">Starting point</div><div class="v">Quality first</div><div class="s">Character-initialized decoder and segmenter, optionally after OPD.</div></div><div class="tile"><div class="l">Controller</div><div class="v">Held-out EMA</div><div class="s">Increase pressure when quality holds; back off when it does not.</div></div><div class="tile"><div class="l">Endpoint</div><div class="v">Last accepted rate</div><div class="s">Stop when the next lower-frequency target fails the quality gate.</div></div></div><div class="finding ok"><b>The proposal is a controller around the existing hard-boundary GRPO loop.</b> It does not differentiate through the discrete segmentation or replace the decoder-quality reward. The controller changes the target rate and rate pressure between short training blocks, using held-out quality to decide whether to continue.</div></section><section><h2>1 · Why a fixed penalty is not enough</h2><p class="lead">The project already has evidence that a single rate weight is not a reliable proxy for the quality–cost frontier. The page distinguishes measured precursors from the unrun adaptive controller.</p><div class="card"><h3>Observed failure modes and safeguards</h3><table class="matrix"><thead><tr><th>Evidence</th><th>What it says</th><th>Design consequence</th></tr></thead><tbody><tr><td>Initial RL collapse</td><td>An unbounded one-sided rate objective reached a zero-variance absorbing state.</td><td>Keep a floor, bounded target, and collapse diagnostics.</td></tr><tr><td>100× lambda sweep</td><td>With std-normalized GRPO and flat rollout quality, reward-side lambda is inert.</td><td>Adaptive pressure must reach the auxiliary rate-loss path, or normalization must change.</td></tr><tr><td>Coarse Phase C</td><td>Rates moved, but ASR frequency wandered and checkpoint selection landed before policy training.</td><td>Do not call a band run a minimum-sufficient frequency frontier.</td></tr><tr><td>Inner/outer pilot</td><td>Minimum training CE and best held-out WER agreed in 0/6 trajectories.</td><td>Use held-out quality for controller decisions, not training reward alone.</td></tr></tbody></table><p class="cap"><strong>Table 1.</strong> Prior evidence motivating the proposal. The entries are observations from earlier studies, not results of this controller.</p></div><div class="finding"><b>Controller signal:</b> validation WER/NLL is deliberately separated from the training-side GRPO reward. Earlier notes show that an undertrained decoder can make the reward improve as the rate falls, even when held-out recognition is not improving.</div></section><section><h2>2 · Proposed controller</h2><p class="lead">The training loop remains on-policy GRPO with K=4 hard rollouts. A short controller interval surrounds it: train, validate, then update the rate target only after the quality gate is evaluated.</p><div class="card"><h3>Performance-first, then controlled compression</h3>
+    <div class="flow">
+      <div class="flow-box"><strong>1 · Adapt for quality</strong><span>Keep rate pressure small. Train the decoder on the current prefixes and let the segmenter improve task quality.</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box"><strong>2 · Propose less frequency</strong><span>Lower the target by one step and increase pressure with a bounded dual update.</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box"><strong>3 · Validate, accept or roll back</strong><span>Use held-out WER/NLL and rate stability. Accept the target or restore the last accepted checkpoint.</span></div>
+    </div>
+    <p class="cap"><strong>Figure 1.</strong> Proposed block-level control loop. This is a design schematic, not a measured training trajectory.</p></div><div class="equation">\[
+\begin{aligned}
+R_{\mathrm{train}}
+  &amp;= Q_{\mathrm{train}}
+   - \lambda_k\,P_f(f_{\mathrm{audio}}, f_k)
+   - \mu\,\max(0,d_{95}-d_{\max})
+   - \alpha_k D_{\mathrm{boundary}}(\pi,\pi_{\mathrm{char}}), \\
+f_{\mathrm{audio}} &amp;= \rho f_{\mathrm{enc}}, \\
+P_f(f,f_k) &amp;= \bigl(\max(0,f-f_k)\bigr)^2
+              + \eta\bigl(\max(0,f_k-f)\bigr)^2.
+\end{aligned}
+\]</div><p class="note"><code>Q_train</code> is the existing detached task-quality signal (for example, negative transcript NLL). The controller target <code>f_k</code> is in audio-token Hz; lower Hz means stronger compression. <code>d_95</code> protects against a small number of excessively long segments. <code>α_k</code> can decay so the policy is allowed to move gradually away from the character initialization.</p><div class="equation">\[
+\begin{aligned}
+\mathrm{accept}_k
+  &amp;= \mathbf{1}\!\left[\operatorname{EMA}(\mathrm{WER}_{\mathrm{dev\mbox{-}other}})_k
+      \le \mathrm{WER}_{\mathrm{best}}+\delta\right], \\
+\mathrm{accept}_k=1 &amp;: \quad
+  f_{k+1}=f_k-\Delta f,\quad
+  \lambda_{k+1}=\operatorname{clip}(\gamma_{\uparrow}\lambda_k,0,\lambda_{\max}), \\
+\mathrm{accept}_k=0 &amp;: \quad
+  \theta\leftarrow\theta_{\mathrm{last\ accepted}},\quad
+  \lambda_{k+1}=\gamma_{\downarrow}\lambda_k.
+\end{aligned}
+\]</div><p class="note">Here <code>δ</code> is the allowed WER tolerance, <code>Δf</code> is one target-rate step, <code>γ↑ &gt; 1</code> increases pressure after an accepted step, and <code>0 &lt; γ↓ &lt; 1</code> eases pressure after a rejected step. The held-out score controls the schedule; it is not back-propagated through the hard boundary sample.</p></section><section><h2>3 · Initial schedule and acceptance rules</h2><p class="lead">The ladder below is an initial search path, not a claim that these are the task-optimal rates. The controller may stop early or retain an intermediate target.</p><div class="card"><table class="matrix"><thead><tr><th>Block</th><th>Nominal target</th><th>Main purpose</th><th>Advance condition</th></tr></thead><tbody><tr><td>0 · Quality bridge</td><td>14.5 Hz</td><td>Adapt the decoder to the current or OPD-sampled prefixes while the boundary policy stays anchored.</td><td>Decoder and dev WER are finite and stable.</td></tr><tr><td>1 · First reduction</td><td>12.5 Hz</td><td>Turn on bounded auxiliary rate pressure and retain the best accepted checkpoint.</td><td>Two held-out evaluations inside the quality floor.</td></tr><tr><td>2 · Controlled reduction</td><td>11.0 Hz</td><td>Continue the same joint objective; monitor rate variance and long-segment tails.</td><td>Dev-other WER stable; no collapse signal.</td></tr><tr><td>3 · Lower-rate probe</td><td>10.0 Hz</td><td>Test whether additional compression still preserves task performance.</td><td>Accept only if the predeclared gate passes.</td></tr></tbody></table><p class="cap"><strong>Table 2.</strong> Illustrative target ladder from the earlier proposal. Frequencies are reader-facing audio-token rates; lower is more compressed.</p></div><div class="card"><h3>Quality gate</h3><table class="matrix"><thead><tr><th>Decision</th><th>Rule</th><th>Action</th></tr></thead><tbody><tr><td>Quality holds</td><td>Dev-other WER EMA remains within δ of the best accepted value for two checks, with dev-clean as a secondary guard.</td><td><span class="accept">Accept</span> the target, save checkpoint, lower the next target, and increase pressure modestly.</td></tr><tr><td>Quality degrades</td><td>Dev-other WER exceeds the quality floor or the rate/tail constraint becomes unstable.</td><td><span class="reject">Rollback</span> to the last accepted checkpoint, ease pressure once, then stop if the retry fails.</td></tr><tr><td>No useful reduction</td><td>The lower target fails while the previous target passes.</td><td>Report the previous target as the last accepted operating point; do not force more downsampling.</td></tr></tbody></table><p class="cap"><strong>Table 3.</strong> Predeclared controller decisions. A rejected lower target is evidence about the quality–rate frontier, not a reason to continue increasing pressure.</p></div></section><section><h2>4 · Where the rate signal must enter</h2><p class="lead">The adaptive part should not rely on changing only the scalar multiplier in the realized-reward channel. That channel is the wrong place to express pressure when the rollout group has flat quality.</p><div class="card"><table class="matrix"><thead><tr><th>Path</th><th>Role</th><th>Recommendation</th></tr></thead><tbody><tr><td>Reward</td><td>Subtract the realized per-rollout rate penalty before group-relative advantage estimation.</td><td>Keep for auditable realized cost, but do not expect lambda alone to control the gradient in flat groups.</td></tr><tr><td>Auxiliary rate loss</td><td>Apply differentiable pressure to the conditional boundary probabilities along sampled histories.</td><td>Use this path for the adaptive multiplier; it is the path where the weight scales the gradient.</td></tr><tr><td>Held-out controller</td><td>Update target and multiplier between training blocks from dev WER/NLL and measured frequency.</td><td>Use validation only for control decisions, never as a differentiable reward shortcut.</td></tr></tbody></table><p class="cap"><strong>Table 4.</strong> Recommended separation of optimization and control signals. The auxiliary path is required for an effective adaptive rate weight under std-normalized GRPO.</p><div class="finding ok"><b>Implementation constraint:</b> for the full-history Transformer policy, the auxiliary term is a conditional-expectation surrogate along sampled histories, not an exact marginal expected rate. Report it that way and compare it with realized frequency.</div></div></section><section><h2>5 · Experiment boundary and logging</h2><div class="card"><h3>Minimal execution plan</h3><div class="phase"><div class="phase-num">1</div><div><h3>One-seed calibration</h3><p>Start from the best character-initialized segmenter and decoder. If OPD is used, finish the frozen-segmenter decoder screen first. Calibrate <code>Δf</code>, <code>δ</code>, <code>γ↑</code>, and <code>γ↓</code> on a short run.</p></div></div><div class="phase"><div class="phase-num">2</div><div><h3>One-seed full-data gate</h3><p>Run the staged controller with K=4, hard boundaries, the existing decoder update, and the auxiliary rate channel. Save every accepted and rejected checkpoint.</p></div></div><div class="phase"><div class="phase-num">3</div><div><h3>Replication only after success</h3><p>Use the existing gate: improve dev-other by at least 0.3 WER at similar frequency, or keep WER within 0.1 while reducing frequency by at least 15%.</p></div></div><div class="phase"><div class="phase-num">4</div><div><h3>Report the frontier honestly</h3><p>Report the last accepted target, the first rejected target, realized Hz, WER, <code>d_95</code>, <code>zero_variance_share</code>, rollback count, and whether selection used a pre- or post-policy checkpoint.</p></div></div></div><div class="card"><table class="left-table"><thead><tr><th>Log every controller interval</th><th>Why it matters</th></tr></thead><tbody><tr><td>target Hz, realized Hz, rate penalty, auxiliary rate loss</td><td>Separates requested pressure from what the policy actually emitted.</td></tr><tr><td>dev-clean/dev-other WER and EMA state</td><td>Makes each accept/rollback decision auditable.</td></tr><tr><td>lambda, target step, accepted/rejected state</td><td>Reconstructs the controller trajectory.</td></tr><tr><td>d95 segment duration, rho std, zero-variance share</td><td>Catches pathological long segments and GRPO collapse.</td></tr><tr><td>checkpoint id and trainable phase</td><td>Prevents the Phase-C selection mistake from hiding the policy result.</td></tr></tbody></table><p class="cap"><strong>Table 5.</strong> Minimum audit record for a dynamic rate objective. These values are proposed logging requirements, not collected results.</p></div></section><section><h2>6 · What would count as success</h2><div class="finding ok"><b>Success is not merely a lower rate.</b> The controller succeeds if it finds a lower accepted audio-token frequency without crossing the held-out quality floor, and if the first rejected target is reproducible enough to make the stopping point meaningful across seeds.</div><div class="card"><table class="left-table"><thead><tr><th>Outcome</th><th>Interpretation</th></tr></thead><tbody><tr><td>Quality holds as target decreases</td><td>The current decoder/policy can exploit a lower-rate prefix; continue to the next target.</td></tr><tr><td>Quality fails immediately after a stable target</td><td>The previous accepted rate is the minimum sufficient point for that seed; retain it.</td></tr><tr><td>Rate changes but quality is flat and lambda has no effect</td><td>The reward path is saturated; inspect auxiliary loss and rollout diversity before interpreting the rate.</td></tr><tr><td>Different seeds stop at different targets</td><td>The frontier is noisy; report a distribution or revisit initialization/controller step size.</td></tr></tbody></table><p class="cap"><strong>Table 6.</strong> Possible outcomes and the corresponding claim. None should be described as a completed result until the controller is run and audited.</p></div></section><footer>Proposal generated from the project’s rate-curriculum, lambda-invariance, and Phase-C analysis records. The adaptive controller is unrun; measured precursor results are labeled as such.</footer></div></body></html>
