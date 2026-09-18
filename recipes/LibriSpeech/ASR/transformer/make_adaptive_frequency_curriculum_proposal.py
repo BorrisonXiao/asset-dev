@@ -79,6 +79,7 @@ def build(args: argparse.Namespace) -> None:
         ("bilevel", "Connection to bilevel training"),
         ("objective", "Every objective component"),
         ("controller", "The proposed loop"),
+        ("schedule", "Concrete experiment plan"),
         ("experiment", "How to test it"),
     ]:
         body += f'<a href="#{anchor}">{label}</a>'
@@ -137,8 +138,8 @@ def build(args: argparse.Namespace) -> None:
         '14.5 → 12.5 → 11.0 → 10.0 Hz ladder assumed character-based initialization. '
         'For this continuation, start at the measured validation rate. If it is 11.0 Hz, '
         'an illustrative search is 11.0 → 10.5 → 10.0 → 9.5 Hz. A 0.5 Hz step is a '
-        'pilot setting to calibrate, not a measured optimum. The search must also respect '
-        'a declared lower safety bound and segment-duration limits.</p>'
+        'pilot setting to calibrate, not a measured optimum. Section 6 gives the exact '
+        'draft schedule, including the lowest target and stopping rules.</p>'
         '<p>Use a small continuation learning rate with an explicit new update budget and '
         'scheduler. The implementation must handle the saved 24,000-step counter and '
         'saved scheduler state deliberately, and verify all restored components. '
@@ -181,9 +182,10 @@ m_k &= \alpha w_k + (1-\alpha)m_{k-1}.
         'A candidate acceptance tolerance is <b>0.1 absolute WER percentage points</b>; '
         'for example, a 5.0% reference permits at most 5.1%. A 0.3-point raw deterioration '
         'is an illustrative emergency stop. These defaults require pilot calibration.</p>'
-        '<p>Anchor the limit to the initial checkpoint’s validation score and tighten it '
-        'only after a confirmed improvement. Do not grant a fresh degradation allowance '
-        'at every rate step. Check dev-clean separately as a secondary guard. After '
+        '<p>For the first pilot, keep the limit fixed at the initial checkpoint’s '
+        'validation score plus the allowance. Do not grant a fresh degradation allowance '
+        'at every rate step. Tightening the limit after confirmed improvements can be '
+        'tested later. Check dev-clean separately as a secondary guard. After '
         'rollback, restore the saved EMA and controller history from the accepted state. '
         'Use a fixed validation set and evaluation protocol throughout.</p>',
     )
@@ -566,8 +568,10 @@ r_{ik}^{\mathrm{recovery}} &= -\ell_\theta(i,b_{ik}), \\
         'quality-preserving reduction that survives that measurement.</p>'
         '<p>Give compression and recovery finite update budgets. In band mode, setting '
         'the active rate weight to zero removes both upper- and lower-band penalties; '
-        'if an auxiliary route is enabled, disable it too. Rate/duration/diversity '
-        'emergency checks remain external stop criteria. There is no hidden rate loss '
+        'if an auxiliary route is enabled, disable it too. The WER and update-limit '
+        'stops are specified in Section 6. Log segment durations and rollout diversity '
+        'as diagnostics; this first pilot does not invent extra thresholds for them. '
+        'There is no hidden rate loss '
         'or boundary anchor left in the quality-only phase. If all K task rewards '
         'are identical, the GRPO task gradient is zero; an unfrozen policy needs '
         'informative rollout differences to learn useful allocation.</p>'
@@ -577,9 +581,9 @@ r_{ik}^{\mathrm{recovery}} &= -\ell_\theta(i,b_{ik}), \\
                 [
                     ["The new target is not yet reached and quality is acceptable", "Continue the bounded compression block using the selected rate route. Change the upper band target explicitly; do not rely solely on a reward-weight ramp."],
                     ["The lower rate is reached, or quality worsens modestly", "Enter joint recovery: remove every rate penalty and continue updating the segmenter and recognizer."],
-                    ["After recovery, raw WER and EMA pass twice and actual Hz remains within the lower target tolerance", "Accept the checkpoint only if its rate is lower than the previous accepted point and the original LS960 reference. Save model, optimizer/scheduler and controller history."],
+                    ["After recovery, raw WER and EMA pass twice and actual Hz is at or below the lower target", "Accept the checkpoint only if its rate is lower than the previous accepted point and the original LS960 reference. Save model, optimizer and controller history."],
                     ["Quality recovers but Hz rises beyond the target", "Record a rate rebound, not successful compression. Allow one predeclared gentler compression–recovery retry, or restore the last accepted state."],
-                    ["Quality still fails, or an emergency WER/duration/diversity limit is crossed", "Restore the complete accepted state; emergency stops act immediately. Stop this search if the allowed retry also fails."],
+                    ["Recovery runs out of updates, or WER worsens sharply", "A recovery timeout allows one smaller rate-step retry. A large raw-WER increase ends the run immediately. Section 6 defines both rules."],
                 ],
             )
             + caption("Table", 5, "The acceptance rate is measured after quality-only recovery. The target remains a decision criterion while its training penalty is disabled."),
@@ -587,10 +591,133 @@ r_{ik}^{\mathrm{recovery}} &= -\ell_\theta(i,b_{ik}), \\
     )
 
     body += section(
-        "experiment", "6 · Test the continuation against equal extra training",
-        '<p>First calibrate one seed from its selected LS960 state. Hold data exposure, '
-        'total real optimizer updates, starting weights and validation cadence fixed '
-        'across the continuation arms in Table 6. Use all three LS960 training splits. '
+        "schedule", "6 · Concrete experiment plan",
+        '<p><b>First run: seed 3407, starting from its selected LS960 checkpoint.</b> '
+        'Keep task learning on throughout. Turn the existing reward-side rate penalty '
+        'on to reduce Hz, and off to recover WER. Do not add the auxiliary rate loss, '
+        'boundary KL, entropy bonus or bilevel lookahead in this first run.</p>'
+        '<p>This is a draft to implement, not an experiment already run. Table 6 '
+        'lists settings we already used. Table 7 makes the new pilot choices explicit; '
+        'their values are not known to be optimal.</p>'
+        + hk.card(
+            table(
+                ["Keep from LS960", "Setting"],
+                [
+                    ["Training data", "All three splits: <code>train-clean-100</code>, <code>train-clean-360</code>, <code>train-other-500</code>."],
+                    ["Model", "Transformer-AR segmenter: 4 layers, width 256, 4 heads, 64-frame history. BiGRU pooler: 1 layer, hidden size 128. Keep the saved projection and LoRA."],
+                    ["What learns", "Boundary policy, BiGRU, projection and LoRA in every phase. WavLM and the Llama base stay frozen."],
+                    ["Task losses", "Transcript CE plus on-policy GRPO with negative transcript NLL as the task reward; <code>grpo_k=4</code>, <code>grpo_normalize_std=True</code>, <code>pg_weight=1</code>."],
+                    ["Rate penalty", "Reward only; select <code>rate_channel=reward</code>, <code>rate_mode=band</code>. The existing enabled weight is <code>lambda_cap=1</code>. Keep the lower band edge at 7.5 Hz (<code>rho_lo=0.15</code>)."],
+                    ["Optimizer and batches", "AdamW, weight decay 0; BF16; 300-second dynamic training batches; gradient accumulation 1. One A100 per run."],
+                ],
+            )
+            + caption("Table", 6, "Existing LS960 settings retained for the pilot. Accumulation 1 is confirmed by the runtime log; the saved YAML's value of 4 was overridden by the launcher."),
+        )
+        + hk.card(
+            table(
+                ["Pilot setting", "Draft value and meaning"],
+                [
+                    ["Learning rates", "Boundary policy + BiGRU: <code>5e-6</code>. Projection + LoRA: <code>2e-5</code>. These are one tenth of the LS960 rates. Keep them constant in every phase; no new LR warmup or decay."],
+                    ["Validation", "Evaluate full dev-other and dev-clean before training, then every 500 new optimizer updates. Use greedy boundaries and text decoding, with batch size 8 throughout. Save a checkpoint at each check."],
+                    ["EMA", "Use 20% of the new dev-other WER and 80% of the previous EMA (<code>alpha=0.2</code>). Start the EMA at the measured LS960 dev-other WER."],
+                    ["Quality limits", "Dev-other raw WER and its EMA must both be at most initial dev-other WER + 0.1 percentage point. Raw dev-clean WER must be at most its initial value + 0.1 point."],
+                    ["Large WER increase", "If raw WER on either dev set exceeds that set's initial WER by more than 0.3 point, end the whole run. Do not wait for EMA."],
+                    ["Rate step", "Lower the target by 0.5 Hz; set <code>rho_hi</code> to the target in Hz divided by 50. Keep the lower band edge at 7.5 Hz; never set the upper target below it. One failed attempt may be retried with a 0.25 Hz step."],
+                    ["Phase lengths", "At most 2,000 updates each for the initial task-only phase, each compression phase and each recovery phase: four validation checks per phase. Recovery needs two consecutive passing checks."],
+                    ["Total length", "At most 8,000 additional optimizer updates for the run, including failed attempts and retries. Count new updates separately from the saved LS960 step; restoring a checkpoint does not refund used updates."],
+                ],
+            )
+            + caption("Table", 7, "Proposed pilot settings. The 0.2 EMA weight, 0.1/0.3 WER limits and 0.5 Hz step were already candidate values on this page. The reduced LRs, phase budgets and 0.25 Hz retry are new draft choices, not measured findings."),
+        )
+        + '<h3>Exactly how EMA is used</h3>'
+        '<p>After each validation, compute the new dev-other EMA by adding '
+        '<b>20% of the new WER and 80% of the previous EMA</b>. '
+        'The raw dev-clean WER is a separate check; it is not mixed into that average. '
+        'Use the initial LS960 WER values for the limits throughout the pilot. '
+        'Training loss and training reward do not decide when to switch phases.</p>'
+        '<p>A <b>passing quality check</b> means all three quality limits in Table 7 '
+        'are met. Keep EMA running when the phase changes. Reset only the count of '
+        'consecutive passes; a failed quality check also resets this count. '
+        'Two checks must come from two different checkpoints '
+        'after the rate penalty was removed. On rollback, restore the saved EMA '
+        'with the model. EMA is a decision check, not a training loss or a model-weight '
+        'average. The phase sets the rate weight to 0 or 1; this pilot does not '
+        'compute a continuously changing rate weight from EMA.</p>'
+        + '<h3>Training order and phase changes</h3>'
+        + hk.card(
+            table(
+                ["Phase", "What runs", "When it ends / what happens next"],
+                [
+                    ["0 · Check the starting model", "Load the selected LS960 model and matching optimizer state. Measure WER and Hz on the fixed dev sets. Save this untouched starting checkpoint.", "Set the WER limits and initial EMA from these measurements, not the published test scores. Then start task-only learning."],
+                    ["1 · Task-only learning", "Train both models with CE and task-only GRPO. Rate weight = 0.", "After two consecutive passing quality checks, save the state and start compression. This takes at least 1,000 updates. If it cannot pass within 2,000 updates, end the run and retain LS960."],
+                    ["2 · Reduce Hz", "Keep both models learning. Rate weight = 1. Set the upper target 0.5 Hz below the smaller of the saved state's dev-other rate and the original LS960 rate. If this would be below 7.5 Hz, end this pilot instead.", "Turn the rate penalty off at the first check where Hz reaches the target, any quality limit fails, or this phase reaches 2,000 updates. Then enter recovery. A >0.3-point raw-WER increase instead ends the entire run."],
+                    ["3 · Recover WER", "Train both models with CE and task-only GRPO again. Rate weight = 0; keep EMA running. Do not hold the boundary count fixed.", "After two consecutive passing quality checks, accept only if dev-other Hz is at or below the target at both checks. Save the second checkpoint, then try the next 0.5 Hz reduction. If quality passes but Hz rebounds above the target, or quality fails to pass twice within 2,000 updates, reject this attempt."],
+                ],
+            )
+            + caption("Table", 8, "The concrete pilot schedule. Hz means 50 times the mean per-utterance kept ratio on dev-other, using greedy boundaries, matching the existing rate reporting. Also log dev-clean Hz, but use dev-other Hz for the rate decisions."),
+        )
+        + '<p><b>After a rejected attempt:</b> restore the model, optimizer and EMA '
+        'saved before that rate change. Retry once, with a 0.25 Hz reduction instead '
+        'of 0.5 Hz, and the same phase limits. If the retry passes recovery, accept '
+        'it and return to 0.5 Hz steps. If the retry also fails, end the run. '
+        'Do not keep switching between phases without a limit.</p>'
+        + '<h3>“Stop the rate penalty” is not “stop training”</h3>'
+        '<p><b>A small quality failure stops only the rate penalty.</b> Training '
+        'continues in recovery. Once quality passes twice and the lower Hz is '
+        'retained, compression starts again at the next target. If quality recovers '
+        'only by adding too many boundaries, use the smaller-step retry above; '
+        'do not count it as a successful reduction.</p>'
+        '<p><b>The whole run ends</b> on a >0.3-point raw-WER increase, failure of '
+        'the initial task-only phase, failure of the smaller-step retry, the '
+        '8,000-update limit, or a proposed next target below 7.5 Hz. At the update limit, '
+        'a final recovery check may still accept a checkpoint if it completes the '
+        'two-check rule; otherwise keep the previous accepted result. Non-finite '
+        'losses or runtime errors also stop the run and need inspection.</p>'
+        '<p>At the end, restore the lowest-Hz checkpoint that passed recovery. '
+        'If no reduction passed, keep the original LS960 checkpoint. Save any '
+        'quality-only improvement separately, but do not report it as compression. '
+        'There is <b>no automatic task-only training after a whole-run stop</b>. '
+        'A longer run would be a new experiment.</p>'
+        + hk.card(
+            '<p>Suppose the initial dev-other WER is 5.0%: the quality limit is '
+            '5.1%, and the whole-run stop is above 5.3%. A check at 5.2% turns '
+            'the rate penalty off, but training continues. A check at 5.35% ends '
+            'the run. If raw WER later returns to 5.05% but EMA is still 5.12%, '
+            'recovery continues: the EMA has not passed yet. These are examples, '
+            'not LS960 measurements.</p>',
+            title="Example: two different meanings of stop",
+        )
+        + '<p>This plan does not wait for task performance to stop improving. '
+        'It ends a task-only phase when the required quality is confirmed twice, '
+        'or when its update limit is reached. Task learning continues during '
+        'compression too; only the additional pressure to reduce Hz changes.</p>'
+        + '<h3>Run order and checks before launch</h3>'
+        '<p>First verify checkpoint loading, both validation sets, phase switches '
+        'and rollback without a full training run. Then run the seed-3407 adaptive '
+        'pilot and the ordinary/fixed-pressure comparisons in Section 7, using '
+        'the same proposed LRs and validation cadence. The fixed-pressure run '
+        'keeps the adaptive run’s first lower target for its whole run. '
+        'Only after this works should the same settings be repeated with seeds '
+        '3408 and 3409. Keep auxiliary rate loss and bilevel lookahead for later tests.</p>'
+        '<p>The current LS960 trainer does not yet implement this EMA schedule '
+        'or its two-dev-set decisions. Use a new output directory, verify the '
+        'restored optimizer groups use the new LRs, and set <code>warmup_epochs</code>, '
+        '<code>warmup_fraction_of_epoch</code> and <code>warmup_optimizer_steps</code> '
+        'to zero so the boundary policy learns from the first new '
+        'update. Preserve the training-data order and used-update count across '
+        'rollbacks. Log phase, target, raw WER, EMA, Hz, rate weight, used updates '
+        'and the reason for every switch or stop. No training is launched by '
+        'this report revision.</p>',
+    )
+
+    body += section(
+        "experiment", "7 · Compare against the same extra training budget",
+        '<p>Use the same starting weights, learning rates, training-data order and '
+        'validation cadence across the continuation arms in Table 9, each with '
+        'an 8,000-update maximum. If the adaptive run stops after N new updates, '
+        'also compare against control checkpoints chosen using only their first '
+        'N updates; failed attempts count toward N. Do not call unequal actual '
+        'training lengths compute-matched. Use all three LS960 training splits. '
         'The static reward-penalty arm helps distinguish the value of the adaptive schedule '
         'from the value of simply adding compression pressure.</p>'
         + hk.card(
@@ -605,9 +732,14 @@ r_{ik}^{\mathrm{recovery}} &= -\ell_\theta(i,b_{ik}), \\
                     ["Adaptive + decoder lookahead (follow-up)", "Add the earlier support/query decoder-only lookahead within compression blocks.", "Whether post-adaptation rollout rewards add value once rate control is established."],
                 ],
             )
-            + caption("Table", 6, "Proposed comparisons. Keep the rate route matched in the first static/adaptive pair. Test the auxiliary route separately; add lookahead after a stable controller pilot. Record wall time and GPU memory as well as update counts."),
+            + caption("Table", 9, "Proposed comparisons. Keep the rate route matched in the first static/adaptive pair. Test the auxiliary route separately; add lookahead after a stable controller pilot. Record wall time and GPU memory as well as update counts."),
         )
-        + '<p>Keep a fixed dev-other controller set and dev-clean guard. Repeated '
+        + '<p>The two fixed-objective controls do not switch phases or retry. '
+        'They share the same whole-run raw-WER stop and update limit. For each '
+        'control, select the lowest-Hz checkpoint whose quality passed at two '
+        'consecutive checks within the comparison budget; if none passes, keep '
+        'the original LS960 checkpoint. Use validation only for this selection.</p>'
+        '<p>Keep a fixed dev-other controller set and dev-clean guard. Repeated '
         'controller decisions use validation information, so reserve test-clean/test-other '
         'for the final selected checkpoints after the recipe is fixed. A successful '
         'one-seed pilot should be repeated with all three original seeds.</p>'
@@ -635,18 +767,18 @@ r_{ik}^{\mathrm{recovery}} &= -\ell_\theta(i,b_{ik}), \\
     )
 
     body += section(
-        "evidence", "7 · Earlier evidence behind the safeguards",
+        "evidence", "8 · Earlier evidence behind the safeguards",
         hk.card(
             table(
                 ["Recorded observation", "Consequence for this proposal"],
                 [
-                    ["An unbounded one-sided rate objective collapsed to a zero-variance state.", "Use a bounded compression band and keep external duration/diversity checks active during quality-only recovery."],
+                    ["An unbounded one-sided rate objective collapsed to a zero-variance state.", "Use a bounded compression band. Monitor segment durations and rollout diversity, and stop for the declared WER failures."],
                     ["A 100× rate-weight sweep was ineffective in flat-quality, std-normalized GRPO groups.", "Do not equate a reward-weight ramp with stronger gradients. Move the target band explicitly and compare an auxiliary-only route separately."],
                     ["Phase-C rates moved, but ASR rate wandered and multi-task checkpoint selection often chose a pre-policy state.", "Track each accepted rate and evaluate the matching checkpoint, including the starting model."],
                     ["Across six retrospective trajectories, minimum training CE and best dev-clean WER selected the same epoch in 0/6 cases.", "Use validation quality to control compression. This mismatch motivates the approach but does not establish that it will improve WER."],
                 ],
             )
-            + caption("Table", 7, "Measured precursors from the project records. None is a result of the adaptive continuation proposed on this page."),
+            + caption("Table", 10, "Measured precursors from the project records. None is a result of the adaptive continuation proposed on this page."),
         )
         + '<p class="note">Provenance: '
         + link(f"{SOURCE}/plans/bilevel_optimization.md", "support/query bilevel plan")
