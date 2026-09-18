@@ -66,7 +66,7 @@ def section(anchor: str, title: str, body: str, lead: str = "") -> str:
 def build(args: argparse.Namespace) -> None:
     body = f"<style>{EXTRA_CSS}</style>"
     body += hk.hero(
-        "Proposal · Revised 17 September 2026",
+        "Proposal · Revised 18 September 2026",
         "Adaptive frequency curriculum",
         "Continue learning from the trained LS960 checkpoint: consolidate task performance, "
         "reduce the audio-token rate, let both the segmenter and decoder recover task performance, and keep the reduction "
@@ -258,8 +258,8 @@ m_k &= \alpha w_k + (1-\alpha)m_{k-1}.
                 ["Component", "What it does / where gradients go", "LS960 Transformer-AR setting"],
                 [
                     [r"\(\mathcal{L}_{\mathrm{CE}}\)", "Transcript prediction on the greedy hard segmentation. Updates BiGRU, projection and LoRA; does not differentiate through boundary decisions.", "Active, weight 1."],
-                    [r"\(\omega\mathcal{L}_{\mathrm{GRPO}}(r)\)", "Uses detached rollout advantages to update the boundary policy. Its reward already combines task quality and any enabled realized-rate penalty.", r"Active; \(\omega=1\) (<code>pg_weight</code>)."],
-                    [r"\(\lambda_s^A\mathcal{L}_{\mathrm{rate,aux}}\)", "A separate differentiable rate surrogate acting on boundary probabilities. This is an additional rate-gradient route, not an expansion of the GRPO term.", r"Off: \(\lambda_s^A=0\). Only enable in an explicitly declared alternative arm."],
+                    [r"\(\omega\mathcal{L}_{\mathrm{GRPO}}(r)\)", "Multiply each sampled boundary decision’s log probability by its detached, normalized rollout reward. The explicit Bernoulli loss and its logit derivative appear below.", r"Active; \(\omega=1\) (<code>pg_weight</code>)."],
+                    [r"\(\lambda_s^A\mathcal{L}_{\mathrm{rate,aux}}\)", r"Compute soft token count \(1+\sum_t p_{ikt}\), convert it to Hz, and apply the band penalty. Backpropagate that penalty through the probabilities \(p_{ikt}\); the sampled 0/1 cuts stay fixed.", r"Off: \(\lambda_s^A=0\). The equations below define this optional additional objective."],
                     [r"\(-\tau H(\pi_\phi)\)", "An entropy bonus encouraging less certain boundary decisions; its minus sign reflects loss minimization.", r"Off: \(\tau=0\). Keep it off in the first continuation comparison."],
                 ],
             )
@@ -271,10 +271,21 @@ m_k &= \alpha w_k + (1-\alpha)m_{k-1}.
         r'positions and text padding are excluded. If \(N_i\) is the number of valid '
         r'target tokens and \(b_i^{g}\) the greedy segmentation, decoder training uses:</p>'
         + hk.equation(r"""
+\begin{aligned}
+q_{\theta,in}(b)
+ &= P_\theta(y_{in}\mid y_{i,<n},x_i,b), \\
+\ell_\theta(i,b)
+ &= -\frac{1}{N_i}\sum_{n=1}^{N_i}
+      \log q_{\theta,in}(b), \\
 \mathcal{L}_{\mathrm{CE}}
-  = \frac{\sum_i N_i\,\ell_\theta(i,b_i^{g})}
-         {\sum_i N_i}.
+ &= -\frac{1}{\sum_i N_i}
+      \sum_i\sum_{n=1}^{N_i}\log q_{\theta,in}(b_i^g).
+\end{aligned}
 """)
+        + r'<p>\(x_i\) is the speech input, \(y_{in}\) the nth target token, '
+        r'and \(y_{i,&lt;n}\) the preceding reference tokens. '
+        r'\(q_{\theta,in}(b)\) is the recognizer’s probability of the correct token '
+        'given that segmentation.</p>'
         + '<p>This is a mean over all valid text tokens in the batch. For each sampled '
         'segmentation, the task reward is the negative per-utterance NLL. That sampled '
         'NLL is evaluated without gradients: it scores the segmenter’s action. The '
@@ -282,6 +293,12 @@ m_k &= \alpha w_k + (1-\alpha)m_{k-1}.
         + '<h3>Rate cost inside the GRPO reward</h3>'
         + hk.equation(r"""
 \begin{aligned}
+p_{ikt}
+ &= \pi_\phi(b_{ikt}=1\mid x_i,b_{ik,<t}) \\
+ &= \sigma(z_{ikt})=\frac{1}{1+\exp(-z_{ikt})}, \\
+f_{ik}
+ &= \frac{f_{\mathrm{enc}}}{T_i}
+       \left(1+\sum_{t=2}^{T_i}b_{ikt}\right), \\
 r_{ik}
  &= -\ell_\theta(i,b_{ik})
     - \lambda_s^{R} c_s(f_{ik}), \\
@@ -290,7 +307,12 @@ c_s(f)
  &\quad + \left[\max\left(0,\frac{f_{\min}-f}{f_{\mathrm{enc}}}\right)\right]^2.
 \end{aligned}
 """)
-        + r'<p>\(f_{ik}\) is realized audio-token Hz for a sampled segmentation; '
+        + r'<p>\(z_{ikt}\) is the boundary logit from the current policy given the '
+        r'sampled history. \(p_{ikt}\) is its probability of opening a new segment, '
+        r'and \(b_{ikt}\in\{0,1\}\) is the sampled decision. '
+        r'\(T_i\) counts all valid encoder frames, including the first; frame 1 '
+        'already opens the implicit initial segment, so only frames 2 onward '
+        r'contribute new boundary decisions. \(f_{ik}\) is realized audio-token Hz; '
         r'\(f_s\) is the upper target and \(f_{\min}\) the lower edge of the rate band. '
         r'\(f_{\mathrm{enc}}=50\) Hz is the encoder frame rate. The band cost \(c_s\) '
         'is zero inside the band. This formula uses Hz for readability but divides '
@@ -301,30 +323,143 @@ c_s(f)
         '<code>lambda_press</code> and <code>lambda_floor</code> belong to another '
         'rate mode and are inactive here. The implicit first segment is counted once, '
         'plus later boundary events, when computing the token rate.</p>'
-        + '<h3>How the reward becomes a boundary-policy loss</h3>'
+        + '<h3>Expanded GRPO: group statistics, Bernoulli loss and gradient</h3>'
         + hk.equation(r"""
 \begin{aligned}
+\bar r_i &= \frac{1}{K}\sum_{k=1}^K r_{ik}, \\
+\sigma_i
+ &= \sqrt{\frac{1}{K-1}\sum_{k=1}^K(r_{ik}-\bar r_i)^2}, \\
 A_{ik}
- &= \frac{r_{ik}-\bar r_i}{\sigma_i+\epsilon}, \\
-\mathcal{L}_{\mathrm{GRPO}}
- &= -\frac{1}{Z}\sum_{(i,k,t)\in V}
-       \operatorname{sg}(A_{ik}) \\
- &\qquad\qquad\cdot
-       \log \pi_\phi(b_{ikt}\mid h_{ikt}).
+ &= \frac{r_{ik}-\bar r_i}{\sigma_i+\epsilon}.
 \end{aligned}
 """)
-        + r'<p>\(\bar r_i\) and \(\sigma_i\) are the mean and sample standard deviation '
-        r'across the four rewards for the same utterance; \(\epsilon=10^{-6}\) prevents '
-        r'division by zero. \(\operatorname{sg}\) means stop-gradient. '
-        r'\(h_{ikt}\) contains acoustic features and sampled boundary history; '
-        r'\(b_{ikt}\) is the binary boundary action at frame \(t\). '
-        r'\(V\) contains valid stochastic decisions across the batch and rollouts, '
-        r'and \(Z=|V|\); padding and the forced first-frame action are excluded. '
-        'Thus the policy loss averages over valid decisions, as the implementation does.</p>'
-        '<p>A rollout’s rate cost changes its reward, then its normalized advantage, '
-        'then the gradient on its boundary decisions. No separate additive rate term '
-        'is needed for that route. This recipe makes one on-policy score-function update; '
-        'there is no reference-policy KL or clipped likelihood-ratio term in this default.</p>'
+        + r'<p>The mean and sample standard deviation use the four rewards of the '
+        r'same utterance. \(\epsilon=10^{-6}\). A positive advantage means this '
+        'sampled segmentation scored better than the others in its group.</p>'
+        + hk.equation(r"""
+\begin{aligned}
+&\mathcal{L}_{\mathrm{GRPO}}
+ = -\frac{1}{Z}\sum_{(i,k,t)\in V}
+       \operatorname{sg}(A_{ik}) \\
+ &\quad\cdot\bigl[b_{ikt}\log p_{ikt} \\
+ &\qquad +(1-b_{ikt})\log(1-p_{ikt})\bigr], \\
+&Z = K\sum_i(T_i-1).
+\end{aligned}
+""")
+        + r'<p>\(\operatorname{sg}\) means stop-gradient. \(V\) contains every '
+        'valid stochastic boundary decision across utterances and the K rollouts; '
+        'padding and the forced first-frame action are excluded. The bracket '
+        'is the log probability of a Bernoulli action: it selects log p for a cut '
+        'and log(1−p) for no cut. The actual code computes the negative of this '
+        'bracket with binary cross-entropy with logits, multiplies by the detached '
+        'advantage, and averages over valid decisions.</p>'
+        + hk.equation(r"""
+\begin{aligned}
+&\frac{\partial\,[\omega\mathcal{L}_{\mathrm{GRPO}}]}
+     {\partial z_{ikt}}
+ \\
+&= \frac{\omega}{Z}\operatorname{sg}(A_{ik})
+     (p_{ikt}-b_{ikt}).
+\end{aligned}
+""")
+        + '<p>For a positive advantage, gradient descent raises the probability '
+        'of the action that was sampled; for a negative advantage, it lowers it. '
+        'The same rollout advantage weights every valid decision in that rollout. '
+        'The reward, its mean and standard deviation, and the sampled history '
+        'are all held fixed during this backward pass.</p>'
+        + '<p><b>This is how rate already acts through GRPO:</b> the realized '
+        'count changes the band cost, which changes the reward and advantage, '
+        'which changes the gradient above. There is no direct derivative through '
+        'the hard count. This is the recipe’s one-update on-policy loss; it has '
+        'no clipped likelihood ratio or reference-policy KL term.</p>'
+        + '<h3>Expanded auxiliary loss: penalize a soft count directly</h3>'
+        + hk.equation(r"""
+\begin{aligned}
+\widehat f_{ik}
+ &= \frac{f_{\mathrm{enc}}}{T_i}
+       \left(1+\sum_{t=2}^{T_i}p_{ikt}\right), \\
+\mathcal{L}_{\mathrm{rate,aux}}
+ &= \frac{1}{BK}\sum_{i=1}^B\sum_{k=1}^K
+       c_s(\widehat f_{ik}).
+\end{aligned}
+""")
+        + r'<p>\(B\) is batch size. Compare \(\widehat f_{ik}\) with the realized '
+        r'rate \(f_{ik}\): each hard cut \(b_{ikt}\) has been replaced by its '
+        r'probability \(p_{ikt}\), while the initial segment still contributes 1. '
+        r'The band function \(c_s\) is exactly the squared out-of-band function '
+        'defined above. Thus this loss averages a penalty on soft counts; it '
+        'does not use the rollout advantage.</p>'
+        + hk.equation(r"""
+\begin{aligned}
+&\lbrack a\rbrack_+ := \max(0,a), \\
+&c_s'(f)
+ = \frac{2}{f_{\mathrm{enc}}^2} \\
+&\quad\cdot\left([f-f_s]_+-[f_{\min}-f]_+\right), \\
+&\frac{\partial\,(\lambda_s^A\mathcal{L}_{\mathrm{rate,aux}})}
+     {\partial z_{ikt}}
+ \\
+&= \frac{\lambda_s^A}{BK}\,
+      c_s'(\widehat f_{ik})\,
+      \frac{f_{\mathrm{enc}}}{T_i}\,
+      p_{ikt}(1-p_{ikt}).
+\end{aligned}
+""")
+        + '<p>If the soft rate is above the upper target, this derivative is '
+        'positive, so gradient descent reduces boundary logits and their cut '
+        'probabilities. Below the lower bound it has the opposite sign; inside '
+        'the band it is zero. This pressure depends on the soft rate and sigmoid '
+        'slope, rather than on whether a particular sampled segmentation improved '
+        'recognition. Its coefficient directly scales the gradient.</p>'
+        '<p><b>Why call it a surrogate?</b> In an autoregressive policy, each '
+        'probability depends on earlier sampled cuts. The auxiliary backward pass '
+        'holds those histories fixed; it does not include how changing the policy '
+        'changes the distribution of histories. Also, a nonlinear penalty on a '
+        'soft count is generally different from the expected penalty on a sampled '
+        'hard count. It is a useful additional objective to test, not an algebraic '
+        'expansion of the GRPO estimator.</p>'
+        '<details><summary>Implementation caveat for the optional auxiliary arm</summary>'
+        r'<p>The equations use all \(T_i\) acoustic frames for duration, just as '
+        'the realized-rate reward does. The current local '
+        '<code>_full_ar_rate_loss</code> instead passes the action-valid mask to '
+        '<code>rate_loss</code>. That mask excludes the first frame; the helper '
+        r'therefore divides by \(\max(T_i-1,1)\), not \(T_i\). Its current soft '
+        r'rate and derivative use that denominator in place of \(T_i\) above.</p>'
+        '<p>A CPU check with 100 frames and probability 0.25 at every later frame '
+        'gives 12.875 Hz with the acoustic mask, versus 13.005 Hz through the local '
+        'auxiliary wrapper. With an upper edge of 10 Hz and weight 1, the penalties '
+        'are 0.00330625 and 0.00361213, respectively. Correct the duration mask '
+        'and add a regression test before running this optional arm. This report '
+        'does not change training code. The historical LS960 reward-only update '
+        'and the proposed primary continuation are unaffected because their '
+        'auxiliary coefficient is zero.</p></details>'
+        + '<h3>Entropy, also written out</h3>'
+        + hk.equation(r"""
+H(\pi_\phi)
+ = -\frac{1}{Z}\sum_{(i,k,t)\in V}
+     \left[p_{ikt}\log p_{ikt}
+          +(1-p_{ikt})\log(1-p_{ikt})\right].
+""")
+        + r'<p>The joint loss subtracts \(\tau H\), so a positive coefficient '
+        'would encourage uncertain boundary probabilities. The saved LS960 '
+        r'recipe and this proposal keep \(\tau=0\).</p>'
+        + '<h3>Putting the policy gradients together</h3>'
+        + hk.equation(r"""
+\begin{aligned}
+\frac{\partial\mathcal{L}_{\mathrm{total}}}{\partial z_{ikt}}
+ &= \frac{\omega}{Z}\operatorname{sg}(A_{ik})(p_{ikt}-b_{ikt}) \\
+ &\quad + \frac{\lambda_s^A}{BK}\,
+      c_s'(\widehat f_{ik})\,
+      \frac{f_{\mathrm{enc}}}{T_i}\,
+      p_{ikt}(1-p_{ikt}).
+\end{aligned}
+""")
+        + '<p>This uses the configured zero entropy coefficient. CE supplies '
+        'no derivative through the hard boundary choices; it updates the '
+        'recognizer separately. The first term is the existing GRPO update, '
+        'whose advantage already includes the reward-side rate penalty. The '
+        'second term exists only if the auxiliary option is enabled. Shared '
+        'policy parameters receive the sum of these local logit derivatives '
+        'backpropagated through the boundary network.</p>'
         + hk.card(
             table(
                 ["Rate-channel choice", "Reward / separate rate loss", "Use in this proposal"],
@@ -337,28 +472,49 @@ A_{ik}
             )
             + caption("Table", 4, "Exactly where rate enters. The R/A weights are explanatory notation: the code selects routes with rate_channel and uses the band helper’s lambda_cap; it does not already provide an independent two-weight adaptive scheduler."),
         )
-        + r'<p>For the auxiliary option, \(\mathcal{L}_{\mathrm{rate,aux}}\) averages '
-        r'\(c_s(\widehat f_{ik})\) across utterances and rollouts. '
-        r'\(\widehat f_{ik}\) replaces later hard boundary events with their conditional '
-        'probabilities along the sampled history, includes the implicit first segment, '
-        'and converts the resulting count to Hz. This is a differentiable surrogate '
-        'for the autoregressive policy, not an exact marginal expected rate.</p>'
-        '<p><b>Why the earlier draft mentioned the auxiliary route:</b> when task quality '
-        'is identical across a rollout group, multiplying all rate costs by a positive '
-        'constant largely cancels during standard-deviation normalization (apart from '
-        'the numerical epsilon). Changing the band target can still change rollout '
-        'preferences, and the multiplier matters when quality varies. Use the reward '
-        'route as the matched baseline; test the auxiliary route separately rather than '
-        'assuming a reward-weight ramp always controls gradient strength.</p>'
+        + '<h3>Why a reward-weight ramp may not strengthen GRPO</h3>'
+        r'<p>If task quality is identical across a rollout group, let '
+        r'\(c_{ik}=c_s(f_{ik})\), with group mean \(\bar c_i\) and sample '
+        r'standard deviation \(\sigma_{c,i}\). For \(\lambda_s^R&gt;0\), '
+        'substituting the reward into the advantage gives:</p>'
+        + hk.equation(r"""
+\begin{aligned}
+A_{ik}
+ &= \frac{-\lambda_s^R(c_{ik}-\bar c_i)}
+          {\lambda_s^R\sigma_{c,i}+\epsilon} \\
+ &= -\frac{c_{ik}-\bar c_i}
+           {\sigma_{c,i}+\epsilon/\lambda_s^R}.
+\end{aligned}
+""")
+        + '<p>The multiplier largely cancels, apart from the numerical epsilon. '
+        'That is why increasing the reward-side rate weight is not generally '
+        'equivalent to multiplying a rate gradient by that weight. Changing '
+        'the band target can still change rollout preferences, and the multiplier '
+        'matters when quality varies. Use the reward route as the matched baseline; '
+        'test the auxiliary route separately rather than assuming a reward-weight '
+        'ramp always controls gradient strength.</p>'
         + hk.card(
             r'<p><b>\(D_{\mathrm{boundary}}\) meant an optional boundary-policy anchor.</b> '
-            'One possible definition is the mean KL divergence between the current '
-            'and fixed LS960 Bernoulli boundary distributions, evaluated on the same '
-            'features and sampled histories. It penalizes changing the old policy’s '
-            'boundary probabilities; it does not penalize token count directly.</p>'
+            'To make that suggestion explicit, one possible definition is the mean '
+            'conditional Bernoulli KL from the current policy to a fixed LS960 policy:</p>'
+            + hk.equation(r"""
+\begin{aligned}
+p^0_{ikt}
+ &= \pi_{\phi_0}(b_{ikt}=1\mid x_i,b_{ik,<t}), \\
+D_{\mathrm{boundary}}
+ &= \frac{1}{Z}\sum_{(i,k,t)\in V}
+       \Bigg[p_{ikt}\log\frac{p_{ikt}}{p^0_{ikt}} \\
+ &\qquad +(1-p_{ikt})\log\frac{1-p_{ikt}}{1-p^0_{ikt}}\Bigg].
+\end{aligned}
+""")
+            + r'<p>\(\phi_0\) is the frozen LS960 policy; both policies see the same '
+            'features and sampled histories. This estimator holds the histories and '
+            'reference probabilities fixed during differentiation. It penalizes '
+            'changing the old policy’s boundary probabilities, not token count directly.</p>'
             '<p>That was an extra proposal, not a component of the trained LS960 '
             'objective or an inherent part of this GRPO implementation. Its exact '
-            'estimator was not specified in the earlier draft. The revised primary '
+            'estimator was not specified in the earlier draft; the formula here '
+            'defines a possible future ablation, not an existing implementation. The revised primary '
             'objective omits it, equivalently giving it weight zero, so the segmenter '
             'can refine boundary allocation freely. Any future reference-policy '
             'regularizer should be a separately defined ablation.</p>',
@@ -506,7 +662,7 @@ r_{ik}^{\mathrm{recovery}} &= -\ell_\theta(i,b_{ik}), \\
         '(with the normalization constraint in ADR-037).</p>',
     )
     body += (
-        '<footer>Adaptive frequency curriculum · Proposal revised 17 September 2026. '
+        '<footer>Adaptive frequency curriculum · Proposal revised 18 September 2026. '
         'LS960 and the short bilevel pilots are completed evidence; the EMA controller '
         'and the proposed adaptive continuation have not been run.</footer>'
     )
