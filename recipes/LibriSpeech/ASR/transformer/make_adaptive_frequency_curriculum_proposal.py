@@ -69,7 +69,7 @@ def build(args: argparse.Namespace) -> None:
         "Proposal · Revised 17 September 2026",
         "Adaptive frequency curriculum",
         "Continue learning from the trained LS960 checkpoint: consolidate task performance, "
-        "reduce the audio-token rate, give the decoder time to adapt, and keep the reduction "
+        "reduce the audio-token rate, let both the segmenter and decoder recover task performance, and keep the reduction "
         "only when validation quality recovers.",
     )
     body += '<nav class="jump-links" aria-label="On this page">'
@@ -77,6 +77,7 @@ def build(args: argparse.Namespace) -> None:
         ("ls960", "Continue after LS960"),
         ("ema", "What EMA means"),
         ("bilevel", "Connection to bilevel training"),
+        ("objective", "Every objective component"),
         ("controller", "The proposed loop"),
         ("experiment", "How to test it"),
     ]:
@@ -124,10 +125,10 @@ def build(args: argparse.Namespace) -> None:
                 [
                     ["A · LS960 training (completed)", "Existing decoder adaptation and joint GRPO training.",
                      "Supplies a trained segmenter and recognizer. Preserve this checkpoint as the starting reference."],
-                    ["B · Consolidate performance (proposed)", "Brief decoder/projection/LoRA and BiGRU continuation with the boundary policy fixed.",
-                     "Verify the restored model and stabilize performance at its current rate. Apply no additional adaptive rate pressure."],
-                    ["C · Compress, recover, validate (proposed)", "Joint updates during compression; decoder and pooler updates with the segmenter frozen during recovery.",
-                     "Reduce the target a little, let the recognizer catch up, then accept or roll back. Repeat while the quality gate passes."],
+                    ["B · Consolidate performance (proposed)", "Boundary policy, BiGRU, projection and LoRA all continue learning from task quality.",
+                     "Verify the restored model and use a short quality-only block with all rate penalties disabled. Remeasure WER and Hz before compression."],
+                    ["C · Compress, recover, validate (proposed)", "The segmenter and recognizer remain trainable in both phases. Compression enables rate pressure; recovery removes it.",
+                     "Reduce the target a little, let boundary placement and recognition improve together, then accept or roll back using the rate after recovery."],
                 ],
             )
             + caption("Table", 1, "Placement of the new stage. Only Stage A has completed results; B and C are proposed continuation work."),
@@ -199,8 +200,8 @@ m_k &= \alpha w_k + (1-\alpha)m_{k-1}.
                 ["Question", "Earlier support/query bilevel method", "Adaptive continuation proposed here"],
                 [
                     ["What is being chosen?", "Which sampled boundary rollout works after decoder adaptation?", "When to lower the target rate, increase pressure, recover or stop?"],
-                    ["Inner work", "For each of K=4 rollouts, take a temporary decoder SGD step on support utterances.", "Run real training updates, including a recovery block at the proposed lower rate."],
-                    ["Outer feedback", "Query NLL from disjoint training utterances becomes the segmenter’s GRPO reward; temporary weights are restored.", "Dev WER and its EMA change the target and auxiliary rate-loss weight between blocks."],
+                    ["Inner work", "For each of K=4 rollouts, take a temporary decoder SGD step on support utterances.", "Run real joint updates; during recovery the segmenter also learns, with rate penalties removed."],
+                    ["Outer feedback", "Query NLL from disjoint training utterances becomes the segmenter’s GRPO reward; temporary weights are restored.", "Dev WER and its EMA change the target, phase and rate pressure between blocks."],
                     ["Time scale", "One temporary adaptation step per rollout and training batch.", "Many optimizer updates between controller decisions."],
                     ["Gradient path", "First-order score-function update; no hypergradient through the inner step or hard boundaries.", "Validation-driven feedback schedule; no differentiation through dev WER or EMA."],
                 ],
@@ -226,84 +227,215 @@ m_k &= \alpha w_k + (1-\alpha)m_{k-1}.
         'each compression block. First test the controller with the existing joint '
         'GRPO update. Then add decoder-only lookahead as a separate arm if the '
         'controller is stable; the earlier pilot favors that scope for its lower cost. '
-        'The recovery block is a practical connection to bilevel reasoning, not evidence '
-        'that the two algorithms are equivalent.</p>',
+        'In the revised recovery stage, both the boundary policy and recognizer change. '
+        'This is joint quality refinement; the earlier bilevel inner step instead held '
+        'sampled boundaries fixed while temporarily adapting the decoder.</p>',
+    )
+
+    body += section(
+        "objective", "4 · The joint objective, component by component",
+        '<p><b>The LS960 Transformer-AR recipe already includes the rate penalty inside '
+        'the GRPO reward.</b> The separate auxiliary rate loss is zero. The current local '
+        'code reproduces this behavior with <code>rate_channel: auto</code>, which resolves '
+        'to <code>reward</code> for this policy. '
+        'The previous draft introduced an auxiliary route and a boundary anchor without '
+        'clearly separating those optional changes from the trained objective.</p>'
+        r'<p>Let \(\phi\) denote boundary-policy parameters and \(\theta\) the trainable '
+        'BiGRU pooler, projection and decoder LoRA parameters. WavLM and the Llama base '
+        r'remain frozen. A batch has utterances \(i\); each has \(K=4\) sampled boundary '
+        r'sequences \(b_{ik}\). The controller block is \(s\).</p>'
+        + hk.equation(r"""
+\begin{aligned}
+\mathcal{L}_{\mathrm{total}}
+ &= \mathcal{L}_{\mathrm{CE}}
+    + \omega\,\mathcal{L}_{\mathrm{GRPO}}(r) \\
+ &\quad + \lambda_s^{A}\mathcal{L}_{\mathrm{rate,aux}}
+    - \tau H(\pi_\phi).
+\end{aligned}
+""")
+        + hk.card(
+            table(
+                ["Component", "What it does / where gradients go", "LS960 Transformer-AR setting"],
+                [
+                    [r"\(\mathcal{L}_{\mathrm{CE}}\)", "Transcript prediction on the greedy hard segmentation. Updates BiGRU, projection and LoRA; does not differentiate through boundary decisions.", "Active, weight 1."],
+                    [r"\(\omega\mathcal{L}_{\mathrm{GRPO}}(r)\)", "Uses detached rollout advantages to update the boundary policy. Its reward already combines task quality and any enabled realized-rate penalty.", r"Active; \(\omega=1\) (<code>pg_weight</code>)."],
+                    [r"\(\lambda_s^A\mathcal{L}_{\mathrm{rate,aux}}\)", "A separate differentiable rate surrogate acting on boundary probabilities. This is an additional rate-gradient route, not an expansion of the GRPO term.", r"Off: \(\lambda_s^A=0\). Only enable in an explicitly declared alternative arm."],
+                    [r"\(-\tau H(\pi_\phi)\)", "An entropy bonus encouraging less certain boundary decisions; its minus sign reflects loss minimization.", r"Off: \(\tau=0\). Keep it off in the first continuation comparison."],
+                ],
+            )
+            + caption("Table", 3, "Components of the implemented joint update, with proposal notation for the rate channels. The boundary policy and pooler are separated by their gradient roles even though both live in the segmenter module."),
+        )
+        + '<h3>Decoder learning and the task-quality reward</h3>'
+        r'<p>Write \(\ell_\theta(i,b)\) for mean teacher-forced negative log-likelihood '
+        '(NLL) of utterance i’s valid transcript tokens under segmentation b. Audio-prefix '
+        r'positions and text padding are excluded. If \(N_i\) is the number of valid '
+        r'target tokens and \(b_i^{g}\) the greedy segmentation, decoder training uses:</p>'
+        + hk.equation(r"""
+\mathcal{L}_{\mathrm{CE}}
+  = \frac{\sum_i N_i\,\ell_\theta(i,b_i^{g})}
+         {\sum_i N_i}.
+""")
+        + '<p>This is a mean over all valid text tokens in the batch. For each sampled '
+        'segmentation, the task reward is the negative per-utterance NLL. That sampled '
+        'NLL is evaluated without gradients: it scores the segmenter’s action. The '
+        'separate CE pass above trains the recognizer.</p>'
+        + '<h3>Rate cost inside the GRPO reward</h3>'
+        + hk.equation(r"""
+\begin{aligned}
+r_{ik}
+ &= -\ell_\theta(i,b_{ik})
+    - \lambda_s^{R} c_s(f_{ik}), \\
+c_s(f)
+ &= \left[\max\left(0,\frac{f-f_s}{f_{\mathrm{enc}}}\right)\right]^2 \\
+ &\quad + \left[\max\left(0,\frac{f_{\min}-f}{f_{\mathrm{enc}}}\right)\right]^2.
+\end{aligned}
+""")
+        + r'<p>\(f_{ik}\) is realized audio-token Hz for a sampled segmentation; '
+        r'\(f_s\) is the upper target and \(f_{\min}\) the lower edge of the rate band. '
+        r'\(f_{\mathrm{enc}}=50\) Hz is the encoder frame rate. The band cost \(c_s\) '
+        'is zero inside the band. This formula uses Hz for readability but divides '
+        'by the encoder frequency before squaring, matching the code’s kept-ratio units. '
+        'The saved LS960 band is 7.5–12.5 Hz; compression lowers the upper target.</p>'
+        r'<p>\(\lambda_s^R\) is the reward-side rate weight. In the saved band-mode '
+        'recipe it corresponds to <code>lambda_cap=1.0</code>; '
+        '<code>lambda_press</code> and <code>lambda_floor</code> belong to another '
+        'rate mode and are inactive here. The implicit first segment is counted once, '
+        'plus later boundary events, when computing the token rate.</p>'
+        + '<h3>How the reward becomes a boundary-policy loss</h3>'
+        + hk.equation(r"""
+\begin{aligned}
+A_{ik}
+ &= \frac{r_{ik}-\bar r_i}{\sigma_i+\epsilon}, \\
+\mathcal{L}_{\mathrm{GRPO}}
+ &= -\frac{1}{Z}\sum_{(i,k,t)\in V}
+       \operatorname{sg}(A_{ik}) \\
+ &\qquad\qquad\cdot
+       \log \pi_\phi(b_{ikt}\mid h_{ikt}).
+\end{aligned}
+""")
+        + r'<p>\(\bar r_i\) and \(\sigma_i\) are the mean and sample standard deviation '
+        r'across the four rewards for the same utterance; \(\epsilon=10^{-6}\) prevents '
+        r'division by zero. \(\operatorname{sg}\) means stop-gradient. '
+        r'\(h_{ikt}\) contains acoustic features and sampled boundary history; '
+        r'\(b_{ikt}\) is the binary boundary action at frame \(t\). '
+        r'\(V\) contains valid stochastic decisions across the batch and rollouts, '
+        r'and \(Z=|V|\); padding and the forced first-frame action are excluded. '
+        'Thus the policy loss averages over valid decisions, as the implementation does.</p>'
+        '<p>A rollout’s rate cost changes its reward, then its normalized advantage, '
+        'then the gradient on its boundary decisions. No separate additive rate term '
+        'is needed for that route. This recipe makes one on-policy score-function update; '
+        'there is no reference-policy KL or clipped likelihood-ratio term in this default.</p>'
+        + hk.card(
+            table(
+                ["Rate-channel choice", "Reward / separate rate loss", "Use in this proposal"],
+                [
+                    [r"<code>reward</code>: \(\lambda_s^R&gt;0,\ \lambda_s^A=0\)", "Reward is negative NLL minus the realized band cost. No auxiliary rate loss.", "Primary continuation: retain the existing LS960 route and adapt the target / compression–recovery schedule."],
+                    [r"<code>aux</code>: \(\lambda_s^R=0,\ \lambda_s^A&gt;0\)", "GRPO reward is task quality alone. Add a rate surrogate directly to the loss.", "Separate compression arm if direct control of rate-gradient strength is useful."],
+                    [r"<code>both</code>: \(\lambda_s^R&gt;0,\ \lambda_s^A&gt;0\)", "Rate affects normalized policy advantages and a separate differentiable gradient.", "An explicit combined objective; not the default continuation and not silently enabled."],
+                    [r"Quality / recovery: \(\lambda_s^R=\lambda_s^A=0\)", "Reward is negative NLL; every rate-loss contribution is zero.", "Segmenter, BiGRU, projection and LoRA keep learning from task quality."],
+                ],
+            )
+            + caption("Table", 4, "Exactly where rate enters. The R/A weights are explanatory notation: the code selects routes with rate_channel and uses the band helper’s lambda_cap; it does not already provide an independent two-weight adaptive scheduler."),
+        )
+        + r'<p>For the auxiliary option, \(\mathcal{L}_{\mathrm{rate,aux}}\) averages '
+        r'\(c_s(\widehat f_{ik})\) across utterances and rollouts. '
+        r'\(\widehat f_{ik}\) replaces later hard boundary events with their conditional '
+        'probabilities along the sampled history, includes the implicit first segment, '
+        'and converts the resulting count to Hz. This is a differentiable surrogate '
+        'for the autoregressive policy, not an exact marginal expected rate.</p>'
+        '<p><b>Why the earlier draft mentioned the auxiliary route:</b> when task quality '
+        'is identical across a rollout group, multiplying all rate costs by a positive '
+        'constant largely cancels during standard-deviation normalization (apart from '
+        'the numerical epsilon). Changing the band target can still change rollout '
+        'preferences, and the multiplier matters when quality varies. Use the reward '
+        'route as the matched baseline; test the auxiliary route separately rather than '
+        'assuming a reward-weight ramp always controls gradient strength.</p>'
+        + hk.card(
+            r'<p><b>\(D_{\mathrm{boundary}}\) meant an optional boundary-policy anchor.</b> '
+            'One possible definition is the mean KL divergence between the current '
+            'and fixed LS960 Bernoulli boundary distributions, evaluated on the same '
+            'features and sampled histories. It penalizes changing the old policy’s '
+            'boundary probabilities; it does not penalize token count directly.</p>'
+            '<p>That was an extra proposal, not a component of the trained LS960 '
+            'objective or an inherent part of this GRPO implementation. Its exact '
+            'estimator was not specified in the earlier draft. The revised primary '
+            'objective omits it, equivalently giving it weight zero, so the segmenter '
+            'can refine boundary allocation freely. Any future reference-policy '
+            'regularizer should be a separately defined ablation.</p>',
+            title="What was D_boundary?",
+        )
+        + '<p class="note">Implementation evidence: '
+        + link(f"{SOURCE}/recipes/LibriSpeech/ASR/transformer/train_speechllm_with_segmenter.py",
+               "published LS960 joint update and decoder losses")
+        + ' · '
+        + link(f"{SOURCE}/recipes/LibriSpeech/ASR/transformer/segmenter.py",
+               "band penalties, group advantages and policy-gradient reduction")
+        + '. The configurable route selector and full-AR auxiliary option are in the '
+        'current local working code; the published training source records the earlier '
+        'reward-only full-AR path. The adaptive controller remains a proposal.</p>',
     )
 
     flow = """
     <div class="flow">
-      <div class="flow-box"><strong>1 · Establish quality</strong><span>Load the LS960 state, evaluate it, and consolidate performance at its measured rate.</span></div>
-      <div class="flow-box"><strong>2 · Reduce the target</strong><span>Unfreeze the segmenter. Lower the target by one small step and apply bounded rate pressure.</span></div>
-      <div class="flow-box"><strong>3 · Recover performance</strong><span>Hold the candidate boundary policy fixed and adapt the decoder and BiGRU to its shorter prefixes.</span></div>
-      <div class="flow-box"><strong>4 · Validate and decide</strong><span>Check raw WER, EMA and realized Hz. Save an accepted state and repeat from step 2, or restore the previous state.</span></div>
+      <div class="flow-box"><strong>1 · Establish quality</strong><span>Load LS960, evaluate it, and refine the segmenter and recognizer with task quality alone.</span></div>
+      <div class="flow-box"><strong>2 · Reduce the target</strong><span>Lower the target by one small step. Enable the declared rate-penalty route while both models learn.</span></div>
+      <div class="flow-box"><strong>3 · Recover performance</strong><span>Remove all rate penalties. Keep the segmenter trainable so boundary placement and recognition improve together.</span></div>
+      <div class="flow-box"><strong>4 · Validate and decide</strong><span>Measure WER and actual Hz after recovery. Accept a retained reduction and repeat from step 2, or retry / restore.</span></div>
     </div>
     """
     body += section(
-        "controller", "4 · The proposed compression–recovery loop",
+        "controller", "5 · Recovery keeps the segmenter learning",
         hk.card(
-            flow + caption("Figure", 1, "A proposed continuation loop after LS960. Recovery gives each candidate rate a bounded adaptation opportunity before acceptance. This is a design schematic."),
+            flow + caption("Figure", 1, "The proposed continuation alternates compression pressure with joint quality refinement. The boundary policy stays trainable throughout; recovery does not hold the rate fixed."),
         )
-        + '<p>Keep K=4, the 64-frame Transformer history and hard boundary sampling. '
-        'During compression, use joint decoder CE and segmenter GRPO plus an adaptive '
-        'auxiliary rate loss. During recovery, freeze the candidate segmenter and '
-        'continue decoder/pooler learning, holding the target fixed. Give both blocks '
-        'predeclared update budgets so failed targets cannot consume unlimited training.</p>'
+        + '<p><b>Recovery removes the rate objective, not the segmenter’s task gradient.</b> '
+        'Keep K=4 and the 64-frame history. The recognizer still learns from CE, and '
+        'the segmenter still learns from the relative task quality of its sampled '
+        'boundaries. With both rate coefficients and the existing entropy coefficient '
+        'set to zero, the recovery objective is:</p>'
         + hk.equation(r"""
 \begin{aligned}
-\mathcal{L}_{\mathrm{joint}}
- &= \mathcal{L}_{\mathrm{CE}} + \mathcal{L}_{\mathrm{GRPO}}
- \\
- &\quad + \lambda_k^{\mathrm{aux}} P_f(\widehat f,f_k)
- \\
- &\quad + \beta D_{\mathrm{boundary}}(\pi,\pi_0), \\
-P_f(f,f_k)
- &= [\max(0,f-f_k)]^2
- \\
- &\quad + \eta[\max(0,f_{\min}-f)]^2.
+r_{ik}^{\mathrm{recovery}} &= -\ell_\theta(i,b_{ik}), \\
+\mathcal{L}_{\mathrm{recovery}}
+  &= \mathcal{L}_{\mathrm{CE}}
+   + \omega\mathcal{L}_{\mathrm{GRPO}}
+       (r^{\mathrm{recovery}}).
 \end{aligned}
 """)
-        + r'<p class="note">This is a proposed objective, not implemented controller code. '
-        r'\(\mathcal{L}_{\mathrm{CE}}\) adapts the recognizer; '
-        r'\(\mathcal{L}_{\mathrm{GRPO}}\) is the existing policy loss. '
-        r'\(f_k\) is the target ceiling in Hz, \(f_{\min}\) the safety floor, '
-        r'and \(\eta\) its relative penalty. \(\widehat f\) is the auxiliary estimate '
-        r'of frequency. \(\lambda_k^{\mathrm{aux}}\) sets its pressure. '
-        r'\(D_{\mathrm{boundary}}\) is an optional KL or imitation anchor to the '
-        r'loaded LS960 policy \(\pi_0\), weighted by \(\beta\). Choose and log that '
-        'anchor explicitly. Check long-segment duration separately; a safe mean Hz '
-        'does not rule out pathological gaps.</p>'
+        + '<p>The segmenter can move, add or remove boundaries in this phase. Task '
+        'quality may improve by reallocating the same number of boundaries, or by '
+        'restoring more audio tokens. Consequently, removing rate pressure does not '
+        'guarantee fixed-frequency allocation. Keep the target as an evaluation '
+        'criterion and measure the resulting rate after recovery. Accept only a '
+        'quality-preserving reduction that survives that measurement.</p>'
+        '<p>Give compression and recovery finite update budgets. In band mode, setting '
+        'the active rate weight to zero removes both upper- and lower-band penalties; '
+        'if an auxiliary route is enabled, disable it too. Rate/duration/diversity '
+        'emergency checks remain external stop criteria. There is no hidden rate loss '
+        'or boundary anchor left in the quality-only phase. If all K task rewards '
+        'are identical, the GRPO task gradient is zero; an unfrozen policy needs '
+        'informative rollout differences to learn useful allocation.</p>'
         + hk.card(
             table(
                 ["Observation", "Controller action"],
                 [
-                    ["Quality holds, but the realized rate remains above the new target", "Within the compression budget, increase the auxiliary weight modestly up to a declared cap. Initialize it to a small positive value when compression starts."],
-                    ["The lower rate is reached, or quality worsens modestly", "Hold the target and enter recovery. Freeze the segmenter so the decoder/pooler can adapt without further boundary drift."],
-                    ["After recovery, raw WER and EMA pass twice and the lower target is reached", "Accept only if realized Hz also fell from the previous accepted state, allowing a predeclared target tolerance. Save model, optimizer/scheduler and controller history; then propose the next lower target."],
-                    ["Quality still fails after recovery, or an emergency WER/duration/diversity limit is crossed", "Roll back the complete training state; emergency stops act immediately. Permit at most one predefined retry with a smaller target step or gentler pressure; stop the search if it fails."],
-                    ["Quality holds, but the rate never fell within the budget", "Record the target as unreached. A quality pass alone cannot count as a compression success."],
+                    ["The new target is not yet reached and quality is acceptable", "Continue the bounded compression block using the selected rate route. Change the upper band target explicitly; do not rely solely on a reward-weight ramp."],
+                    ["The lower rate is reached, or quality worsens modestly", "Enter joint recovery: remove every rate penalty and continue updating the segmenter and recognizer."],
+                    ["After recovery, raw WER and EMA pass twice and actual Hz remains within the lower target tolerance", "Accept the checkpoint only if its rate is lower than the previous accepted point and the original LS960 reference. Save model, optimizer/scheduler and controller history."],
+                    ["Quality recovers but Hz rises beyond the target", "Record a rate rebound, not successful compression. Allow one predeclared gentler compression–recovery retry, or restore the last accepted state."],
+                    ["Quality still fails, or an emergency WER/duration/diversity limit is crossed", "Restore the complete accepted state; emergency stops act immediately. Stop this search if the allowed retry also fails."],
                 ],
             )
-            + caption("Table", 3, "Acceptance combines quality, realized compression and safety. Thresholds and retry budgets are fixed before the run."),
-        )
-        + hk.card(
-            table(
-                ["Signal path", "How the adaptive stage uses it"],
-                [
-                    ["GRPO reward", "Keep the established task-quality reward and declared realized-rate cost. With std normalization and flat quality across rollouts, scaling only the rate reward largely cancels in normalized advantages."],
-                    ["Auxiliary rate loss", "Put the adaptive multiplier here so its weight directly scales a differentiable gradient. For an autoregressive policy, the conditional probabilities along sampled histories form a surrogate; they are not exact marginal expected rates."],
-                    ["Validation controller", "Raw WER and EMA choose phase, target and pressure between blocks. Dev examples do not supply training gradients; the bilevel query split, if used later, remains inside the training stream."],
-                ],
-            )
-            + caption("Table", 4, "Placement of rate control. Keep the existing GRPO normalization fixed in the first controller comparison and verify that the auxiliary gradient responds to its multiplier."),
+            + caption("Table", 5, "The acceptance rate is measured after quality-only recovery. The target remains a decision criterion while its training penalty is disabled."),
         ),
     )
 
     body += section(
-        "experiment", "5 · Test the continuation against equal extra training",
+        "experiment", "6 · Test the continuation against equal extra training",
         '<p>First calibrate one seed from its selected LS960 state. Hold data exposure, '
         'total real optimizer updates, starting weights and validation cadence fixed '
-        'across the continuation arms in Table 5. Use all three LS960 training splits. '
-        'The static rate-loss arm helps distinguish the value of the adaptive schedule '
+        'across the continuation arms in Table 6. Use all three LS960 training splits. '
+        'The static reward-penalty arm helps distinguish the value of the adaptive schedule '
         'from the value of simply adding compression pressure.</p>'
         + hk.card(
             table(
@@ -311,19 +443,21 @@ P_f(f,f_k)
                 [
                     ["Starting checkpoint", "No further training.", "The original quality and rate reference."],
                     ["Ordinary continuation", "Continue the existing objective for the same extra update budget.", "Whether extra training alone improves WER or rate."],
-                    ["Fixed-pressure continuation", "Use the same auxiliary rate-loss path and a predeclared lower target, with a fixed multiplier and no adaptive schedule.", "Whether feedback and recovery improve on a static compression recipe."],
-                    ["Adaptive continuation", "Use the proposed quality → compression → recovery loop.", "Whether the controller finds a better quality/rate operating point."],
+                    ["Fixed-pressure continuation", "Keep the historical reward-side rate route, with a predeclared lower target and fixed multiplier throughout.", "Whether feedback and recovery improve on a static compression recipe."],
+                    ["Adaptive continuation · reward route", "Use the same reward-side rate route during compression; remove it during joint quality recovery.", "Whether scheduling compression and recovery improves the attained quality/rate point."],
+                    ["Adaptive continuation · auxiliary route (separate arm)", "During compression use task-only GRPO plus an auxiliary rate loss; remove that loss during joint recovery.", "Whether direct rate-gradient control helps relative to the reward-route controller."],
                     ["Adaptive + decoder lookahead (follow-up)", "Add the earlier support/query decoder-only lookahead within compression blocks.", "Whether post-adaptation rollout rewards add value once rate control is established."],
                 ],
             )
-            + caption("Table", 5, "Proposed comparisons. The last arm follows a stable controller pilot. Record wall time and GPU memory as well as update counts, since lookahead adds compute."),
+            + caption("Table", 6, "Proposed comparisons. Keep the rate route matched in the first static/adaptive pair. Test the auxiliary route separately; add lookahead after a stable controller pilot. Record wall time and GPU memory as well as update counts."),
         )
         + '<p>Keep a fixed dev-other controller set and dev-clean guard. Repeated '
         'controller decisions use validation information, so reserve test-clean/test-other '
         'for the final selected checkpoints after the recipe is fixed. A successful '
         'one-seed pilot should be repeated with all three original seeds.</p>'
         '<p><b>Log each decision:</b> checkpoint and phase, target and realized Hz, '
-        'raw WER and EMA, the quality reference, auxiliary weight and gradient, '
+        'raw WER and EMA, the quality reference, rate channel and every active rate weight, '
+        'reward-side and auxiliary costs separately, '
         '95th-percentile segment duration, rollout reward spread, '
         '<code>zero_variance_share</code>, accept/reject status and rollback count. '
         'Save the lowest accepted checkpoint and the first failed or unreached target '
@@ -345,18 +479,18 @@ P_f(f,f_k)
     )
 
     body += section(
-        "evidence", "6 · Earlier evidence behind the safeguards",
+        "evidence", "7 · Earlier evidence behind the safeguards",
         hk.card(
             table(
                 ["Recorded observation", "Consequence for this proposal"],
                 [
-                    ["An unbounded one-sided rate objective collapsed to a zero-variance state.", "Retain a rate floor, duration checks and rollout-diversity diagnostics."],
-                    ["A 100× rate-weight sweep was ineffective in flat-quality, std-normalized GRPO groups.", "Drive the adaptive weight through the auxiliary loss and check its actual gradient."],
+                    ["An unbounded one-sided rate objective collapsed to a zero-variance state.", "Use a bounded compression band and keep external duration/diversity checks active during quality-only recovery."],
+                    ["A 100× rate-weight sweep was ineffective in flat-quality, std-normalized GRPO groups.", "Do not equate a reward-weight ramp with stronger gradients. Move the target band explicitly and compare an auxiliary-only route separately."],
                     ["Phase-C rates moved, but ASR rate wandered and multi-task checkpoint selection often chose a pre-policy state.", "Track each accepted rate and evaluate the matching checkpoint, including the starting model."],
                     ["Across six retrospective trajectories, minimum training CE and best dev-clean WER selected the same epoch in 0/6 cases.", "Use validation quality to control compression. This mismatch motivates the approach but does not establish that it will improve WER."],
                 ],
             )
-            + caption("Table", 6, "Measured precursors from the project records. None is a result of the adaptive continuation proposed on this page."),
+            + caption("Table", 7, "Measured precursors from the project records. None is a result of the adaptive continuation proposed on this page."),
         )
         + '<p class="note">Provenance: '
         + link(f"{SOURCE}/plans/bilevel_optimization.md", "support/query bilevel plan")
