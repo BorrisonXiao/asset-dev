@@ -5,11 +5,11 @@
 #   - joint GRPO RL (cnn, transformer), each afterok its cold-start
 # Gumbel/CIF differentiable arm deferred (see plans/dynamic_segmenter_rl_v1.md).
 set -euo pipefail
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 mkdir -p slurm_logs
 SEED=3407
-COMMON=(--account=jsalt2026-lgarci27 --comment=accept_cost --partition=a100
-        --reservation="JSALT 2026" --exclude=ga129)
+COMMON=(--account=highprio --comment=accept_cost --partition=gpu-a100
+)
 
 echo "### fixed-rate baselines ###"
 for K in 3 4 5 6 8; do

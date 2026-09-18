@@ -7,13 +7,13 @@
 #SBATCH --gpus=1
 #SBATCH --cpus-per-task=12
 #SBATCH --mem=60G
-#SBATCH --output=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer/slurm_logs/%x_%j.out
+#SBATCH --output=/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/slurm_logs/%x_%j.out
 
 set -euo pipefail
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 PYTHONUNBUFFERED=1
-export HF_HUB_CACHE=/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub
+export HF_HUB_CACHE=/export/jsalt26/omnienc/users/cxiao/hf/hub
 
-ROOT=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm
+ROOT=/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm
 RECIPE="$ROOT/recipes/LibriSpeech/ASR/transformer"
 OUT="$RECIPE/results/speechllm_segmenter_wavlm/transformer_ar_combined_rollout_validation/full_baseline_70131"
 SOURCE="$RECIPE/results/speechllm_segmenter_wavlm/fullprefix_transformer_ar_best_char_decoder/nll_mt/3407"
@@ -23,7 +23,7 @@ DECODER_CKPT="$RECIPE/results/speechllm_fixed_pooling_wavlm/char_alignment_tc100
 cd "$RECIPE"
 started=$(date +%s)
 set +e
-/home/jhu/jsalt2026-ext-cxiao7/cxiao/envs/jointllm/bin/python \
+/export/jsalt26/omnienc/users/cxiao/envs/jointllm/bin/python \
   train_speechllm_with_segmenter.py hparams/speechllm_segmenter.yaml \
   --segmenter_mode joint --segmenter_backbone transformer_ar \
   --number_of_epochs 1 --warmup_epochs 0 --grpo_k 4 \
@@ -33,7 +33,7 @@ set +e
   --test_csv "[$SOURCE/test-clean.csv]" --skip_prep True \
   --test_batch_size 8 \
   --ssl_hub microsoft/wavlm-large \
-  --ssl_folder /home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub \
+  --ssl_folder /export/jsalt26/omnienc/users/cxiao/hf/hub \
   --ssl_feat_dims 1024 --segmenter_input_dim 1024 \
   --segmenter_ar_hidden_dim 256 --segmenter_ar_num_layers 4 \
   --segmenter_ar_nhead 4 --segmenter_ar_ffn_dim 1024 \

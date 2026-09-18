@@ -5,7 +5,7 @@
 # lookahead scope changes.
 set -euo pipefail
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 
 read -r -a SEEDS <<< "${SEED_LIST:-3407 3408 3409}"
 read -r -a MODES <<< "${BILEVEL_MODES:-decoder_lookahead decoder_pooler_lookahead}"
@@ -13,24 +13,28 @@ WARMUP_EPOCHS=2
 JOINT_RL_EPOCHS=10
 TOTAL_EPOCHS=$((WARMUP_EPOCHS + JOINT_RL_EPOCHS))
 INNER_LR=${INNER_LR:-0.01}
+# Use a conservative full-run default. Decoder warmup at 600 seconds reserved
+# 41.5/79.3 GiB in the memory sweep. This can still be overridden for a
+# different accelerator or model configuration.
+MAX_BATCH_LENGTH_TRAIN=${MAX_BATCH_LENGTH_TRAIN:-600}
 DRY_RUN=${DRY_RUN:-0}
 
 WAVLM_ID=microsoft/wavlm-large
 WAVLM_DIM=1024
-WAVLM_CACHE=/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub
+WAVLM_CACHE=/export/jsalt26/omnienc/users/cxiao/hf/hub
 DECODER_CKPT=$(pwd)/results/speechllm_fixed_pooling_wavlm/char_alignment_tc100/3408/save/CKPT+2026-08-09+17-11-52+00
 CONTROL_ROOT=results/speechllm_segmenter_wavlm/fullprefix_transformer_ar_local64_best_char_decoder
 COLD_DIR=$(pwd)/$CONTROL_ROOT/coldstart/3407/save
 BASELINE_ROOT=results/speechllm_segmenter_wavlm/fullprefix_transformer_ar_local64_bigru_best_char_decoder/nll_mt
-OUT_ROOT=results/speechllm_segmenter_wavlm/bilevel_transformer_ar_local64_bigru_full
+# Keep this study separate from the earlier batch-size attempts.
+OUT_ROOT=${OUT_ROOT:-results/speechllm_segmenter_wavlm/bilevel_transformer_ar_local64_bigru_full_mb600}
 
 COMMON=(
-  --account=jsalt2026-lgarci27
+  --account=highprio
   --comment=accept_cost
-  --partition=a100
-  --reservation="JSALT 2026"
-  --cpus-per-task=12
-  --mem=80G
+  --partition=gpu-a100
+  --cpus-per-task=8
+  --mem=32G
   --time=3-00:00:00
 )
 
@@ -90,6 +94,8 @@ for mode in "${MODES[@]}"; do
     extra+=" --bilevel_support_fraction 0.5 --bilevel_inner_lr $INNER_LR"
     extra+=" --bilevel_inner_max_grad_norm 1.0 --bilevel_support_pg_weight 1.0"
     extra+=" --bilevel_measure_support_after False --bilevel_deterministic_sdpa True"
+    extra+=" --min_batch_ex_train 2"
+    extra+=" --max_batch_length_train $MAX_BATCH_LENGTH_TRAIN"
     extra+=" --initial_lr 0.0002 --lr_decoder 0.0002"
     extra+=" --lr_decoder_warmup 0.0002 --lr_segmenter 0.00005"
     extra+=" --pg_weight 1.0 --grpo_k 4 --max_decode_ratio 3.0"
@@ -104,6 +110,7 @@ for mode in "${MODES[@]}"; do
 done
 
 echo "Configuration: WavLM, local-history Transformer-AR window=64, BiGRU residual pooling, K=4"
+echo "Dynamic batching: min 2 examples, ${MAX_BATCH_LENGTH_TRAIN}s duration budget"
 echo "Schedule: $WARMUP_EPOCHS matched warmup + $JOINT_RL_EPOCHS joint-RL epochs"
 echo "Matched non-bilevel baseline: $BASELINE_ROOT/{3407,3408,3409}"
 echo "Output root: $OUT_ROOT (estimated under 5 GB total)"

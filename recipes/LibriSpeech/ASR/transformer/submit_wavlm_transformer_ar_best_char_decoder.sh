@@ -4,7 +4,7 @@
 # the joint-RL phase uses the same 10-epoch budget.
 set -euo pipefail
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 
 SEEDS=(3407 3408 3409)
 WARMUP_EPOCHS=2
@@ -15,17 +15,15 @@ DRY_RUN=${DRY_RUN:-0}
 
 WAVLM_ID=microsoft/wavlm-large
 WAVLM_DIM=1024
-WAVLM_CACHE=/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub
+WAVLM_CACHE=/export/jsalt26/omnienc/users/cxiao/hf/hub
 COLD_DIR=$(pwd)/results/speechllm_segmenter_wavlm/fullprefix_transformer_ar/coldstart/3407/save
 DECODER_CKPT=$(pwd)/results/speechllm_fixed_pooling_wavlm/char_alignment_tc100/3408/save/CKPT+2026-08-09+17-11-52+00
 OUT_ROOT=results/speechllm_segmenter_wavlm/fullprefix_transformer_ar_best_char_decoder/nll_mt
 
 COMMON=(
-  --account=jsalt2026-lgarci27
+  --account=highprio
   --comment=accept_cost
-  --partition=a100
-  --reservation="JSALT 2026"
-  --exclude=ga129
+  --partition=gpu-a100
   --time=3-00:00:00
 )
 

@@ -2,11 +2,10 @@
 # Resume the three completed LS960 phone-CTC decoder-CE runs for one more pass.
 set -euo pipefail
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 
-RESERVATION=${RESERVATION:-JSALT 2026}
 TRAIN_SPLITS="['train-clean-100','train-clean-360','train-other-500']"
-BOUNDARY_DIR=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/boundary_targets/wavlm_phone_ctc_ls960_best_longsplit8
+BOUNDARY_DIR=/export/jsalt26/omnienc/users/cxiao/boundary_targets/wavlm_phone_ctc_ls960_best_longsplit8
 OUT_ROOT=results/speechllm_ls960_phone_ctc_longsplit8_mean_ce_1ep
 OUT_ROOT_ABS=$(pwd)/$OUT_ROOT
 CSV_DIR=$OUT_ROOT_ABS/manifests
@@ -38,18 +37,14 @@ echo "=== CONTINUE WAVLM PHONE-CTC LONG-SPLIT8 LS960 CE ==="
 echo "Training splits: $TRAIN_SPLITS"
 echo "Resume source/output: $OUT_ROOT/{3407,3408,3409}"
 echo "Estimated additional storage: under 1 GB because best-checkpoint retention replaces superseded checkpoints"
-echo "Compute: three one-A100 jobs; ga129 excluded"
+echo "Compute: three one-A100 jobs"
 echo "Training objective: regular CE; parameter-free mean pooling; decoder projection + LoRA only"
 
 identity=(
-  --account=jsalt2026-lgarci27
+  --account=highprio
   --comment=accept_cost
-  --partition=a100
-  --exclude=ga129
+  --partition=gpu-a100
 )
-if [[ -n "$RESERVATION" ]]; then
-  identity+=(--reservation="$RESERVATION")
-fi
 
 export TRAIN_SPLITS TOKENIZERS_PARALLELISM=false OMP_NUM_THREADS=2
 for seed in "${SEEDS[@]}"; do
@@ -68,7 +63,7 @@ for seed in "${SEEDS[@]}"; do
     "${identity[@]}" \
     --cpus-per-task=12 --mem=64G --time=1-00:00:00 \
     --job-name="l960_ph11x_$seed" \
-    --export="ALL,SEED=$seed,EPOCHS=2,OUTPUT_FOLDER=$out,SSL_FOLDER=/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub,BOUNDARY_TARGET_DIR=$BOUNDARY_DIR" \
+    --export="ALL,SEED=$seed,EPOCHS=2,OUTPUT_FOLDER=$out,SSL_FOLDER=/export/jsalt26/omnienc/users/cxiao/hf/hub,BOUNDARY_TARGET_DIR=$BOUNDARY_DIR" \
     run_char_alignment.slurm)
   printf 'decoder_ce_continuation\t%s\t%s\t-\t%s\t1\tregular_ce_projection_plus_lora\n' \
     "$seed" "$job" "$TRAIN_SPLITS" >> "$MANIFEST"

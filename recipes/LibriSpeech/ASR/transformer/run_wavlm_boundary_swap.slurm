@@ -6,14 +6,14 @@
 #SBATCH --gpus=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=80G
-#SBATCH --output=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer/slurm_logs/%x_%j.out
+#SBATCH --output=/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/slurm_logs/%x_%j.out
 
 set -euo pipefail
 
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 PYTHONUNBUFFERED=1
-export HF_HUB_CACHE=/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub
+export HF_HUB_CACHE=/export/jsalt26/omnienc/users/cxiao/hf/hub
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 
 : "${BACKBONE:?set BACKBONE=cnn|transformer}"
 : "${COLD_SEGMENTER:?set COLD_SEGMENTER}"
@@ -23,7 +23,7 @@ cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/Lib
 ORACLE_DECODER=results/speechllm_fixed_pooling_wavlm/char_alignment_tc100/3407/save/CKPT+2026-08-09+16-38-50+00
 MANIFEST_ROOT=results/speechllm_fixed_pooling_wavlm/char_alignment_tc100/3407
 
-/home/jhu/jsalt2026-ext-cxiao7/cxiao/envs/jointllm/bin/python \
+/export/jsalt26/omnienc/users/cxiao/envs/jointllm/bin/python \
     eval_wavlm_boundary_swap.py \
     --decoder-checkpoint "$ORACLE_DECODER" \
     --cold-segmenter "$COLD_SEGMENTER" \

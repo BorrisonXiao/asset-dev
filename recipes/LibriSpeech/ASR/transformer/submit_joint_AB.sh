@@ -5,12 +5,12 @@
 #   A: two-sided pin  (rho_bar - rho*)^2                          -> can't collapse
 #   B: one-sided cap + token-tax + soft floor at rho_floor=0.08   -> rate-distortion, floored
 set -euo pipefail
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 mkdir -p slurm_logs
 SEED=3407
 B=results/speechllm_segmenter
-COMMON=(--account=jsalt2026-lgarci27 --comment=accept_cost --partition=a100
-        --reservation="JSALT 2026" --exclude=ga129)
+COMMON=(--account=highprio --comment=accept_cost --partition=gpu-a100
+)
 
 for BB in cnn transformer; do
     CS="$(pwd)/$B/coldstart/$BB/$SEED/save"

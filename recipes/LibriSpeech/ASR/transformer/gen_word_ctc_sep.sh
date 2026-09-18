@@ -5,7 +5,7 @@
 #SBATCH --gpus=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
-#SBATCH --output=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/boundary_targets/logs/gen_sep_%A_%a.out
+#SBATCH --output=/export/jsalt26/omnienc/users/cxiao/boundary_targets/logs/gen_sep_%A_%a.out
 #
 # Regenerate CTC word_ctc boundaries AND the parallel per-frame is_separator
 # channel (word_ctc_sep) for the splits needed by the blank-removal ablations.
@@ -19,10 +19,10 @@
 
 set -euo pipefail
 
-RECIPE=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
-DATA=/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/datasets
-OUT=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/boundary_targets
-PY=/home/jhu/jsalt2026-ext-cxiao7/cxiao/envs/jointllm/bin/python
+RECIPE=/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
+DATA=/export/jsalt26/omnienc/users/cxiao/datasets
+OUT=/export/jsalt26/omnienc/users/cxiao/boundary_targets
+PY=/export/jsalt26/omnienc/users/cxiao/envs/jointllm/bin/python
 
 cd "$RECIPE"
 

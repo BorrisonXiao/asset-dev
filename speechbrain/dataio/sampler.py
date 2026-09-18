@@ -435,6 +435,11 @@ class DynamicBatchSampler(Sampler):
          have not been grouped.
     verbose: bool
         If ``True``, log also the stats for each batch at the first epoch.
+    min_batch_ex : int
+        Minimum number of examples in every emitted batch. Underfilled batches
+        are regrouped without exceeding ``max_batch_length`` or
+        ``max_batch_ex``. The default of one preserves the established
+        behavior.
     """
 
     def __init__(
@@ -452,6 +457,7 @@ class DynamicBatchSampler(Sampler):
         epoch: int = 0,
         drop_last: bool = False,
         verbose: bool = False,
+        min_batch_ex: int = 1,
     ):
         self._dataset = dataset
         self._ex_lengths = {}
@@ -511,6 +517,16 @@ class DynamicBatchSampler(Sampler):
         if max_batch_ex is None:
             max_batch_ex = np.inf
         self._max_batch_ex = max_batch_ex
+        if not isinstance(min_batch_ex, int) or min_batch_ex < 1:
+            raise ValueError(
+                f"min_batch_ex must be a positive integer, got {min_batch_ex!r}"
+            )
+        if min_batch_ex > self._max_batch_ex:
+            raise ValueError(
+                "min_batch_ex cannot exceed max_batch_ex, got "
+                f"{min_batch_ex} > {self._max_batch_ex}"
+            )
+        self._min_batch_ex = min_batch_ex
         # Calculate bucket lengths - how often does one bucket boundary fit into max_batch_length?
         self._bucket_lens = [
             min(
@@ -588,6 +604,139 @@ class DynamicBatchSampler(Sampler):
         else:
             raise NotImplementedError
 
+    def _batch_fits(self, batch):
+        """Whether a regrouped batch obeys the configured upper bounds."""
+        return (
+            len(batch) <= self._max_batch_ex
+            and sum(self._ex_lengths[str(idx)] for idx in batch)
+            <= self._max_batch_length
+        )
+
+    def _enforce_min_batch_ex(self):
+        """Regroup undersized batches while preserving every example once.
+
+        Dynamic bucketing can leave one residual batch per bucket. A downstream
+        algorithm that needs disjoint support/query examples cannot consume
+        singleton residuals. This repair touches only batches below the
+        configured minimum and keeps both upper bounds intact.
+        """
+        if self._min_batch_ex <= 1:
+            return
+
+        original_count = sum(len(batch) for batch in self._batches)
+        complete = [
+            batch for batch in self._batches if len(batch) >= self._min_batch_ex
+        ]
+        underfilled = [
+            batch for batch in self._batches if len(batch) < self._min_batch_ex
+        ]
+        if not underfilled:
+            return
+
+        pending = sorted(
+            (idx for batch in underfilled for idx in batch),
+            key=lambda idx: self._ex_lengths[str(idx)],
+            reverse=True,
+        )
+        repaired = []
+        while len(pending) >= self._min_batch_ex:
+            # Avoid leaving a final group below the requested minimum.
+            target_size = (
+                len(pending)
+                if len(pending) < 2 * self._min_batch_ex
+                else self._min_batch_ex
+            )
+            batch = [pending.pop(0)]
+            while len(batch) < target_size:
+                partner = next(
+                    (
+                        pos
+                        for pos in range(len(pending) - 1, -1, -1)
+                        if self._batch_fits(batch + [pending[pos]])
+                    ),
+                    None,
+                )
+                if partner is None:
+                    break
+                batch.append(pending.pop(partner))
+            if len(batch) < self._min_batch_ex:
+                pending.extend(batch)
+                break
+            repaired.append(batch)
+
+        if pending:
+            # An odd tail can often fit into an existing batch. Prefer the
+            # shortest compatible batch to limit added padding.
+            targets = sorted(
+                complete + repaired,
+                key=lambda batch: sum(
+                    self._ex_lengths[str(idx)] for idx in batch
+                ),
+            )
+            target = next(
+                (
+                    batch
+                    for batch in targets
+                    if self._batch_fits(batch + pending)
+                ),
+                None,
+            )
+            if target is None:
+                # A full batch may be able to spare examples while remaining
+                # at or above the minimum. This handles cases such as
+                # [6], [3, 3, 3] with a length budget of 10: the feasible
+                # repair is [6, 3], [3, 3], not appending [6] to the full
+                # three-example batch.
+                needed = self._min_batch_ex - len(pending)
+                donors = []
+                for batch in complete + repaired:
+                    spare = len(batch) - self._min_batch_ex
+                    donors.extend(
+                        (self._ex_lengths[str(idx)], batch, idx)
+                        for idx in sorted(
+                            batch,
+                            key=lambda item: self._ex_lengths[str(item)],
+                        )[:spare]
+                    )
+                donors.sort(key=lambda item: item[0])
+                selected = donors[:needed]
+                candidate = pending + [item[2] for item in selected]
+                if len(selected) != needed or not self._batch_fits(candidate):
+                    longest = max(
+                        self._ex_lengths[str(idx)] for idx in pending
+                    )
+                    raise ValueError(
+                        "Cannot satisfy min_batch_ex without exceeding the "
+                        "dynamic batch limits. Increase max_batch_length, "
+                        "lower min_batch_ex, or drop the residual examples. "
+                        f"min_batch_ex={self._min_batch_ex}, "
+                        f"max_batch_length={self._max_batch_length}, "
+                        f"longest_pending={longest:.3f}."
+                    )
+                for _, donor_batch, idx in selected:
+                    donor_batch.remove(idx)
+                repaired.append(candidate)
+            else:
+                target.extend(pending)
+
+        self._batches = complete + repaired
+        repaired_count = sum(len(batch) for batch in underfilled)
+        if sum(len(batch) for batch in self._batches) != original_count:
+            raise RuntimeError(
+                "Minimum-batch regrouping lost or added examples"
+            )
+        if any(len(batch) < self._min_batch_ex for batch in self._batches):
+            raise RuntimeError(
+                "Minimum-batch regrouping left an undersized batch"
+            )
+        logger.info(
+            "DynamicBatchSampler: regrouped %d examples from %d batches to "
+            "enforce min_batch_ex=%d",
+            repaired_count,
+            len(underfilled),
+            self._min_batch_ex,
+        )
+
     def _generate_batches(self):
         logger.info("DynamicBatchSampler: Generating dynamic batches")
         if self._shuffle_ex:
@@ -640,6 +789,7 @@ class DynamicBatchSampler(Sampler):
                 if batch:
                     self._batches.append(batch)
 
+        self._enforce_min_batch_ex()
         self._permute_batches()  # possibly reorder batches
 
         if self._epoch == 0:  # only log at first epoch

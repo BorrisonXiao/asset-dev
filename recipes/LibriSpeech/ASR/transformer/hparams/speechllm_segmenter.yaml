@@ -25,6 +25,9 @@ output_wer_folder: !ref <output_folder>/wer_results
 save_folder: !ref <output_folder>/save
 train_log: !ref <output_folder>/train_log.txt
 stage_timing_file: null           # optional JSONL, used by matched speed validation
+eval_only: False                  # recover a checkpoint and evaluate without fitting
+inference_benchmark_file: null    # optional JSONL summary, one row per test split
+inference_warmup_batches: 5       # excluded from latency/throughput summaries
 feats_cache_dir: null
 ckpt_interval_minutes: 15
 
@@ -58,6 +61,14 @@ segment_pooling_hidden_dim: 128
 segment_pooling_num_layers: 1
 segment_pooling_dropout: 0.0
 
+# Matched attribution controls. ``freeze_boundary_policy`` freezes the FiLM and
+# boundary-policy parameters while leaving the pooler and decoder trainable for
+# CE adaptation. When ``fixed_rate_k`` is set, deterministic fixed-stride
+# boundaries replace the learned policy at both training and evaluation time.
+# A fixed rate is only valid with a frozen boundary policy.
+freeze_boundary_policy: False
+fixed_rate_k: null
+
 # Full-prefix label-autoregressive Transformer. These are intentionally separate
 # from the bidirectional acoustic Transformer above; policy dropout starts at zero
 # so cached rollouts and parallel re-scoring use the same on-policy distribution.
@@ -77,6 +88,15 @@ grpo_k: 4                         # fixed current control; do not reduce for spe
 grpo_normalize_std: True         # GRPO (std-norm) vs RLOO (mean-only)
 pg_weight: 1.0
 warmup_epochs: 1                 # decoder-only warmup epochs before joint RL
+# Optional finer-grained schedule for full-corpus runs. When set, this takes
+# precedence over warmup_epochs and uses this fraction of the first epoch's
+# optimizer updates for decoder-only adaptation before switching to joint RL.
+warmup_fraction_of_epoch: null
+warmup_optimizer_steps: null     # resolved at runtime from the dynamic sampler
+# Optional optimizer-step-controlled validation for long full-corpus runs.
+# The overall stop is the SpeechBrain run option --optimizer_step_limit.
+validation_interval_optimizer_steps: 0
+validate_at_warmup_end: True
 # Auto keeps CNN/non-full-AR on the reference path and selects combined_on_policy for
 # Transformer-AR, sharing greedy+K rollouts and evaluating K rewards in one wide decode.
 # Every mode remains one-update on-policy GRPO.
@@ -128,7 +148,7 @@ trace_out: null
 
 ####################### Data Configuration #################################
 
-data_folder: /home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/datasets/LibriSpeech
+data_folder: /export/jsalt26/omnienc/users/cxiao/datasets/LibriSpeech
 train_splits: ["train-clean-100"]
 dev_splits: ["dev-clean"]
 test_splits: ["test-clean", "test-other", "dev-other"]
@@ -142,17 +162,19 @@ test_csv:
     - !ref <csv_folder>/dev-other.csv
 
 # Char-level CTC boundaries drive the cold-start BCE (warmstart_target=alignment wires
-# the per-utterance <id>.pt loader in the shared dataio_prepare).
-boundary_source: none
+# the per-utterance <id>.pt loader in the shared dataio_prepare). In joint mode,
+# boundary_source: alignment instead uses those precomputed boundaries directly while
+# training the pooler/decoder; this requires freeze_boundary_policy: True.
+boundary_source: none  # none | alignment
 warmstart_target: alignment
-boundary_target_dir: /home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/datasets/wavlm_boundaries/char
+boundary_target_dir: /export/jsalt26/omnienc/users/cxiao/datasets/wavlm_boundaries/char
 
 ####################### Model Paths & Configuration ########################
 
 ssl_hub: facebook/wav2vec2-base-960h
 # Stable pre-populated HF cache for wav2vec2-base-960h (a public model, but
 # HF_HUB_OFFLINE=1 is on for the gated LLM, so the SSL model must be local too).
-ssl_folder: /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/ssl_cache
+ssl_folder: /export/jsalt26/omnienc/users/cxiao/hf/hub
 ssl_frozen: True
 ssl_device: cuda
 ssl_output_norm: True
@@ -163,22 +185,29 @@ llm_device: cuda
 # the segmenter and decoder share `ssl` exactly as before. In dual-SSL mode the code
 # asserts that both encoders emit the same frame grid before transferring boundaries.
 segmenter_ssl_hub: null
-segmenter_ssl_folder: /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/ssl_cache
+segmenter_ssl_folder: /export/jsalt26/omnienc/users/cxiao/hf/hub
 segmenter_ssl_frozen: True
 segmenter_ssl_device: cuda
 segmenter_ssl_output_norm: True
 
 llm_path: meta-llama/Llama-3.2-1B-Instruct
 llm_emb_size: 2048
-llm_save_path: /home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub
+llm_save_path: /export/jsalt26/omnienc/users/cxiao/hf/hub
 
 ####################### Training Hyperparameters ###########################
 
 number_of_epochs: 5
+checkpoints_to_keep: 1
+# When set in eval-only mode, load this zero-based validation-WER rank rather
+# than implicitly evaluating only the best retained checkpoint.
+eval_checkpoint_rank: null
 batch_size: 16
 grad_accumulation_factor: 4
 sorting: random
 num_workers: 0
+pin_memory: False
+persistent_workers: False
+prefetch_factor: 2
 precision: bf16
 eval_precision: bf16
 max_grad_norm: 1.0
@@ -204,6 +233,7 @@ num_bucket: 200
 shuffle: True
 batch_ordering: random
 max_batch_ex: 256
+min_batch_ex_train: 1           # set to 2 for support/query bilevel training
 
 dynamic_batch_sampler_train:
     max_batch_length: !ref <max_batch_length_train>
@@ -211,6 +241,7 @@ dynamic_batch_sampler_train:
     shuffle: !ref <shuffle>
     batch_ordering: !ref <batch_ordering>
     max_batch_ex: !ref <max_batch_ex>
+    min_batch_ex: !ref <min_batch_ex_train>
 
 dynamic_batch_sampler_valid:
     max_batch_length: !ref <max_batch_length_val>
@@ -262,10 +293,16 @@ eos_index: 128001
 pad_token: 128004
 prompt: "Transcribe speech to text."
 
-# Decode-step budget = max_decode_ratio * (compressed audio-prefix length). The reference
-# NLL recipe uses 3x; CER jobs may override to 2x for faster free-running reward decode.
+# Legacy ratio fields remain for compatibility with SpeechBrain's base class.
+# The batch-invariant searcher uses one cap per utterance from original waveform
+# duration, independent of batch padding and the number of pooled audio tokens.
 min_decode_ratio: 0.0
 max_decode_ratio: 3.0
+decode_sample_rate: 16000
+max_decode_tokens_per_second: 12.0
+max_decode_token_margin: 16
+min_decode_tokens: 8
+max_decode_tokens: 512
 
 ####################### Model Components ####################################
 
@@ -336,13 +373,17 @@ llm: !new:speechbrain.nnet.adapters.AdaptedModel
     adapter_kwargs:
         rank: !ref <lora_rank>
 
-searcher: !new:speechbrain.decoders.seq2seq.S2SHuggingFaceLLMGreedySearcher
+searcher: !new:batch_invariant_decode.BatchInvariantLLMGreedySearcher
     llm_model: !ref <llm>
     temperature: 0.0
     min_decode_ratio: !ref <min_decode_ratio>
     max_decode_ratio: !ref <max_decode_ratio>
     bos_index: !ref <bos_index>
     eos_index: !ref <eos_index>
+    max_decode_tokens_per_second: !ref <max_decode_tokens_per_second>
+    max_decode_token_margin: !ref <max_decode_token_margin>
+    min_decode_tokens: !ref <min_decode_tokens>
+    max_decode_tokens: !ref <max_decode_tokens>
 
 modules:
     ssl: !ref <ssl>

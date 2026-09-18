@@ -4,10 +4,10 @@
 #   (1 vs 2) single-task (frozen decoder) vs multi-task (CE-co-trained decoder), at NLL reward
 #   (2 vs 3) NLL reward vs CER reward (free-running decode), at multi-task
 set -euo pipefail
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 SEED=3407; BB=cnn; B=results/speechllm_segmenter
 CS="$(pwd)/$B/coldstart/$BB/$SEED/save"
-COMMON=(--account=jsalt2026-lgarci27 --comment=accept_cost --partition=a100 --reservation="JSALT 2026" --exclude=ga129)
+COMMON=(--account=highprio --comment=accept_cost --partition=gpu-a100)
 
 j1=$(sbatch "${COMMON[@]}" --job-name=abl_nll_frozen --parsable \
   --export=ALL,MODE=joint,BACKBONE=${BB},EPOCHS=10,WARMUP_EPOCHS=6,COLDSTART_DIR=${CS},EXTRA_ARGS="--segmenter_reward nll --freeze_decoder_in_joint True --output_folder $B/abl/nll_frozen/${BB}/${SEED}" \

@@ -3,7 +3,7 @@
 # One shared six-epoch decoder warm-up is followed by 3 variants x 3 seeds.
 set -euo pipefail
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 
 BB=transformer
 WARMUP_SEED=3407
@@ -36,11 +36,9 @@ done
 
 # Hard policy: every GPU submission uses this exact account/partition pair.
 COMMON=(
-  --account=jsalt2026-lgarci27
-  --partition=a100
+  --account=highprio
+  --partition=gpu-a100
   --comment=accept_cost
-  --reservation="JSALT 2026"
-  --exclude=ga129
 )
 
 warmup_extra="--seed $WARMUP_SEED --segmenter_reward nll --freeze_decoder_in_joint False --rl_update_mode on_policy --lr_segmenter 0.0001 --lr_decoder 0.0005 --pg_weight 1.0 --max_decode_ratio 3.0 --output_folder $WARMUP_OUT"

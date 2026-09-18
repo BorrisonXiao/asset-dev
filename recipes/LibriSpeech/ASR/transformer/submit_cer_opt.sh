@@ -8,7 +8,7 @@
 # re-doing the warmup wall-time. The aborted intra-epoch-7 (old slow loop) ckpt is moved
 # aside so recovery starts cleanly from end-of-warmup.
 set -euo pipefail
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 SEED=3407; BB=cnn; B=results/speechllm_segmenter
 CS="$(pwd)/$B/coldstart/$BB/$SEED/save"
 SAVE="$B/abl/cer_mt/$BB/$SEED/save"
@@ -22,7 +22,7 @@ for c in "$SAVE"/CKPT*; do
   fi
 done
 
-COMMON=(--account=jsalt2026-lgarci27 --comment=accept_cost --partition=a100 --reservation="JSALT 2026" --exclude=ga129)
+COMMON=(--account=highprio --comment=accept_cost --partition=gpu-a100)
 j=$(sbatch "${COMMON[@]}" --job-name=abl_cer_mt_opt --parsable \
   --export=ALL,MODE=joint,BACKBONE=${BB},EPOCHS=10,WARMUP_EPOCHS=6,COLDSTART_DIR=${CS},EXTRA_ARGS="--segmenter_reward cer --freeze_decoder_in_joint False --output_folder $B/abl/cer_mt/${BB}/${SEED}" \
   run_segmenter.slurm)

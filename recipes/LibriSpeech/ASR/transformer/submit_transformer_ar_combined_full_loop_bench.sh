@@ -1,15 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 mkdir -p slurm_logs results/speechllm_segmenter_wavlm/transformer_ar_combined_rollout_validation
 
 common=(
-  --account=jsalt2026-lgarci27
+  --account=highprio
   --comment=accept_cost
-  --partition=a100
-  --reservation='JSALT 2026'
-  --exclude=ga132
+  --partition=gpu-a100
   --parsable
   run_transformer_ar_combined_full_loop_bench.slurm
 )

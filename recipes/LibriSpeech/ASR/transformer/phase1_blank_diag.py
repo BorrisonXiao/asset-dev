@@ -23,7 +23,7 @@ os.environ.setdefault("HF_HUB_OFFLINE", "1")
 os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 os.environ.setdefault(
     "HF_HUB_CACHE",
-    "/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub",
+    "/export/jsalt26/omnienc/users/cxiao/hf/hub",
 )
 
 import torch  # noqa: E402
@@ -36,10 +36,10 @@ from segment_pooling import (  # noqa: E402
     segment_separator_mask,
 )
 
-RECIPE = "/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer"
+RECIPE = "/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer"
 EXP1 = f"{RECIPE}/results/speechllm_fixed_pooling/alignment/3407"
-BOUND = "/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/datasets/wavlm_boundaries/word_ctc"
-SEP = "/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/boundary_targets/word_ctc_sep"
+BOUND = "/export/jsalt26/omnienc/users/cxiao/datasets/wavlm_boundaries/word_ctc"
+SEP = "/export/jsalt26/omnienc/users/cxiao/boundary_targets/word_ctc_sep"
 N_UTTS = int(os.environ.get("N_UTTS", "300"))
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 

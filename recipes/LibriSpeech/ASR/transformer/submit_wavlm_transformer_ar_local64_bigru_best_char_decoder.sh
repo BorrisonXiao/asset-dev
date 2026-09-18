@@ -4,10 +4,10 @@
 # BiGRU pooler parameters load as an exact zero-residual mean-pooling warm start.
 set -euo pipefail
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 
 # Override SEED_LIST to add independent replications without changing the
-# original three runs, e.g. SEED_LIST="3410 3411 3412".
+# original three runs, e.g. SEED_LIST="3410 3412 3413".
 read -r -a SEEDS <<< "${SEED_LIST:-3407 3408 3409}"
 WARMUP_EPOCHS=2
 JOINT_RL_EPOCHS=10
@@ -16,17 +16,16 @@ DRY_RUN=${DRY_RUN:-0}
 
 WAVLM_ID=microsoft/wavlm-large
 WAVLM_DIM=1024
-WAVLM_CACHE=/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub
+WAVLM_CACHE=/export/jsalt26/omnienc/users/cxiao/hf/hub
 DECODER_CKPT=$(pwd)/results/speechllm_fixed_pooling_wavlm/char_alignment_tc100/3408/save/CKPT+2026-08-09+17-11-52+00
 CONTROL_ROOT=results/speechllm_segmenter_wavlm/fullprefix_transformer_ar_local64_best_char_decoder
 COLD_DIR=$(pwd)/$CONTROL_ROOT/coldstart/3407/save
 OUT_ROOT=results/speechllm_segmenter_wavlm/fullprefix_transformer_ar_local64_bigru_best_char_decoder
 
 COMMON=(
-  --account=jsalt2026-lgarci27
+  --account=highprio
   --comment=accept_cost
-  --partition=a100
-  --reservation="JSALT 2026"
+  --partition=gpu-a100
   --cpus-per-task=12
   --mem=60G
   --time=3-00:00:00

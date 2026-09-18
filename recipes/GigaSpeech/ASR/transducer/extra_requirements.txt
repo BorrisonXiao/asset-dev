@@ -1,6 +1,0 @@
-datasets
-# You might need to install numba with conda
-# You might also need to install other packages such as cudatoolkit
-numba
-soundfile
-speechcolab

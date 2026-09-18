@@ -7,7 +7,7 @@
 # Both arms then run the same 10-epoch Bernoulli NLL-GRPO phase.
 set -euo pipefail
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 
 SEEDS=(3407 3408 3409)
 RL_EPOCHS=10
@@ -15,10 +15,10 @@ DRY_RUN=${DRY_RUN:-0}
 
 WAVLM_ID=microsoft/wavlm-large
 WAVLM_DIM=1024
-WAVLM_CACHE=/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub
+WAVLM_CACHE=/export/jsalt26/omnienc/users/cxiao/hf/hub
 W2V2_ID=facebook/wav2vec2-base-960h
 W2V2_DIM=768
-W2V2_CACHE=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/ssl_cache
+W2V2_CACHE=/export/jsalt26/omnienc/users/cxiao/hf/hub
 
 # Best wav2vec2 CNN char segmenter: seed 3407, epoch 4, dev F1=0.89453897.
 SEGMENTER_CKPT=$(pwd)/results/speechllm_segmenter/coldstart/cnn/3407/save/CKPT+2026-08-02+01-25-10+00/segmenter.ckpt
@@ -28,11 +28,9 @@ DECODER_CKPT=$(pwd)/results/speechllm_fixed_pooling_wavlm/char_alignment_tc100/3
 OUT_ROOT=results/speechllm_segmenter_wavlm/hybrid_w2v2_segmenter_controlled
 
 COMMON=(
-  --account=jsalt2026-lgarci27
+  --account=highprio
   --comment=accept_cost
-  --partition=a100
-  --reservation="JSALT 2026"
-  --exclude=ga129
+  --partition=gpu-a100
   --time=3-00:00:00
 )
 

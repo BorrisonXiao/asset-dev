@@ -7,7 +7,7 @@
 # Seed 3407 is already complete; by default this submits missing seeds 3408/3409.
 set -euo pipefail
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 
 TOTAL_EPOCHS=12
 WARMUP_EPOCHS=2
@@ -20,17 +20,15 @@ fi
 
 WAVLM_ID=microsoft/wavlm-large
 WAVLM_DIM=1024
-WAVLM_CACHE=/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub
+WAVLM_CACHE=/export/jsalt26/omnienc/users/cxiao/hf/hub
 SEGMENTER_CKPT=$(pwd)/results/speechllm_segmenter_wavlm/coldstart/cnn/3407/save/CKPT+2026-08-07+11-19-21+00/segmenter.ckpt
 DECODER_CKPT=$(pwd)/results/speechllm_fixed_pooling_wavlm/char_alignment_tc100/3408/save/CKPT+2026-08-09+17-11-52+00
 OUT_ROOT=results/speechllm_segmenter_wavlm/oracleclose_bestinit
 
 COMMON=(
-  --account=jsalt2026-lgarci27
+  --account=highprio
   --comment=accept_cost
-  --partition=a100
-  --reservation="JSALT 2026"
-  --exclude=ga129
+  --partition=gpu-a100
   --time=2-00:00:00
 )
 

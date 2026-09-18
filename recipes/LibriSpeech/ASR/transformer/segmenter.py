@@ -68,9 +68,31 @@ class TaskFiLM(nn.Module):
             nn.init.zeros_(self.beta.weight)
 
     def forward(self, x, task_id=None):
-        """Modulate ``x`` (B, T, C) by task. No-op if disabled or ``task_id`` is None."""
+        """Modulate ``x`` (B, T, C) by task. No-op if disabled or ``task_id`` is None.
+
+        ``task_id`` may be an int, a scalar tensor, or a per-example tensor. A
+        scalar is the normal case for this project, where every batch is task
+        homogeneous, and it survives the K-fold batch replication the GRPO
+        rollout paths perform. A per-example tensor shorter than the batch is
+        tiled, which is exactly what replication produces.
+        """
         if not self.enabled or task_id is None:
             return x
+        if not torch.is_tensor(task_id):
+            task_id = torch.tensor(task_id, device=x.device)
+        task_id = task_id.to(device=x.device, dtype=torch.long)
+        if task_id.dim() == 0:
+            task_id = task_id.reshape(1)
+        if task_id.numel() == 1:
+            task_id = task_id.expand(x.size(0))
+        elif task_id.size(0) != x.size(0):
+            if x.size(0) % task_id.size(0) != 0:
+                raise ValueError(
+                    f"Cannot align {task_id.size(0)} task ids to a batch of "
+                    f"{x.size(0)}: the batch is not a whole multiple of the "
+                    "task-id count."
+                )
+            task_id = task_id.repeat(x.size(0) // task_id.size(0))
         g = self.gamma(task_id).unsqueeze(1)  # (B, 1, C)
         b = self.beta(task_id).unsqueeze(1)
         return g * x + b
@@ -247,9 +269,7 @@ class CausalBoundaryBlock(nn.Module):
         x = residual + self.out(attn)
         return x + self.ffn(self.norm2(x)), (k, v)
 
-    def step_preallocated(
-        self, x, cache, position, history_window=None
-    ):
+    def step_preallocated(self, x, cache, position, history_window=None):
         """One step using indexed KV writes instead of repeated ``torch.cat``."""
         residual = x
         q, k, v = self._split_qkv(self.norm1(x))
@@ -319,12 +339,12 @@ class CausalTransformerBoundaryPolicy(nn.Module):
         super().__init__()
         self.audio_proj = nn.Linear(input_dim, hidden_dim)
         self.boundary_embedding = nn.Embedding(3, hidden_dim)
-        self.pe = SinusoidalPositionalEncoding(hidden_dim, max_len=max_positions)
+        self.pe = SinusoidalPositionalEncoding(
+            hidden_dim, max_len=max_positions
+        )
         self.layers = nn.ModuleList(
             [
-                CausalBoundaryBlock(
-                    hidden_dim, nhead, ffn_dim, dropout=dropout
-                )
+                CausalBoundaryBlock(hidden_dim, nhead, ffn_dim, dropout=dropout)
                 for _ in range(num_layers)
             ]
         )
@@ -433,12 +453,12 @@ class CausalTransformerBoundaryPolicy(nn.Module):
         caches = self._new_caches(B, T, features.device, features.dtype)
         boundaries, logits, log_probs = [], [], []
         for t in range(T):
-            logit, caches = self._step(
-                features[:, t], previous, t, caches
-            )
+            logit, caches = self._step(features[:, t], previous, t, caches)
             active = ~padding_mask[:, t]
             if t == 0:
-                action = torch.zeros(B, dtype=torch.long, device=features.device)
+                action = torch.zeros(
+                    B, dtype=torch.long, device=features.device
+                )
             elif mode == "argmax":
                 action = (logit > 0).long()
             else:
@@ -523,9 +543,7 @@ class CausalTransformerBoundaryPolicy(nn.Module):
             )
             greedy_valid = active[:B] & (t > 0)
             greedy_logits.append(logit[:B])
-            greedy_log_probs.append(
-                greedy_logp.masked_fill(~greedy_valid, 0.0)
-            )
+            greedy_log_probs.append(greedy_logp.masked_fill(~greedy_valid, 0.0))
             previous = torch.where(active, action.clamp(min=0), previous)
 
         if not T:
@@ -543,9 +561,7 @@ class CausalTransformerBoundaryPolicy(nn.Module):
             torch.stack(greedy_log_probs, dim=1),
             self.action_mask(padding_mask),
         )
-        samples = tuple(
-            grouped_boundaries[B:].chunk(num_samples, dim=0)
-        )
+        samples = tuple(grouped_boundaries[B:].chunk(num_samples, dim=0))
         return BoundaryPolicyGroupOutput(greedy, samples)
 
     def score(self, features, padding_mask, boundaries):
@@ -614,6 +630,11 @@ class Segmenter(nn.Module):
     ):
         super().__init__()
         self.film = TaskFiLM(num_tasks, input_dim)
+        # Multi-task runs set this once per (task-homogeneous) batch so every
+        # policy entry point conditions on the same task without threading an
+        # argument through each call site. ``None`` -- the default -- keeps
+        # single-task ASR behavior byte-for-byte identical.
+        self.active_task_id = None
         backbone = (backbone or "cnn").lower()
         if backbone == "cnn":
             self.net = CNNBoundaryPredictor(
@@ -675,6 +696,10 @@ class Segmenter(nn.Module):
             # so an old char checkpoint remains a behavior-preserving warm start.
             self.transition_bias = nn.Parameter(torch.zeros(2))
 
+    def _resolve_task(self, task_id):
+        """Explicit ``task_id`` wins; otherwise fall back to the active task."""
+        return self.active_task_id if task_id is None else task_id
+
     def boundary_logits(self, features, padding_mask, task_id=None):
         """Per-frame boundary logits ``(B, T)`` (padding positions are meaningless)."""
         if self.is_full_ar:
@@ -682,7 +707,7 @@ class Segmenter(nn.Module):
                 "transformer_ar logits require a boundary prefix; use "
                 "teacher_forced_logits(), sample_boundaries(), or score_boundaries()."
             )
-        h = self.film(features, task_id)
+        h = self.film(features, self._resolve_task(task_id))
         return self.net(h, padding_mask)
 
     def teacher_forced_logits(
@@ -690,9 +715,13 @@ class Segmenter(nn.Module):
     ):
         """Parallel conditional logits for the full-prefix Transformer policy."""
         if not self.is_full_ar:
-            raise RuntimeError("teacher_forced_logits is only for transformer_ar")
+            raise RuntimeError(
+                "teacher_forced_logits is only for transformer_ar"
+            )
         return self.net.teacher_forced_logits(
-            self.film(features, task_id), padding_mask, boundaries
+            self.film(features, self._resolve_task(task_id)),
+            padding_mask,
+            boundaries,
         )
 
     def sample_boundaries(
@@ -708,7 +737,7 @@ class Segmenter(nn.Module):
             raise RuntimeError("sample_boundaries is only for transformer_ar")
         mode = "argmax" if deterministic else "sample"
         return self.net.rollout(
-            self.film(features, task_id),
+            self.film(features, self._resolve_task(task_id)),
             padding_mask,
             mode=mode,
             generator=generator,
@@ -724,9 +753,11 @@ class Segmenter(nn.Module):
     ):
         """Share one closed-loop pass across greedy and sampled histories."""
         if not self.is_full_ar:
-            raise RuntimeError("sample_boundary_group is only for transformer_ar")
+            raise RuntimeError(
+                "sample_boundary_group is only for transformer_ar"
+            )
         return self.net.rollout_group(
-            self.film(features, task_id),
+            self.film(features, self._resolve_task(task_id)),
             padding_mask,
             num_samples=num_samples,
             generator=generator,
@@ -739,7 +770,9 @@ class Segmenter(nn.Module):
         if not self.is_full_ar:
             raise RuntimeError("score_boundaries is only for transformer_ar")
         return self.net.score(
-            self.film(features, task_id), padding_mask, boundaries
+            self.film(features, self._resolve_task(task_id)),
+            padding_mask,
+            boundaries,
         )
 
     def conditioned_logits(self, logits, boundary):
@@ -918,27 +951,54 @@ def boundary_bce_loss(logits, targets):
 
 
 def expected_kept_ratio(logits, padding_mask, probabilities=None):
-    """Per-utterance expected kept-ratio ``rho_bar = (sum_t sigmoid(logit_t)) / T``.
+    """Per-utterance expected kept-ratio ``rho_bar = E[#segments] / T``.
 
-    Differentiable proxy for the (non-differentiable) sampled kept-ratio. Returns
-    ``(expected_count (B,), rho_bar (B,), T (B,))``.
+    Differentiable proxy for the (non-differentiable) sampled kept-ratio, and it
+    must measure the SAME quantity as :func:`realized_kept_ratio`, because the
+    two feed the two rate channels (the auxiliary ``rate_loss`` and the reward's
+    ``sampled_rate_penalty``) against one shared band.
+
+    Pooling always opens a segment at frame 0 and one more at every *later*
+    frame carrying a boundary -- the frame-0 guard in
+    ``segment_pooling.compute_segment_ids`` -- so
+    ``E[#segments] = 1 + sum_{t>=1} p_t``.
+
+    Fixed 2026-09-01: this previously returned ``sum_{t>=0} p_t / T``, which both
+    omitted the implicit first segment and counted a frame-0 boundary that
+    pooling ignores. The two rate channels were therefore aiming at bands offset
+    by ``(1 - p_0)/T`` -- about 0.4 Hz on a 2.6 s clip, 0.08 Hz on a 12 s one.
+    The autoregressive policy forces ``p_0 = 0``, so the correction there is a
+    pure ``+1/T``.
+
+    Returns ``(expected_segments (B,), rho_bar (B,), T (B,))``.
     """
     valid = (~padding_mask).float()
     if probabilities is None:
         probabilities = torch.sigmoid(logits.float())
     p = probabilities.float() * valid
+    if p.shape[1] > 0:
+        # Frame 0 cannot open a second segment; it already has the implicit one.
+        p = torch.cat([torch.zeros_like(p[:, :1]), p[:, 1:]], dim=1)
     T = valid.sum(dim=1).clamp(min=1.0)
-    expected_count = p.sum(dim=1)  # E[# boundaries]
-    return expected_count, expected_count / T, T
+    expected_segments = p.sum(dim=1) + 1.0
+    return expected_segments, expected_segments / T, T
 
 
 def realized_kept_ratio(boundary, padding_mask):
     """Actual pooled-token ratio, counting the implicit segment beginning at frame 0."""
     valid = ~padding_mask
     n_frames = valid.sum(dim=1).float().clamp(min=1.0)
-    # The causal policy fixes boundary[:, 0] to zero. The implicit first segment is
-    # counted exactly once here; each later 1 starts one additional segment.
-    n_segments = ((boundary == 1) & valid).sum(dim=1).float() + 1.0
+    # The implicit first segment is counted exactly once here; each LATER 1 starts
+    # one additional segment. A boundary at frame 0 is ignored, matching the
+    # frame-0 guard in ``segment_pooling.compute_segment_ids`` -- without this it
+    # would be counted twice. The autoregressive policy fixes boundary[:, 0] to
+    # zero, so this only changes the (non-production) bernoulli path.
+    counted = (boundary == 1) & valid
+    if counted.shape[1] > 0:
+        counted = torch.cat(
+            [torch.zeros_like(counted[:, :1]), counted[:, 1:]], dim=1
+        )
+    n_segments = counted.sum(dim=1).float() + 1.0
     return n_segments / n_frames
 
 
@@ -1304,9 +1364,9 @@ if __name__ == "__main__":
     assert torch.equal(
         torch.cat(grouped.sampled_boundaries, dim=0), sampled_reference
     ), "combined rollout must preserve matched-seed stochastic histories"
-    assert torch.equal(
-        grouped_rng.get_state(), reference_rng.get_state()
-    ), "combined rollout must consume the same random-number stream"
+    assert torch.equal(grouped_rng.get_state(), reference_rng.get_state()), (
+        "combined rollout must consume the same random-number stream"
+    )
     for sample in grouped.sampled_boundaries:
         assert sample.shape == (B, T)
         assert (sample[:, 0] == 0).all()
@@ -1333,7 +1393,9 @@ if __name__ == "__main__":
         ar_dropout=0.0,
         ar_max_positions=128,
     )
-    fixed = train_ar.sample_boundaries(feats, pad, deterministic=False).boundaries
+    fixed = train_ar.sample_boundaries(
+        feats, pad, deterministic=False
+    ).boundaries
     opt_ar = torch.optim.SGD(train_ar.parameters(), lr=0.05)
 
     def full_ar_nll():

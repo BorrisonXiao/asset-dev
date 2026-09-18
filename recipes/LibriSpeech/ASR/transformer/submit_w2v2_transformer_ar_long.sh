@@ -5,7 +5,7 @@
 # initial logits and argmax boundaries before the new structured-policy training.
 set -euo pipefail
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 
 SEEDS=(3407 3408 3409)
 EPOCHS=30
@@ -13,7 +13,7 @@ DRY_RUN=${DRY_RUN:-0}
 
 W2V2_ID=facebook/wav2vec2-base-960h
 W2V2_DIM=768
-W2V2_CACHE=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/ssl_cache
+W2V2_CACHE=/export/jsalt26/omnienc/users/cxiao/hf/hub
 
 # Best completed wav2vec2 Transformer NLL-MT checkpoint selected on dev-clean:
 # seed 3407, epoch 10, dev WER=5.84905 (test-clean/other=7.50/11.71).
@@ -21,11 +21,9 @@ INIT_CKPT=$(pwd)/results/speechllm_segmenter/multiseed_shared_warmup_onpolicy/nl
 OUT_ROOT=results/speechllm_segmenter/w2v2_transformer_autoregressive_long/nll_mt
 
 COMMON=(
-  --account=jsalt2026-lgarci27
+  --account=highprio
   --comment=accept_cost
-  --partition=a100
-  --reservation="JSALT 2026"
-  --exclude=ga129
+  --partition=gpu-a100
   --time=3-00:00:00
 )
 

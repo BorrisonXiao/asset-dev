@@ -1,0 +1,555 @@
+# ############################################################################
+# Model: SINGLE-TASK non-ASR baseline over one segmentation, for the
+#        rate/quality bottleneck study. One task per run: emotion, speaker
+#        count, or intent.
+#
+# Purpose. The multi-task runs cannot separate three confounds: the audio-token
+# rate, multi-task interference, and the pooled-prefix interface itself. This
+# config isolates the first two by training ONE task at a time over a
+# segmentation that is either fixed by construction or learned:
+#
+#   fixed_rate_k: 1    50.0 Hz   no downsampling -- every frame is its own
+#                                segment; the interface's upper bound
+#   fixed_rate_k: 2    25.0 Hz   light compression
+#   fixed_rate_k: 5    10.0 Hz   the rate the reported multi-task checkpoint
+#                                actually emitted (7.6-10.6 Hz per task)
+#   fixed_rate_k: 10    5.0 Hz   the rate multi-task Phase C compresses to
+#                                (5.4-5.6 Hz per task)
+#   fixed_rate_k: null        the learned Transformer-AR policy from the
+#                                warm start, single-task
+#
+# Every arm shares the same warm start, the same effective batch, the same
+# learning rates and the same step budget for a given task, so the only thing
+# that varies within a task is the segmentation. That is what makes the arms
+# comparable; do not tune one arm without tuning the others.
+#
+# Checkpoint selection is on the TASK's own validation metric via
+# `selection_metric`, not on ASR WER. There is no ASR source here at all, and
+# ASR-only selection is what caused the multi-task runs to report pre-policy
+# checkpoints.
+#
+# Entry point: train_speechllm_multitask.py, with a single-source mixture.
+# Launcher: submit_nonasr_singletask_baselines.sh (sets the per-task steps,
+# per-arm batch split, and selection metric together -- prefer it to hand-set
+# overrides, which is where the arms drift apart).
+# ############################################################################
+
+seed: 3408
+__set_seed: !apply:speechbrain.utils.seed_everything [!ref <seed>]
+
+####################### Experiment Configuration ###########################
+
+experiment_name: speechllm_singletask_nonasr
+output_folder: !ref results/<experiment_name>/<seed>
+output_wer_folder: !ref <output_folder>/wer_results
+save_folder: !ref <output_folder>/save
+train_log: !ref <output_folder>/train_log.txt
+task_metrics_file: !ref <output_folder>/task_metrics.jsonl
+stage_timing_file: !ref <output_folder>/stage_timing.jsonl
+inference_benchmark_file: null
+inference_warmup_batches: 5
+eval_only: False
+eval_checkpoint_rank: null
+# Rank checkpoints on this validation metric instead of ASR WER. Set per task
+# by the launcher: macro_f1_emotion / acc_speaker_count / acc_intent.
+selection_metric: macro_f1_emotion
+feats_cache_dir: null
+ckpt_interval_minutes: 30
+
+# The multi-task path always runs the joint objective; there is no cold start.
+segmenter_mode: joint
+segmenter_backbone: transformer_ar
+
+####################### Warm start #########################################
+
+# Seed-3408 24k-step LS960 Transformer-AR local-64 + BiGRU checkpoint: the best
+# dev-clean WER (2.879) of the completed three-seed cohort.
+warm_start_ckpt_dir: /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt/3408/save/CKPT+2026-08-26+02-54-19+00
+
+# Unused by this recipe (the base class reads them); warm start replaces them.
+coldstart_ckpt_dir: null
+segmenter_init_checkpoint: null
+decoder_init_ckpt_dir: null
+
+####################### Task / phase schedule ##############################
+
+# Phase A: frozen policy, decoder adapters adapt to the new tasks' label spaces.
+bridge_optimizer_steps: 1000000
+# Phase B: FiLM-only policy training under GRPO.
+film_optimizer_steps: 0
+# Phase C follows until the optimizer step limit (passed on the command line).
+# Keep the shared BiGRU trainable (the plan's primary choice); set False to fall
+# back to freezing it if ASR retention degrades.
+train_shared_pooler: True
+
+####################### Segmenter Configuration ############################
+
+segmenter_hidden_dim: 256
+segmenter_kernel_size: 7
+segmenter_num_layers: 4
+segmenter_nhead: 4
+segmenter_ffn_dim: 1024
+segmenter_dropout: 0.1
+# multitask_data.TASK_SPECS owns the task order; this number only has to agree
+# with it (train_speechllm_multitask.validate_task_table checks that at
+# startup). 0 = asr, 1 = st_en_de, 2 = emotion, 3 = speaker_count, 4 = intent.
+# Changing it changes the FiLM and routed-LoRA shapes, so a checkpoint written
+# under a different task count is not resumable; warm start from the
+# single-task ASR checkpoint instead.
+segmenter_num_tasks: 5
+
+# --- closed-set label scoring (classification tasks) ---
+# Restrict a task to part of its canonical label set without touching task ids
+# or checkpoint shapes. The survey's speaker-count pilot ranks 0-4 inside the
+# 0-10 vocabulary; null means "use the whole canonical set".
+candidate_subsets:
+    speaker_count: ["zero", "one", "two", "three", "four"]
+# Rows (utterances x candidates) per scoring forward. The 31-way intent set at
+# a ~58-utterance microbatch is 1798 short sequences, which is worth chunking.
+candidate_chunk_size: 256
+
+# GRPO reward for classification batches (generative tasks use segmenter_reward).
+#   margin: gold label's normalized log-likelihood minus the best incorrect
+#           label's, under that rollout's boundaries. Dense and contrastive --
+#           accuracy is 0/1 and four rollouts of one clip nearly always agree,
+#           which would leave the within-group advantage at zero.
+#   nll:    cheap ablation; scores only the gold label, like a short transcript.
+# The margin scores every candidate per rollout, so a joint step on the 31-way
+# intent task costs roughly 30x the decoder tokens of an nll step.
+classification_reward: margin
+segmenter_sampling: bernoulli
+
+segment_pooling: bigru_residual
+segment_pooling_hidden_dim: 128
+segment_pooling_num_layers: 1
+segment_pooling_dropout: 0.0
+
+freeze_boundary_policy: True
+# 1 = no downsampling (50 Hz), 2 = 25 Hz, 5 = 10 Hz, 10 = 5 Hz;
+# null = use the learned policy from the warm start.
+fixed_rate_k: 5
+
+# Production Transformer-AR policy, matching the LS960 warm start exactly.
+segmenter_ar_hidden_dim: 256
+segmenter_ar_num_layers: 4
+segmenter_ar_nhead: 4
+segmenter_ar_ffn_dim: 1024
+segmenter_ar_dropout: 0.0
+segmenter_ar_max_positions: 4096
+segmenter_ar_history_window: 64
+segmenter_ar_cache_mode: preallocated
+
+# --- GRPO ---
+grpo_k: 4
+grpo_normalize_std: True
+pg_weight: 1.0
+warmup_epochs: 0
+warmup_fraction_of_epoch: null
+warmup_optimizer_steps: null      # set at runtime from bridge_optimizer_steps
+validation_interval_optimizer_steps: 1500
+validate_at_warmup_end: True
+rl_update_mode: combined_on_policy
+
+bilevel_mode: "off"
+bilevel_support_fraction: 0.5
+bilevel_inner_lr: 0.01
+bilevel_inner_max_grad_norm: 1.0
+bilevel_support_pg_weight: 1.0
+bilevel_measure_support_after: False
+bilevel_diagnostics_file: null
+bilevel_deterministic_sdpa: True
+
+# --- rate objective ---
+# One common band for both tasks (7.5-12.5 Hz, realized near 10.5-11 Hz on
+# LS960). Holding every task to the SAME target is what makes a non-ASR gain
+# attributable to boundary placement rather than to spending more audio tokens.
+# Per-task bands below replace this only in the final (Phase C) phase.
+# Which channel the rate penalty reaches the policy through.
+#   reward  subtracted from each rollout's GRPO reward, on the REALIZED rho.
+#           Under std-normalized GRPO this channel is lambda-invariant whenever
+#           the quality term is flat across the group, so lambda_cap is largely
+#           inert exactly when the policy is doing well.
+#   aux     a differentiable term added to the loss, on the EXPECTED rho. The
+#           only channel in which the rate weight scales the gradient. For the
+#           full-AR policy there is no closed-form marginal E[rho], so this uses
+#           the per-frame conditional probabilities along the sampled histories
+#           (see SegmenterASR._full_ar_rate_loss) -- a surrogate, and reports
+#           should call it the conditional expectation.
+#   both    both of the above.
+#   auto    historical per-backbone behaviour: reward-only for transformer_ar,
+#           both for the bernoulli policy. Default, so the completed ASR runs
+#           stay comparable.
+rate_channel: auto
+
+rate_mode: band
+rate_two_sided: False
+rho_star: 0.2
+lambda_cap: 1.0
+lambda_press: 0.02
+rho_floor: 0.08
+lambda_floor: 0.0
+rho_lo: 0.15
+rho_hi: 0.25
+
+# --- per-task rate bands (Phase C) ---
+# f_audio = 50 Hz x rho. A band is a DEAD ZONE: the rate terms are exactly zero
+# inside it, quadratic outside. So rho_hi is the rate the policy gets pushed
+# DOWN to, and rho_lo is the floor it gets pushed back up from. Widening the
+# floor only permits a lower rate; it does not encourage one.
+#
+# These are a starting PRIOR, not a measurement. The plan requires Phase C bands
+# to come from the Phase-A fixed-rate sweep "rather than from an assumed
+# hierarchy" -- which is exactly what this is. Replace each row with the task's
+# measured minimum-sufficient frequency once the sweep has run, and say in any
+# report which of the two produced the numbers.
+#
+#   asr           6.0-9.0 Hz   below the ~10.5 Hz the LS960 runs realize and the
+#                              10 Hz fixed-k=5 control (6.16 clean / 10.17 other,
+#                              vs 7.05 / 10.10 with no downsampling), so the
+#                              policy is actively pushed to compress further.
+#                              Floor near the ~5-6/s syllable rate.
+#   st_en_de      6.0-9.0 Hz   unused here (sampling probability 0) but kept
+#                              aligned with ASR so the slot stays meaningful.
+#   emotion       2.0-5.0 Hz   utterance-level affect carried by prosodic
+#                              contours evolving over 100-300 ms; the plan's
+#                              hypothesis is "coarser than ASR". 13 tokens for a
+#                              2.6 s clip at the top of the band.
+#   speaker_count 3.0-6.0 Hz   sparse events (<=8 activity changes in 5 s) but
+#                              they must be LOCALIZED: the short-peak mixtures
+#                              hold their full count for only 0.5-1.5 s, which
+#                              needs at least a couple of tokens inside that
+#                              window.
+#   intent        4.0-7.0 Hz   must preserve the identity of a few slot-bearing
+#                              words at ~3-4 words/s, so coarser than phone-rate
+#                              ASR but finer than emotion.
+# Per-task Phase-C bands, identical to the multi-task config so the GRPO arm
+# compresses toward the same targets. A single-task run only ever routes one
+# task, so only its row is ever read; the fixed and frozen arms run no GRPO at
+# all and never consult these.
+#   emotion       2.0-5.0 Hz    speaker_count 3.0-6.0 Hz    intent 4.0-7.0 Hz
+# These remain a PRIOR. The fixed-rate arms in this very sweep are what should
+# replace them with each task's measured minimum-sufficient rate; say which of
+# the two produced the numbers in any report.
+task_rate_bands:
+    asr: [0.12, 0.18]
+    st_en_de: [0.12, 0.18]
+    emotion: [0.04, 0.10]
+    speaker_count: [0.06, 0.12]
+    intent: [0.08, 0.14]
+task_rate_bands_phases: ["unfreeze"]
+
+entropy_coeff_init: 0.0
+entropy_coeff_final: 0.0
+
+segmenter_reward: nll
+freeze_decoder_in_joint: False
+
+trace_seg_dir: null
+trace_dec_dir: null
+trace_n_utts: 6
+trace_out: null
+
+####################### Data Configuration #################################
+
+# LibriSpeech root, used only to resolve $data_root in the replay manifest.
+data_folder: /export/jsalt26/omnienc/users/cxiao/datasets/LibriSpeech
+skip_prep: True
+train_splits: ["train-clean-100", "train-clean-360", "train-other-500"]
+dev_splits: ["dev-clean"]
+test_splits: ["test-clean", "test-other"]
+
+nonasr_manifest_dir: /export/jsalt26/omnienc/users/cxiao/datasets/nonasr_manifests
+# Speaker-count mixtures live in their own directory so the generator profile
+# that produced them stays traceable. The LibriCount-matched set replaces the
+# original hardened mixtures, on which the validated CountNet reference scored
+# only 0.564 against 0.927 on the real corpus; the matched set scores 0.873.
+speaker_count_manifest_dir: /export/jsalt26/omnienc/users/cxiao/datasets/nonasr_manifests_lcfull
+librispeech_manifest_dir: /export/jsalt26/omnienc/users/cxiao/datasets/librispeech_manifests
+multitask_manifest_dir: !ref <output_folder>/manifests
+
+# One task per run. The launcher sets these four scalars together with
+# selection_metric; they are the only data knobs that change between tasks.
+#   emotion       cremad_emotion  / cremad_emotion_{train,valid,test}.csv
+#   speaker count speaker_count   / speaker_count_{train,valid,test}.csv
+#   intent        fsc_intent      / fsc_intent_{train,valid,test}.csv
+task_source_key: cremad_emotion
+task_train_csv: !ref <nonasr_manifest_dir>/cremad_emotion_train.csv
+task_valid_csv: !ref <nonasr_manifest_dir>/cremad_emotion_valid.csv
+task_test_csv: !ref <nonasr_manifest_dir>/cremad_emotion_test.csv
+
+sampling_source_keys: [!ref <task_source_key>]
+sampling_probabilities: [1.0]
+multitask_batches_per_epoch: null
+
+train_sources:
+    - csv: !ref <task_train_csv>
+      source_key: !ref <task_source_key>
+
+# Validation is exhaustive over the (optionally subsampled) held-out set.
+valid_subset_size: null
+test_subset_size: null
+valid_source_keys: [!ref <task_source_key>]
+valid_source_probabilities: [1.0]
+valid_batches_per_epoch: null
+
+# No ASR source, so no ASR-retention gate and nothing for the default
+# ASR-WER selection to rank -- selection_metric carries that job here.
+valid_sources:
+    - csv: !ref <task_valid_csv>
+      source_key: !ref <task_source_key>
+      limit: !ref <valid_subset_size>
+
+test_sources:
+    task_test: !ref <multitask_manifest_dir>/test_task.csv
+
+test_source_keys:
+    task_test: !ref <task_source_key>
+
+test_source_specs:
+    task_test:
+        - csv: !ref <task_test_csv>
+          source_key: !ref <task_source_key>
+          limit: !ref <test_subset_size>
+
+boundary_source: none
+warmstart_target: none
+boundary_target_dir: null
+
+####################### Model Paths & Configuration ########################
+
+ssl_hub: microsoft/wavlm-large
+ssl_folder: /export/jsalt26/omnienc/users/cxiao/hf/hub
+ssl_frozen: True
+ssl_device: cuda
+ssl_output_norm: True
+use_feats: False
+llm_device: cuda
+
+segmenter_ssl_hub: null
+segmenter_ssl_folder: /export/jsalt26/omnienc/users/cxiao/hf/hub
+segmenter_ssl_frozen: True
+segmenter_ssl_device: cuda
+segmenter_ssl_output_norm: True
+
+llm_path: meta-llama/Llama-3.2-1B-Instruct
+llm_emb_size: 2048
+llm_save_path: /export/jsalt26/omnienc/users/cxiao/hf/hub
+
+####################### Training Hyperparameters ###########################
+
+number_of_epochs: 3               # safety bound; the run is step limited
+# Baselines only ever report their best checkpoint, and there are 45 runs;
+# keeping 3 apiece would cost ~225 GB for checkpoints nothing reads.
+checkpoints_to_keep: 1
+batch_size: 16
+grad_accumulation_factor: 1
+sorting: random
+num_workers: 4
+pin_memory: True
+persistent_workers: True
+prefetch_factor: 2
+precision: bf16
+eval_precision: bf16
+max_grad_norm: 1.0
+
+initial_lr: 0.0002
+lr_segmenter: 0.00005
+lr_decoder: 0.0002
+lr_decoder_warmup: 0.0002
+weight_decay: 0.0
+
+####################### Feature & Audio Parameters #########################
+
+downsampling_factor: 1
+
+####################### Dynamic Batching Configuration ######################
+
+dynamic_batching: True
+max_batch_length_train: 300
+max_batch_length_val: 300
+num_bucket: 200
+shuffle: True
+batch_ordering: random
+max_batch_ex: 256
+min_batch_ex_train: 2
+
+####################### DataLoader Configuration ##########################
+ignore_index: -100
+test_batch_size: 8
+
+train_dataloader_opts:
+    batch_size: !ref <batch_size>
+    shuffle: True
+    num_workers: !ref <num_workers>
+    drop_last: True
+    collate_fn: !name:speechbrain.dataio.batch.PaddedBatch
+        per_key_padding_kwargs:
+            sig:
+                value: 0
+            tokens_eos:
+                value: !ref <ignore_index>
+
+valid_dataloader_opts:
+    batch_size: !ref <test_batch_size>
+    num_workers: 0
+    collate_fn: !name:speechbrain.dataio.batch.PaddedBatch
+        per_key_padding_kwargs:
+            sig:
+                value: 0
+            tokens_eos:
+                value: !ref <ignore_index>
+
+test_dataloader_opts:
+    batch_size: !ref <test_batch_size>
+    num_workers: 0
+    collate_fn: !name:speechbrain.dataio.batch.PaddedBatch
+        per_key_padding_kwargs:
+            sig:
+                value: 0
+            tokens_eos:
+                value: !ref <ignore_index>
+
+####################### Model Architecture Parameters #######################
+
+bos_index: 128000
+eos_index: 128001
+pad_token: 128004
+# Per-task prompts live in multitask_data.TASK_SPECS; this single-task field is
+# kept only because the inherited base class reads it during setup.
+prompt: "Transcribe speech to text."
+
+min_decode_ratio: 0.0
+max_decode_ratio: 3.0
+decode_sample_rate: 16000
+max_decode_tokens_per_second: 12.0
+max_decode_token_margin: 16
+min_decode_tokens: 8
+max_decode_tokens: 512
+
+####################### Model Components ####################################
+
+normalize: !new:speechbrain.processing.features.InputNormalization
+    norm_type: sentence
+
+ssl: !new:speechbrain.integrations.huggingface.wav2vec2.Wav2Vec2
+    source: !ref <ssl_hub>
+    output_norm: !ref <ssl_output_norm>
+    freeze: !ref <ssl_frozen>
+    save_path: !ref <ssl_folder>
+    device_map: !ref <ssl_device>
+ssl_feat_dims: 1024
+segmenter_input_dim: !ref <ssl_feat_dims>
+
+segmenter: !new:segmenter.Segmenter
+    input_dim: !ref <segmenter_input_dim>
+    backbone: !ref <segmenter_backbone>
+    hidden_dim: !ref <segmenter_hidden_dim>
+    kernel_size: !ref <segmenter_kernel_size>
+    num_layers: !ref <segmenter_num_layers>
+    nhead: !ref <segmenter_nhead>
+    ffn_dim: !ref <segmenter_ffn_dim>
+    dropout: !ref <segmenter_dropout>
+    num_tasks: !ref <segmenter_num_tasks>
+    sampling_strategy: !ref <segmenter_sampling>
+    ar_hidden_dim: !ref <segmenter_ar_hidden_dim>
+    ar_num_layers: !ref <segmenter_ar_num_layers>
+    ar_nhead: !ref <segmenter_ar_nhead>
+    ar_ffn_dim: !ref <segmenter_ar_ffn_dim>
+    ar_dropout: !ref <segmenter_ar_dropout>
+    ar_max_positions: !ref <segmenter_ar_max_positions>
+    ar_history_window: !ref <segmenter_ar_history_window>
+    ar_cache_mode: !ref <segmenter_ar_cache_mode>
+    pooling: !ref <segment_pooling>
+    pooling_input_dim: !ref <ssl_feat_dims>
+    pooling_hidden_dim: !ref <segment_pooling_hidden_dim>
+    pooling_num_layers: !ref <segment_pooling_num_layers>
+    pooling_dropout: !ref <segment_pooling_dropout>
+
+activation: !name:torch.nn.ReLU
+dnn_layers: 2
+dnn_neurons: !ref <llm_emb_size>
+proj: !new:speechbrain.lobes.models.VanillaNN.VanillaNN
+    input_shape: [null, null, !ref <ssl_feat_dims>]
+    activation: !ref <activation>
+    dnn_blocks: !ref <dnn_layers>
+    dnn_neurons: !ref <dnn_neurons>
+
+backbone_llm: !new:speechbrain.integrations.huggingface.llama.LLaMA
+    source: !ref <llm_path>
+    save_path: !ref <llm_save_path>
+    freeze: True
+    attn_implementation: sdpa
+    device: !ref <llm_device>
+    torch_dtype: !name:torch.bfloat16
+    additional_special_tokens:
+        - "<|start_of_audio|>"
+        - "<|end_of_audio|>"
+    output_hidden_states: False
+
+# One shared pointer every routed adapter reads. Batches are task homogeneous,
+# so a single set_task() call switches the whole decoder with no per-example
+# gather in the hot path.
+task_router: !new:multitask_modules.TaskRouter
+    num_tasks: !ref <segmenter_num_tasks>
+    active: 0
+
+lora_rank: 16
+llm: !new:speechbrain.nnet.adapters.AdaptedModel
+    model_to_adapt: !ref <backbone_llm>
+    adapter_class: !apply:multitask_modules.make_task_routed_lora
+        - !ref <task_router>
+    all_linear: True
+    adapter_kwargs:
+        rank: !ref <lora_rank>
+
+searcher: !new:batch_invariant_decode.BatchInvariantLLMGreedySearcher
+    llm_model: !ref <llm>
+    temperature: 0.0
+    min_decode_ratio: !ref <min_decode_ratio>
+    max_decode_ratio: !ref <max_decode_ratio>
+    bos_index: !ref <bos_index>
+    eos_index: !ref <eos_index>
+    max_decode_tokens_per_second: !ref <max_decode_tokens_per_second>
+    max_decode_token_margin: !ref <max_decode_token_margin>
+    min_decode_tokens: !ref <min_decode_tokens>
+    max_decode_tokens: !ref <max_decode_tokens>
+
+modules:
+    ssl: !ref <ssl>
+    segmenter: !ref <segmenter>
+    llm: !ref <llm>
+    proj: !ref <proj>
+    normalize: !ref <normalize>
+    searcher: !ref <searcher>
+
+####################### Optimizers ############################
+
+opt_segmenter: !name:torch.optim.AdamW
+    lr: !ref <lr_segmenter>
+    weight_decay: !ref <weight_decay>
+
+opt_decoder: !name:torch.optim.AdamW
+    lr: !ref <lr_decoder>
+    weight_decay: !ref <weight_decay>
+
+####################### Checkpointing & Logging #############################
+
+checkpointer: !new:speechbrain.utils.checkpoints.Checkpointer
+    checkpoints_dir: !ref <save_folder>
+    recoverables:
+        segmenter: !ref <segmenter>
+        counter: !ref <epoch_counter>
+        normalize: !ref <normalize>
+
+epoch_counter: !new:speechbrain.utils.epoch_loop.EpochCounter
+    limit: !ref <number_of_epochs>
+
+train_logger: !new:speechbrain.utils.train_logger.FileTrainLogger
+    save_file: !ref <train_log>
+
+####################### Metrics #############################################
+
+cer_computer: !name:speechbrain.utils.metric_stats.ErrorRateStats
+    split_tokens: True
+
+error_rate_computer: !name:speechbrain.utils.metric_stats.ErrorRateStats

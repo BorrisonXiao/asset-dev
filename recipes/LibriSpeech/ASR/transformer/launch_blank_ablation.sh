@@ -5,7 +5,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
 #SBATCH --requeue
-#SBATCH --output=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer/results/blank_ablation/logs/%x_%j.out
+#SBATCH --output=/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/blank_ablation/logs/%x_%j.out
 #
 # Blank-removal ablation runs of speechllm_fixed_pooling.yaml.
 # Usage (identity flags go on the sbatch command line):
@@ -25,8 +25,8 @@ TRAIN_SPLITS="${3:-[\"train-clean-100\"]}"
 shift $(( $# < 3 ? $# : 3 ))
 EXTRA=("$@")
 
-RECIPE=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
-PY=/home/jhu/jsalt2026-ext-cxiao7/cxiao/envs/jointllm/bin/python
+RECIPE=/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
+PY=/export/jsalt26/omnienc/users/cxiao/envs/jointllm/bin/python
 OUTPUT="$RECIPE/results/blank_ablation/${TAG}_${BLANK_MODE}"
 # facebook/wav2vec2-base-960h is NOT in the shared HF cache; reuse exp-001's
 # already-downloaded local copy so offline loading resolves (else a fresh
@@ -37,7 +37,7 @@ SSL_FOLDER="$RECIPE/results/speechllm_fixed_pooling/alignment/3407/save/ssl_chec
 # launch_fixed_pooling_ctc.sh / speechllm_fixed_pooling.yaml).
 export HF_HUB_OFFLINE=1
 export TRANSFORMERS_OFFLINE=1
-export HF_HUB_CACHE=/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub
+export HF_HUB_CACHE=/export/jsalt26/omnienc/users/cxiao/hf/hub
 
 cd "$RECIPE"
 

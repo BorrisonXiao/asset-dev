@@ -24,11 +24,11 @@ import matplotlib.pyplot as plt
 RECIPE = Path(__file__).resolve().parent
 ROOT = RECIPE.parents[3]
 DATA = Path(
-    "/home/jhu/jsalt2026-ext-cxiao7/"
+    "/export/jsalt26/omnienc/users/cxiao/"
     "scratch_jsalt2026-lgarci27/omnienc/datasets"
 )
 SSL_CACHE = Path(
-    "/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/ssl_cache"
+    "/export/jsalt26/omnienc/users/cxiao/hf/hub"
 )
 SSL_SNAPSHOT = (
     SSL_CACHE

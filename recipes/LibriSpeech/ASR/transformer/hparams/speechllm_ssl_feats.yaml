@@ -136,6 +136,11 @@ bos_index: !PLACEHOLDER # 0
 eos_index: !PLACEHOLDER # 0
 pad_token: !PLACEHOLDER # 128256
 prompt: "Transcribe speech to text."
+decode_sample_rate: 16000
+max_decode_tokens_per_second: 12.0
+max_decode_token_margin: 16
+min_decode_tokens: 8
+max_decode_tokens: 512
 
 ####################### Model Components ####################################
 
@@ -171,13 +176,17 @@ llm: !new:speechbrain.nnet.adapters.AdaptedModel
 feat_downsampler: !new:speechbrain.lobes.downsampling.ConcatDownsampler
     downsampling_factor: !ref <downsampling_factor>
 
-searcher: !new:speechbrain.decoders.seq2seq.S2SHuggingFaceLLMGreedySearcher
+searcher: !new:batch_invariant_decode.BatchInvariantLLMGreedySearcher
     llm_model: !ref <llm>
     temperature: 0.0  # 0.0 => true greedy (deterministic). >0 => stochastic sampling
     min_decode_ratio: 0.0
     max_decode_ratio: 1.0
     bos_index: !ref <bos_index>
     eos_index: !ref <eos_index>
+    max_decode_tokens_per_second: !ref <max_decode_tokens_per_second>
+    max_decode_token_margin: !ref <max_decode_token_margin>
+    min_decode_tokens: !ref <min_decode_tokens>
+    max_decode_tokens: !ref <max_decode_tokens>
 
 modules:
     feat_downsampler: !ref <feat_downsampler>

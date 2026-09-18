@@ -1,2 +1,0 @@
-focalcodec@git+https://github.com/lucadellalib/focalcodec.git@main#egg=focalcodec
-transformers

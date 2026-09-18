@@ -114,3 +114,85 @@ def test_ConcatDatasetBatchSampler(device):
 
     for b in dataloader:
         assert b["wav"].data.shape[1] <= max_batch_length
+
+
+def test_dynamic_batch_sampler_enforces_minimum_batch_size():
+    from speechbrain.dataio.dataset import DynamicItemDataset
+    from speechbrain.dataio.sampler import DynamicBatchSampler
+
+    lengths = [1.0, 1.2, 1.4, 1.6, 2.0, 2.2, 2.4, 2.6, 3.0, 3.2]
+    dataset = DynamicItemDataset(
+        {
+            f"ex_{index}": {"duration": length}
+            for index, length in enumerate(lengths)
+        }
+    )
+    sampler = DynamicBatchSampler(
+        dataset,
+        max_batch_length=10,
+        num_buckets=8,
+        shuffle=False,
+        batch_ordering="ascending",
+        min_batch_ex=2,
+    )
+
+    batches = list(sampler)
+    flattened = [index for batch in batches for index in batch]
+    assert sorted(flattened) == list(range(len(lengths)))
+    assert all(len(batch) >= 2 for batch in batches)
+    assert all(
+        sum(lengths[index] for index in batch) <= 10 for batch in batches
+    )
+
+    sampler.set_epoch(3)
+    assert all(len(batch) >= 2 for batch in sampler)
+
+
+def test_dynamic_batch_sampler_rejects_impossible_minimum_batch_size():
+    import pytest
+
+    from speechbrain.dataio.dataset import DynamicItemDataset
+    from speechbrain.dataio.sampler import DynamicBatchSampler
+
+    dataset = DynamicItemDataset(
+        {
+            "long_1": {"duration": 6.0},
+            "long_2": {"duration": 6.0},
+        }
+    )
+    with pytest.raises(ValueError, match="Cannot satisfy min_batch_ex"):
+        DynamicBatchSampler(
+            dataset,
+            max_batch_length=10,
+            num_buckets=2,
+            shuffle=False,
+            min_batch_ex=2,
+        )
+
+
+def test_dynamic_batch_sampler_can_rebalance_a_complete_batch():
+    from speechbrain.dataio.dataset import DynamicItemDataset
+    from speechbrain.dataio.sampler import DynamicBatchSampler
+
+    lengths = [6.0, 3.0, 3.0, 3.0]
+    dataset = DynamicItemDataset(
+        {
+            f"ex_{index}": {"duration": length}
+            for index, length in enumerate(lengths)
+        }
+    )
+    sampler = DynamicBatchSampler(
+        dataset,
+        max_batch_length=10,
+        bucket_boundaries=[3.2],
+        shuffle=False,
+        min_batch_ex=2,
+    )
+
+    batches = list(sampler)
+    flattened = [index for batch in batches for index in batch]
+    assert sorted(flattened) == list(range(len(lengths)))
+    assert all(len(batch) >= 2 for batch in batches)
+    assert all(
+        sum(lengths[index] for index in batch) <= 10 for batch in batches
+    )

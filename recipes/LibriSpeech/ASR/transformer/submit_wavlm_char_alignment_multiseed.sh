@@ -4,24 +4,22 @@
 # fixed-rate/no-downsampling baselines.
 set -euo pipefail
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 
 SEEDS=(3407 3408 3409)
 EPOCHS=10
 WAVLM_ID=microsoft/wavlm-large
 WAVLM_DIM=1024
-WAVLM_CACHE=/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub
+WAVLM_CACHE=/export/jsalt26/omnienc/users/cxiao/hf/hub
 WAVLM_MODEL_ROOT="$WAVLM_CACHE/models--microsoft--wavlm-large"
-BOUNDARY_DIR=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/datasets/wavlm_boundaries/char
+BOUNDARY_DIR=/export/jsalt26/omnienc/users/cxiao/datasets/wavlm_boundaries/char
 BASE=results/speechllm_fixed_pooling_wavlm/char_alignment_tc100
 DRY_RUN=${DRY_RUN:-0}
 
 COMMON=(
-  --account=jsalt2026-lgarci27
+  --account=highprio
   --comment=accept_cost
-  --partition=a100
-  --reservation="JSALT 2026"
-  --exclude=ga129
+  --partition=gpu-a100
   --time=3-00:00:00
 )
 

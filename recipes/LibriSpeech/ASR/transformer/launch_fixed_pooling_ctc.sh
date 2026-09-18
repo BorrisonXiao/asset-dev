@@ -5,7 +5,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
 #SBATCH --requeue
-#SBATCH --output=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_fixed_pooling/alignment/3407/slurm_%j.out
+#SBATCH --output=/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/results/speechllm_fixed_pooling/alignment/3407/slurm_%j.out
 #
 # Real (non-debug) training run of speechllm_fixed_pooling.yaml with
 # boundary_source: alignment / boundary_target_dir pointed at the CTC-derived
@@ -28,9 +28,9 @@ set -euo pipefail
 # llm_save_path comment).
 export HF_HUB_OFFLINE=1
 export TRANSFORMERS_OFFLINE=1
-export HF_HUB_CACHE=/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub
+export HF_HUB_CACHE=/export/jsalt26/omnienc/users/cxiao/hf/hub
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 
-/home/jhu/jsalt2026-ext-cxiao7/cxiao/envs/jointllm/bin/python train_speechllm.py \
+/export/jsalt26/omnienc/users/cxiao/envs/jointllm/bin/python train_speechllm.py \
     hparams/speechllm_fixed_pooling.yaml

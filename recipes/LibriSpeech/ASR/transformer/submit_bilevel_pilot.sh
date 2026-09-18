@@ -5,7 +5,7 @@
 # diagnostic, not a final WER experiment.
 set -euo pipefail
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 
 read -r -a MODES <<< "${BILEVEL_MODES:-off heldout decoder_lookahead decoder_pooler_lookahead}"
 SEED=${SEED:-3407}
@@ -16,15 +16,14 @@ DRY_RUN=${DRY_RUN:-0}
 
 WAVLM_ID=microsoft/wavlm-large
 WAVLM_DIM=1024
-WAVLM_CACHE=/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub
+WAVLM_CACHE=/export/jsalt26/omnienc/users/cxiao/hf/hub
 INIT_CKPT=$(pwd)/results/speechllm_segmenter_wavlm/fullprefix_transformer_ar_local64_bigru_best_char_decoder/nll_mt/3407/save/CKPT+2026-08-15+03-13-00+00
 OUT_ROOT=results/speechllm_segmenter_wavlm/bilevel_transformer_ar_local64_bigru_pilot/$PILOT_TAG
 
 COMMON=(
-  --account=jsalt2026-lgarci27
+  --account=highprio
   --comment=accept_cost
-  --partition=a100
-  --reservation="JSALT 2026"
+  --partition=gpu-a100
   --cpus-per-task=12
   --mem=80G
   --time=12:00:00

@@ -10,7 +10,7 @@
 # policy step (lr_segmenter=5e-5, pg_weight=0.5).
 set -euo pipefail
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 
 BB=cnn
 EPOCHS=10
@@ -41,11 +41,9 @@ if ! grep -q '^end-of-epoch: true$' "$WARMUP_CKPT/CKPT.yaml"; then
 fi
 
 COMMON=(
-  --account=jsalt2026-lgarci27
+  --account=highprio
   --comment=accept_cost
-  --partition=a100
-  --reservation="JSALT 2026"
-  --exclude=ga129
+  --partition=gpu-a100
 )
 DEPENDENCY_ARGS=()
 if [[ -n "${AFTEROK_JOB_ID:-}" ]]; then

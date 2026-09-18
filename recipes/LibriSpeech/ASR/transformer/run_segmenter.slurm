@@ -10,13 +10,13 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=80G
 #SBATCH --requeue
-#SBATCH --output=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer/slurm_logs/%x_%j.out
+#SBATCH --output=/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/slurm_logs/%x_%j.out
 
 set -euo pipefail
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 PYTHONUNBUFFERED=1
-export HF_HUB_CACHE=/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub
+export HF_HUB_CACHE=/export/jsalt26/omnienc/users/cxiao/hf/hub
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 
 : "${MODE:?set MODE=coldstart|joint}"
 : "${BACKBONE:?set BACKBONE=cnn|transformer|transformer_ar}"
@@ -36,5 +36,5 @@ if [ -n "${EXTRA_ARGS:-}" ]; then
 fi
 
 echo "=== $(date) MODE=$MODE BACKBONE=$BACKBONE EPOCHS=${EPOCHS:-10} on $(hostname) ==="
-/home/jhu/jsalt2026-ext-cxiao7/cxiao/envs/jointllm/bin/python \
+/export/jsalt26/omnienc/users/cxiao/envs/jointllm/bin/python \
     train_speechllm_with_segmenter.py "${ARGS[@]}"

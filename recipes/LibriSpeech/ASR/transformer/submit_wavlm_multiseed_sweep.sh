@@ -11,7 +11,7 @@
 # afterwards; its independent stages may run in parallel with the CNN graph.
 set -euo pipefail
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 
 SEEDS=(3407 3408 3409)
 WARMUP_SEED=3407
@@ -21,7 +21,7 @@ TOTAL_EPOCHS=10
 
 WAVLM_ID=microsoft/wavlm-large
 WAVLM_DIM=1024
-WAVLM_CACHE=/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub
+WAVLM_CACHE=/export/jsalt26/omnienc/users/cxiao/hf/hub
 WAVLM_MODEL_ROOT="$WAVLM_CACHE/models--microsoft--wavlm-large"
 
 BASE=results/speechllm_segmenter_wavlm
@@ -29,11 +29,9 @@ OUT_ROOT="$BASE/multiseed_shared_warmup_onpolicy"
 DRY_RUN=${DRY_RUN:-0}
 
 COMMON=(
-  --account=jsalt2026-lgarci27
+  --account=highprio
   --comment=accept_cost
-  --partition=a100
-  --reservation="JSALT 2026"
-  --exclude=ga129
+  --partition=gpu-a100
   --time=3-00:00:00
 )
 

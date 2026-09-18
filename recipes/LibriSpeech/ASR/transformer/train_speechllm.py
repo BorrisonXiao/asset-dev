@@ -37,11 +37,14 @@ Authors
  * Adel Moumen, 2025
 """
 
+import json
 import os
 import sys
+import time
 from pathlib import Path
 
 import torch
+from batch_invariant_decode import compact_position_ids
 from hyperpyyaml import load_hyperpyyaml
 
 import speechbrain as sb
@@ -58,6 +61,42 @@ from speechbrain.utils.distributed import if_main_process, run_on_main
 from speechbrain.utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+
+def loader_runtime_options(hparams):
+    """Return safe worker/prefetch options for PyTorch DataLoader."""
+    workers = int(hparams.get("num_workers", 0))
+    options = {
+        "num_workers": workers,
+        "pin_memory": bool(hparams.get("pin_memory", False)),
+    }
+    if workers > 0:
+        options["persistent_workers"] = bool(
+            hparams.get("persistent_workers", False)
+        )
+        options["prefetch_factor"] = int(hparams.get("prefetch_factor", 2))
+    return options
+
+
+def _levenshtein(a, b):
+    """Edit distance between two token sequences."""
+    if not a:
+        return len(b)
+    if not b:
+        return len(a)
+    previous = list(range(len(b) + 1))
+    for i, left in enumerate(a, 1):
+        current = [i]
+        for j, right in enumerate(b, 1):
+            current.append(
+                min(
+                    previous[j] + 1,
+                    current[j - 1] + 1,
+                    previous[j - 1] + (left != right),
+                )
+            )
+        previous = current
+    return previous[-1]
 
 
 def get_multimodal_attention_mask(wav, wav_lens, txt, txt_lens, device):
@@ -121,6 +160,13 @@ def get_multimodal_attention_mask(wav, wav_lens, txt, txt_lens, device):
 
 # Define training procedure
 class ASR(sb.core.Brain):
+    def _decode_durations(self, batch):
+        """Original waveform durations used for batch-independent decode caps."""
+
+        wavs, wav_lens = batch.sig
+        sample_rate = float(getattr(self.hparams, "decode_sample_rate", 16000))
+        return wav_lens.float() * float(wavs.size(1)) / sample_rate
+
     def get_fixed_boundaries(self, boundary_source, pad_mask, batch):
         """Boundary decisions ``(B, T)`` in ``{1, 0, -1}`` from a non-learned source.
 
@@ -179,7 +225,21 @@ class ASR(sb.core.Brain):
         hyps : list or None
             Decoded hypotheses (only during validation/test, None during training)
         """
-        batch = batch.to(self.device)
+        benchmark = stage == sb.Stage.TEST and bool(
+            getattr(self.hparams, "inference_benchmark_file", None)
+        )
+        benchmark_events = None
+        benchmark_wall_start = None
+        if benchmark:
+            if torch.device(self.device).type == "cuda":
+                torch.cuda.synchronize(self.device)
+                benchmark_events = [
+                    torch.cuda.Event(enable_timing=True) for _ in range(4)
+                ]
+                benchmark_events[0].record()
+            benchmark_wall_start = time.perf_counter()
+
+        batch = batch.to(self.device, non_blocking=True)
         tokens_bos, tokens_bos_lens = batch.tokens_bos
         prompt_len = batch.prompt_len
 
@@ -196,6 +256,9 @@ class ASR(sb.core.Brain):
             wavs = self.hparams.normalize(wavs, wav_lens)
             audio_feats = self.modules.ssl(wavs, wav_lens)
             audio_feats_lens = wav_lens
+        if benchmark_events is not None:
+            benchmark_events[1].record()
+        benchmark_encoder_end = time.perf_counter()
         boundary_source = getattr(self.hparams, "boundary_source", "none")
         if boundary_source and boundary_source != "none":
             # Fixed-segmentation baseline: mean-pool frames between boundaries
@@ -235,6 +298,9 @@ class ASR(sb.core.Brain):
             # R^L*D -> R^(L/R)*(D*R)
             audio_down_feats = self.modules.feat_downsampler(audio_feats)
             audio_down_lens = audio_feats_lens
+        if benchmark_events is not None:
+            benchmark_events[2].record()
+        benchmark_pooling_end = time.perf_counter()
         # R^D' -> R^llm_emb_size
         projected_audio_feats = self.modules.proj(audio_down_feats)
         txt_embds = self.txt_embedding(tokens_bos)
@@ -255,7 +321,9 @@ class ASR(sb.core.Brain):
             self.device,
         )
         logits = self.modules.llm(
-            inputs_embeds=multimodal_embds, attention_mask=attention_mask
+            inputs_embeds=multimodal_embds,
+            attention_mask=attention_mask,
+            position_ids=compact_position_ids(attention_mask),
         ).logits
 
         hyps = None
@@ -268,7 +336,53 @@ class ASR(sb.core.Brain):
                 inputs_embeds,
                 audio_down_lens,
                 attention_mask[:, :audio_and_prompt_len],
+                decode_durations=self._decode_durations(batch),
             )
+        if benchmark:
+            benchmark_decoder_end = time.perf_counter()
+            timing = {
+                "wall_seconds": benchmark_decoder_end - benchmark_wall_start,
+                "encoder_wall_seconds": (
+                    benchmark_encoder_end - benchmark_wall_start
+                ),
+                "pooling_wall_seconds": (
+                    benchmark_pooling_end - benchmark_encoder_end
+                ),
+                "decoder_wall_seconds": (
+                    benchmark_decoder_end - benchmark_pooling_end
+                ),
+            }
+            if benchmark_events is not None:
+                benchmark_events[3].record()
+                benchmark_events[3].synchronize()
+                timing.update(
+                    {
+                        "gpu_seconds": benchmark_events[0].elapsed_time(
+                            benchmark_events[3]
+                        )
+                        / 1000.0,
+                        "encoder_gpu_seconds": benchmark_events[0].elapsed_time(
+                            benchmark_events[1]
+                        )
+                        / 1000.0,
+                        "pooling_gpu_seconds": benchmark_events[1].elapsed_time(
+                            benchmark_events[2]
+                        )
+                        / 1000.0,
+                        "decoder_gpu_seconds": benchmark_events[2].elapsed_time(
+                            benchmark_events[3]
+                        )
+                        / 1000.0,
+                    }
+                )
+                timing["wall_seconds"] = time.perf_counter() - benchmark_wall_start
+            audio_token_counts = torch.round(
+                audio_down_lens.detach() * projected_audio_feats.size(1)
+            ).long()
+            self._current_inference_benchmark = {
+                "timing": timing,
+                "audio_token_counts": audio_token_counts.cpu().tolist(),
+            }
         return logits, hyps
 
     def compute_objectives(self, predictions, batch, stage):
@@ -332,7 +446,187 @@ class ASR(sb.core.Brain):
             targets_words = [target.split(" ") for target in targets]
             self.cer_metric.append(ids, preds_words, targets_words)
             self.wer_metric.append(ids, preds_words, targets_words)
+            if stage == sb.Stage.TEST:
+                self._record_inference_benchmark(batch, hyps)
         return loss
+
+    @staticmethod
+    def _percentile(values, q):
+        if not values:
+            return None
+        ordered = sorted(float(value) for value in values)
+        return ordered[round((len(ordered) - 1) * float(q))]
+
+    def _record_inference_benchmark(self, batch, hyps):
+        """Collect the same per-batch and per-utterance fields as learned runs."""
+        state = getattr(self, "_inference_benchmark", None)
+        current = getattr(self, "_current_inference_benchmark", None)
+        if state is None or current is None:
+            return
+        wavs, wav_lens = batch.sig
+        durations = (
+            wav_lens.detach().float().cpu() * float(wavs.size(1)) / 16000.0
+        ).tolist()
+        predictions = self.tokenizer.batch_decode(
+            hyps[0], skip_special_tokens=True
+        )
+        references = list(batch.wrd)
+
+        state["batch_count"] += 1
+        warmup = state["batch_count"] <= int(
+            getattr(self.hparams, "inference_warmup_batches", 5)
+        )
+        if not warmup:
+            state["measured_batch_count"] += 1
+            state["measured_utterances"] += len(durations)
+            state["measured_audio_seconds"] += sum(durations)
+            for name, value in current["timing"].items():
+                state.setdefault(name, []).append(float(value))
+
+        for utterance_id, duration, count, hyp, ref in zip(
+            list(batch.id),
+            durations,
+            current["audio_token_counts"],
+            predictions,
+            references,
+        ):
+            ref_words = str(ref).split()
+            hyp_words = str(hyp).split()
+            errors = _levenshtein(hyp_words, ref_words)
+            if duration < 5.0:
+                bucket = "<5s"
+            elif duration < 10.0:
+                bucket = "5-10s"
+            elif duration < 20.0:
+                bucket = "10-20s"
+            else:
+                bucket = ">=20s"
+            state["utterances"].append(
+                {
+                    "id": str(utterance_id),
+                    "duration_seconds": float(duration),
+                    "segments": int(count),
+                    "token_hz": float(count) / max(float(duration), 1.0e-9),
+                    "word_errors": int(errors),
+                    "reference_words": len(ref_words),
+                    "wer": float(errors) / max(len(ref_words), 1),
+                    "duration_bucket": bucket,
+                    "hypothesis": str(hyp),
+                    "reference": str(ref),
+                }
+            )
+
+    def _write_inference_benchmark(
+        self, stage_seconds, memory_stats, stage_stats
+    ):
+        state = getattr(self, "_inference_benchmark", None)
+        output = getattr(self.hparams, "inference_benchmark_file", None)
+        if state is None or not output or not if_main_process():
+            return
+        utterances = state["utterances"]
+        token_hz = [row["token_hz"] for row in utterances]
+        total_audio = sum(row["duration_seconds"] for row in utterances)
+        total_tokens = sum(row["segments"] for row in utterances)
+        buckets = {}
+        for bucket in ("<5s", "5-10s", "10-20s", ">=20s"):
+            rows = [row for row in utterances if row["duration_bucket"] == bucket]
+            bucket_audio = sum(row["duration_seconds"] for row in rows)
+            buckets[bucket] = {
+                "utterances": len(rows),
+                "audio_seconds": bucket_audio,
+                "token_hz": (
+                    sum(row["segments"] for row in rows) / bucket_audio
+                    if bucket_audio
+                    else None
+                ),
+                "mean_utterance_wer": (
+                    sum(row["wer"] for row in rows) / len(rows) if rows else None
+                ),
+            }
+        wall = state.get("wall_seconds", [])
+        measured_wall = sum(wall)
+        measured_audio = state["measured_audio_seconds"]
+        result = {
+            "split": str(getattr(self.hparams, "evaluation_split", "unknown")),
+            "decoding_protocol": "batch_invariant_left_packed_duration_cap_v1",
+            "max_decode_tokens_per_second": float(
+                self.hparams.max_decode_tokens_per_second
+            ),
+            "max_decode_token_margin": int(
+                self.hparams.max_decode_token_margin
+            ),
+            "max_decode_tokens": int(self.hparams.max_decode_tokens),
+            "boundary_source": str(self.hparams.boundary_source),
+            "fixed_rate_k": (
+                int(self.hparams.fixed_rate_k)
+                if self.hparams.boundary_source == "fixed_rate"
+                else None
+            ),
+            "oracle_boundaries_precomputed": self.hparams.boundary_source
+            == "alignment",
+            "batch_size": int(self.hparams.test_dataloader_opts["batch_size"]),
+            "warmup_batches": int(
+                getattr(self.hparams, "inference_warmup_batches", 5)
+            ),
+            "utterances": len(utterances),
+            "audio_seconds": total_audio,
+            "stage_seconds_including_data_and_metrics": float(stage_seconds),
+            "stage_rtf": float(stage_seconds) / max(total_audio, 1.0e-9),
+            "measured_batches": state["measured_batch_count"],
+            "measured_utterances": state["measured_utterances"],
+            "measured_audio_seconds": measured_audio,
+            "measured_forward_seconds": measured_wall,
+            "forward_rtf": measured_wall / max(measured_audio, 1.0e-9),
+            "utterances_per_second": state["measured_utterances"]
+            / max(measured_wall, 1.0e-9),
+            "batch_latency_seconds_median": self._percentile(wall, 0.5),
+            "batch_latency_seconds_p95": self._percentile(wall, 0.95),
+            "component_gpu_seconds": {
+                name.removesuffix("_gpu_seconds"): sum(state.get(name, []))
+                for name in (
+                    "encoder_gpu_seconds",
+                    "pooling_gpu_seconds",
+                    "decoder_gpu_seconds",
+                )
+            },
+            "token_frequency_hz": {
+                "global": total_tokens / max(total_audio, 1.0e-9),
+                "utterance_mean": sum(token_hz) / max(len(token_hz), 1),
+                "utterance_p05": self._percentile(token_hz, 0.05),
+                "utterance_median": self._percentile(token_hz, 0.5),
+                "utterance_p95": self._percentile(token_hz, 0.95),
+            },
+            "duration_buckets": buckets,
+            "WER": float(stage_stats["WER"]),
+            "CER": float(stage_stats["CER"]),
+            "hardware": (
+                torch.cuda.get_device_name(self.device)
+                if torch.device(self.device).type == "cuda"
+                else "CPU"
+            ),
+            "precision": str(getattr(self.hparams, "eval_precision", "unknown")),
+            **memory_stats,
+        }
+        output_dir = os.path.dirname(output)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+        with open(output, "a", encoding="utf-8") as stream:
+            stream.write(json.dumps(result) + "\n")
+        split = str(result["split"]).replace("/", "_")
+        utterance_output = Path(output).with_name(
+            f"{Path(output).stem}_{split}_utterances.jsonl"
+        )
+        with open(utterance_output, "w", encoding="utf-8") as stream:
+            for row in utterances:
+                stream.write(json.dumps(row, ensure_ascii=False) + "\n")
+        logger.info(
+            "Inference benchmark: split=%s source=%s batch=%d RTF=%.4f Hz=%.2f",
+            result["split"],
+            result["boundary_source"],
+            result["batch_size"],
+            result["forward_rtf"],
+            result["token_frequency_hz"]["global"],
+        )
 
     def on_stage_start(self, stage, epoch):
         """Gets called at the beginning of each epoch.
@@ -346,9 +640,22 @@ class ASR(sb.core.Brain):
         epoch : int
             Current epoch number
         """
+        self._stage_started_at = time.monotonic()
+        if torch.device(self.device).type == "cuda":
+            torch.cuda.reset_peak_memory_stats(self.device)
         if stage != sb.Stage.TRAIN:
             self.cer_metric = self.hparams.cer_computer()
             self.wer_metric = self.hparams.error_rate_computer()
+        if stage == sb.Stage.TEST and getattr(
+            self.hparams, "inference_benchmark_file", None
+        ):
+            self._inference_benchmark = {
+                "batch_count": 0,
+                "measured_batch_count": 0,
+                "measured_utterances": 0,
+                "measured_audio_seconds": 0.0,
+                "utterances": [],
+            }
 
     def on_stage_end(self, stage, stage_loss, epoch):
         """Gets called at the end of an epoch.
@@ -364,8 +671,46 @@ class ASR(sb.core.Brain):
         epoch : int
             Current epoch number
         """
+        stage_seconds = time.monotonic() - getattr(
+            self, "_stage_started_at", time.monotonic()
+        )
+        memory_stats = {}
+        if torch.device(self.device).type == "cuda":
+            gib = 1024**3
+            peak_allocated = torch.cuda.max_memory_allocated(self.device) / gib
+            peak_reserved = torch.cuda.max_memory_reserved(self.device) / gib
+            capacity = torch.cuda.get_device_properties(
+                self.device
+            ).total_memory / gib
+            memory_stats = {
+                "gpu_peak_allocated_gb": peak_allocated,
+                "gpu_peak_reserved_gb": peak_reserved,
+                "gpu_capacity_gb": capacity,
+                "gpu_reserved_headroom_gb": capacity - peak_reserved,
+            }
+        timing_file = getattr(self.hparams, "stage_timing_file", None)
+        if timing_file and if_main_process():
+            timing_dir = os.path.dirname(timing_file)
+            if timing_dir:
+                os.makedirs(timing_dir, exist_ok=True)
+            with open(timing_file, "a", encoding="utf-8") as stream:
+                stream.write(
+                    json.dumps(
+                        {
+                            "split": str(
+                                getattr(self.hparams, "evaluation_split", "")
+                            ),
+                            "stage": stage.name,
+                            "epoch": epoch,
+                            "seconds": stage_seconds,
+                            **memory_stats,
+                        }
+                    )
+                    + "\n"
+                )
+
         # Compute/store important stats
-        stage_stats = {"loss": stage_loss}
+        stage_stats = {"loss": stage_loss, **memory_stats}
         if stage == sb.Stage.TRAIN:
             self.train_stats = stage_stats
         else:
@@ -408,6 +753,9 @@ class ASR(sb.core.Brain):
             )
 
         elif stage == sb.Stage.TEST:
+            self._write_inference_benchmark(
+                stage_seconds, memory_stats, stage_stats
+            )
             self.hparams.train_logger.log_stats(
                 stats_meta={"Epoch loaded": self.hparams.epoch_counter.current},
                 test_stats=stage_stats,
@@ -838,7 +1186,7 @@ if __name__ == "__main__":
 
         train_dataloader_opts = {
             "batch_sampler": train_bsampler,
-            "num_workers": hparams["num_workers"],
+            **loader_runtime_options(hparams),
         }
 
         if collate_fn is not None:
@@ -853,19 +1201,26 @@ if __name__ == "__main__":
 
         if collate_fn is not None:
             valid_dataloader_opts["collate_fn"] = collate_fn
-    # Training
-    asr_brain.fit(
-        asr_brain.hparams.epoch_counter,
-        train_data,
-        valid_data,
-        train_loader_kwargs=train_dataloader_opts,
-        valid_loader_kwargs=valid_dataloader_opts,
-    )
+    # Training, or evaluation-only checkpoint recovery for matched benchmarks.
+    if bool(hparams.get("eval_only", False)):
+        # Register the optimizer recoverable that training checkpoints contain;
+        # no optimizer step is performed in this mode.
+        asr_brain.init_optimizers()
+        logger.info("Evaluation-only mode: skipping fit and recovering for test")
+    else:
+        asr_brain.fit(
+            asr_brain.hparams.epoch_counter,
+            train_data,
+            valid_data,
+            train_loader_kwargs=train_dataloader_opts,
+            valid_loader_kwargs=valid_dataloader_opts,
+        )
 
     # Testing
     os.makedirs(hparams["output_wer_folder"], exist_ok=True)
 
     for k in test_datasets.keys():  # keys are test_clean, test_other etc
+        asr_brain.hparams.evaluation_split = k
         asr_brain.hparams.test_wer_file = os.path.join(
             hparams["output_wer_folder"], f"wer_{k}.txt"
         )

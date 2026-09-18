@@ -5,12 +5,12 @@
 #SBATCH --gpus=1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=8G
-#SBATCH --output=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer/slurm_logs/%x_%j.out
+#SBATCH --output=/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/slurm_logs/%x_%j.out
 
 set -euo pipefail
 echo "node=$(hostname) job=$SLURM_JOB_ID"
 nvidia-smi --query-gpu=index,uuid,name,memory.total,memory.used,temperature.gpu --format=csv,noheader
-/home/jhu/jsalt2026-ext-cxiao7/cxiao/envs/jointllm/bin/python - <<'PY'
+/export/jsalt26/omnienc/users/cxiao/envs/jointllm/bin/python - <<'PY'
 import torch
 
 assert torch.cuda.is_available()

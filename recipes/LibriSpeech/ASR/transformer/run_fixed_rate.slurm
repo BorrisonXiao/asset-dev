@@ -8,26 +8,27 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
 #SBATCH --requeue
-#SBATCH --output=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer/slurm_logs/%x_%j.out
+#SBATCH --output=/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/slurm_logs/%x_%j.out
 
 set -euo pipefail
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 PYTHONUNBUFFERED=1
-export HF_HUB_CACHE=/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub
+export HF_HUB_CACHE=/export/jsalt26/omnienc/users/cxiao/hf/hub
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 
 : "${FIXED_K:?set FIXED_K=<int>}"
 
 SEED=${SEED:-3407}
+TRAIN_SPLITS=${TRAIN_SPLITS:-"['train-clean-100']"}
 OUTPUT_FOLDER=${OUTPUT_FOLDER:-results/speechllm_fixed_pooling/fixed_rate_k${FIXED_K}_tc100/${SEED}}
-SSL_FOLDER=${SSL_FOLDER:-/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/ssl_cache}
+SSL_FOLDER=${SSL_FOLDER:-/export/jsalt26/omnienc/users/cxiao/hf/hub}
 
 ARGS=(
     hparams/speechllm_fixed_pooling.yaml
     --seed "$SEED"
     --boundary_source fixed_rate
     --fixed_rate_k "$FIXED_K"
-    --train_splits "['train-clean-100']"
+    --train_splits "$TRAIN_SPLITS"
     --number_of_epochs "${EPOCHS:-10}"
     --ssl_folder "$SSL_FOLDER"
     --output_folder "$OUTPUT_FOLDER"
@@ -37,5 +38,5 @@ if [[ -n "${EXTRA_ARGS:-}" ]]; then
 fi
 
 echo "=== $(date) fixed_rate k=$FIXED_K seed=$SEED on $(hostname) ==="
-/home/jhu/jsalt2026-ext-cxiao7/cxiao/envs/jointllm/bin/python \
+/export/jsalt26/omnienc/users/cxiao/envs/jointllm/bin/python \
     train_speechllm.py "${ARGS[@]}"

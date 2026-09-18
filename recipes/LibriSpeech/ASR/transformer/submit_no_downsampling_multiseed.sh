@@ -2,17 +2,15 @@
 # Submit the native-rate (rho=1.0) three-seed baseline.
 set -euo pipefail
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 mkdir -p slurm_logs
 
 SEEDS=(3407 3408 3409)
 OUT_ROOT=results/speechllm_fixed_pooling/no_downsampling_tc100
 COMMON=(
-    --account=jsalt2026-lgarci27
-    --partition=a100
+    --account=highprio
+    --partition=gpu-a100
     --comment=accept_cost
-    --reservation="JSALT 2026"
-    --exclude=ga129
 )
 
 for seed in "${SEEDS[@]}"; do

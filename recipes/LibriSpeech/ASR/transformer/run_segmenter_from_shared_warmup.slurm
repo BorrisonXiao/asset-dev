@@ -8,11 +8,11 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=80G
 #SBATCH --requeue
-#SBATCH --output=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer/slurm_logs/%x_%j.out
+#SBATCH --output=/export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer/slurm_logs/%x_%j.out
 
 set -euo pipefail
 
-cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
+cd /export/jsalt26/omnienc/users/cxiao/skipjack/jointllm/recipes/LibriSpeech/ASR/transformer
 
 : "${WARMUP_SOURCE_DIR:?set WARMUP_SOURCE_DIR to the shared warm-up save directory}"
 : "${OUTPUT_FOLDER:?set OUTPUT_FOLDER to the destination for this run}"
