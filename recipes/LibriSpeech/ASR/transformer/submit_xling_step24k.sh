@@ -59,6 +59,7 @@ lang_config() {
       MFA_SPEAKER_CHARS=11
       CTC_EPOCHS=5
       RHO_LO=0.065   # measured zh char rate 0.069 (3.5 Hz) < 0.10 floor; S1 rule
+      LEARNED_BATCH_SECONDS=300  # AISHELL clips <= 14.6 s; dense pooler tensor stays small
       SAFETY_EPOCHS=16
       COLDSTART_EPOCHS=6
       VALID_CSV_BASE=dev_sub.csv
@@ -82,6 +83,7 @@ lang_config() {
       MFA_SPEAKER_CHARS=5
       CTC_EPOCHS=6
       RHO_LO=0.095   # measured ja mora rate 0.098 (4.9 Hz), a hair under 0.10
+      LEARNED_BATCH_SECONDS=160  # 30 s clips + low band floor OOM the dense BiGRU pooler tensor at 300 s (jobs 598742/3)
       SAFETY_EPOCHS=32
       COLDSTART_EPOCHS=10
       VALID_CSV_BASE=dev.csv
@@ -280,12 +282,14 @@ for lang in $LANGS; do
     args+=" --rate_mode band --rho_lo $RHO_LO --rho_hi $RHO_HI --lambda_cap 1.0"
     args+=" --entropy_coeff_init 0.0 --entropy_coeff_final 0.0"
     args+=" --initial_lr 0.0002 --lr_decoder 0.0002 --lr_decoder_warmup 0.0002 --lr_segmenter 0.00005"
-    args+=" --max_batch_length_train 300 --max_batch_length_val 100 --grad_accumulation_factor 1 --min_batch_ex_train 2"
+    args+=" --max_batch_length_train $LEARNED_BATCH_SECONDS --max_batch_length_val 100 --grad_accumulation_factor 1 --min_batch_ex_train 2"
     args+=" --optimizer_step_limit $MAX_STEPS --validation_interval_optimizer_steps $VALID_INTERVAL"
     args+=" --validate_at_warmup_end True --warmup_optimizer_steps $WARMUP_STEPS"
     args+=" --stage_timing_file $out/stage_timing.jsonl"
     joint_dep=""
-    [[ "$DRY_RUN" == 1 ]] || joint_dep="--dependency=afterok:${phone_jobs[$seed]} --kill-on-invalid-dep=yes"
+    if [[ "$DRY_RUN" != 1 && "${phone_jobs[$seed]}" != done ]]; then
+      joint_dep="--dependency=afterok:${phone_jobs[$seed]} --kill-on-invalid-dep=yes"
+    fi
     job=$(EXTRA_ARGS="$args" submit_job "${GPU_IDENTITY[@]}" --job-name="x${lang}_learn_$seed" $joint_dep \
       --cpus-per-task=12 --mem=64G --time=3-00:00:00 \
       --export="ALL,PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,MODE=joint,BACKBONE=transformer_ar,EPOCHS=$SAFETY_EPOCHS,WARMUP_EPOCHS=0,DECODER_SAVE_DIR=$(pwd)/$L/phone_oracle/$seed/save" \
