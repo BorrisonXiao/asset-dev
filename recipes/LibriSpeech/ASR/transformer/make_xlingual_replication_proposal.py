@@ -66,13 +66,14 @@ def build(args):
         "Proposal · RL dynamic downsampling",
         "Cross-lingual 24k-step replication: Mandarin and Japanese",
         "Replicate the LS960 24k-step learned-downsampling study in two languages "
-        "whose natural acoustic-unit rates differ from English, against a "
-        "rate-laddered baseline set (fixed k=5; syllable, initial/final, and mora "
-        "oracles; phone oracle). Revised 2026-09-18 after review: the policy cold "
-        "start and decoder initialization come from the phone oracle, whose rate "
-        "sits above the band top in every language, so the rate band can only "
-        "compress — never inflate — the boundary rate. Nothing has been trained "
-        "yet.",
+        "whose natural acoustic-unit rates differ from English, with the minimal "
+        "baseline set: fixed k=5, the char-level oracle (zh characters, ja moras), "
+        "and the phone oracle. Revision 1 (2026-09-18): phone-anchored "
+        "initialization, so the rate band can only compress — never inflate — the "
+        "boundary rate. Revision 2 (2026-09-18): the initial/final arm is deferred "
+        "for time, and the band is lowered to [0.10, 0.20] (5–10 Hz) so the learned "
+        "arm operates closer to the char-level rate. Launch approved; jobs are "
+        "being prepared and submitted.",
     )
 
     # ------------------------------------------------------------------ 0
@@ -83,14 +84,16 @@ def build(args):
                 ("Languages", "zh + ja", "Mandarin (syllable-timed), Japanese (mora-timed); English study was stress-timed"),
                 ("Datasets", "AISHELL-1 · ReazonSpeech", "150 h read Mandarin; 100 h Japanese TV audio (encoder-in-domain)"),
                 ("Encoders", "HuBERT-Large ×2", "chinese-hubert-large (10k h WenetSpeech) · japanese-hubert-large (19k h ReazonSpeech)"),
-                ("Budget", "24k steps/seed", "Learned arm; 3 seeds per arm; 5 arms for zh, 4 for ja"),
+                ("Budget", "24k steps/seed", "Learned arm; 3 seeds per arm; 4 arms per language"),
             ]
         )
         + hk.finding(
-            "<b>Status: proposal only; revised once.</b> No training jobs are "
-            "submitted. The 2026-09-18 review decided the initialization geometry "
-            "and the unit inventories (Section 9, choices 3 and 5); the remaining "
-            "choices keep their recommendations and gates.",
+            "<b>Status: approved for launch (2026-09-18), twice revised.</b> "
+            "Revision 1 decided the initialization geometry and unit inventories; "
+            "revision 2 (user-directed) deferred the initial/final arm and lowered "
+            "the rate band to [0.10, 0.20] (5–10 Hz). Automated gates (S1 alignment "
+            "quality, S2 smoke) still guard the training pipeline.",
+            ok=True,
         ),
     )
 
@@ -116,8 +119,8 @@ def build(args):
             "<li><b>Mandarin</b> is syllable-timed; one written character is one "
             "syllable, spoken at ≈5–6 /s, so the character oracle sits at roughly "
             "\\(\\rho\\approx0.11\\) (≈5.5 Hz) — <b>below</b> the fixed k=5 grid. If "
-            "placement still wins near 10 Hz, the gain is not an artifact of English "
-            "character rate exceeding the control rate.</li>"
+            "placement in the 5–10 Hz band still wins, the gain is not an artifact of "
+            "English character rate exceeding the control rate.</li>"
             "<li><b>Japanese</b> is mora-timed at ≈7–8 mora/s "
             "(\\(\\rho\\approx0.15\\), ≈7.5 Hz), between the two. Its phone rate is "
             "high (mostly CV moras), separating the phone oracle from the mora oracle "
@@ -231,8 +234,10 @@ def build(args):
     # ------------------------------------------------------------------ 3
     body += hk.section(
         "3 · Arms",
-        lead="A rate ladder of oracle baselines plus the learned system, three seeds "
-        "each (3407/3408/3409): five arms for Mandarin, four for Japanese.",
+        lead="Four arms per language, three seeds each (3407/3408/3409): the "
+        "minimal baseline set plus the learned system. The initial/final "
+        "intermediate arm of revision 1 is deferred for time (revision 2); its "
+        "unit inventory notes stay in Section 4 for the follow-up.",
         body=hk.labeled_asset(
             table(
                 ["Arm", "Languages", "Boundaries", "Rate (pred.)", "Budget/seed"],
@@ -249,20 +254,10 @@ def build(args):
                     ),
                     (
                         [
-                            "syllable oracle",
-                            "zh only",
-                            "Character-CTC alignment (one character = one syllable — the written unit the decoder emits)",
-                            "≈5–6 Hz",
-                            "10 epochs CE, dev-selected",
-                        ],
-                        None,
-                    ),
-                    (
-                        [
-                            "intermediate oracle",
+                            "char-level oracle",
                             "zh + ja",
-                            "zh: initial/final (onset–rime) CTC alignment. ja: mora-CTC alignment (katakana units)",
-                            "zh ≈10 Hz · ja ≈7.5 Hz",
+                            "zh: character-CTC alignment (one character = one syllable — the written unit the decoder emits). ja: mora-CTC alignment (katakana units)",
+                            "zh ≈5–6 Hz · ja ≈7.5 Hz",
                             "10 epochs CE, dev-selected",
                         ],
                         None,
@@ -271,7 +266,7 @@ def build(args):
                         [
                             "phone oracle",
                             "zh + ja",
-                            "MFA forced alignment (<code>mandarin_mfa</code> / <code>japanese_mfa</code> v3). <b>Also the cold-start and decoder-init source for the learned arm</b> (Section 5)",
+                            "MFA forced alignment, best released acoustic models (<code>mandarin_mfa</code> / <code>japanese_mfa</code>, latest v3; versions pinned and recorded). <b>Also the cold-start and decoder-init source for the learned arm</b> (Section 5)",
                             "≈13–15 Hz",
                             "10 epochs CE, dev-selected",
                         ],
@@ -282,7 +277,7 @@ def build(args):
                             "learned (replication target)",
                             "zh + ja",
                             "Transformer-AR policy, 64-frame local history, GRPO",
-                            "band [7.5, 12.5] Hz",
+                            "band [5, 10] Hz (revision 2)",
                             "<b>24,000 optimizer steps</b> (warmup + joint RL)",
                         ],
                         "recommended",
@@ -292,13 +287,11 @@ def build(args):
             ),
             "Table",
             3,
-            "Arm matrix (revised 2026-09-18). All arms share the language's frozen encoder "
-            "and BiGRU residual pooling, so the only difference between arms is where "
-            "boundaries fall. The oracle arms form a rate ladder around the fixed control: "
-            "below it (zh syllable, ja mora), at it (zh initial/final), and above it "
-            "(phone). A Japanese raw-orthography character oracle is deliberately absent: "
-            "rare-kanji CTC alignment is unreliable on 100 h and mora is the language's "
-            "character-analog rhythm unit.",
+            "Arm matrix (revision 2). All arms share the language's frozen encoder and "
+            "BiGRU residual pooling, so the only difference between arms is where "
+            "boundaries fall. A Japanese raw-orthography character oracle is deliberately "
+            "absent: rare-kanji CTC alignment is unreliable on 100 h and mora is the "
+            "language's character-analog rhythm unit.",
             title="Experiment matrix",
         ),
     )
@@ -312,23 +305,21 @@ def build(args):
         "HuBERT-Large. Only the unit inventories are language-specific.",
         body=(
             "<ul>"
-            "<li><b>Phone oracle (also the initialization source).</b> MFA v3 with "
-            "<code>mandarin_mfa</code> and <code>japanese_mfa</code> acoustic models "
-            "+ dictionaries. AISHELL-1 transcripts are unsegmented character strings, "
-            "so zh runs <code>jieba</code> word segmentation before MFA lookup; ja "
-            "uses MFA's own tokenization. Runs on the CPU partition. Because the "
-            "learned arm initializes here, the S1 gate additionally checks "
-            "\\(\\rho_{\\text{phone}} \\ge \\rho_{hi} = 0.25\\) (≥ 12.5 Hz) in each "
-            "language.</li>"
-            "<li><b>zh syllable oracle.</b> Character-CTC forced alignment on frozen "
-            "chinese-hubert-large features (AISHELL-1 train has a ≈4.2k character "
-            "inventory — routine for Mandarin CTC). One character = one syllable.</li>"
-            "<li><b>zh initial/final oracle.</b> Characters are converted to pinyin "
-            "(<code>pypinyin</code>) and split deterministically into onset "
-            "(shengmu) and rime (yunmu) — the canonical Mandarin sub-syllable ASR "
-            "unit. ≈1.85 units per syllable (≈15% of syllables are zero-onset), a "
-            "≈60-unit toneless inventory, so the CTC aligner is denser and better "
-            "trained than the 4.2k-character one.</li>"
+            "<li><b>Phone oracle (also the initialization source).</b> MFA with the "
+            "<b>best released acoustic models</b>: the latest v3 "
+            "<code>mandarin_mfa</code> and <code>japanese_mfa</code> models and "
+            "their dictionaries, versions pinned at download and recorded in the "
+            "alignment stats. AISHELL-1 transcripts are unsegmented character "
+            "strings, so zh runs <code>jieba</code> word segmentation before MFA "
+            "lookup; ja uses MFA's own tokenization. OOV words fall back to the "
+            "models' own G2P; OOV counts are reported. Runs on the CPU partition. "
+            "Because the learned arm initializes here, the S1 gate additionally "
+            "checks \\(\\rho_{\\text{phone}} \\ge \\rho_{hi} = 0.20\\) (≥ 10 Hz) in "
+            "each language.</li>"
+            "<li><b>zh character (syllable) oracle.</b> Character-CTC forced "
+            "alignment on frozen chinese-hubert-large features (AISHELL-1 train has "
+            "a ≈4.2k character inventory — routine for Mandarin CTC). One character "
+            "= one syllable.</li>"
             "<li><b>ja mora oracle.</b> Raw Japanese orthography mixes kanji and kana: "
             "a 3k+ character CTC over 100 h would align rare kanji unreliably, and one "
             "kanji spans several moras. Instead transcripts are converted to katakana "
@@ -336,35 +327,47 @@ def build(args):
             "with a ≈150-unit mora-CTC. Mora is Japanese's natural sub-word rhythm "
             "unit, exactly parallel to zh character = syllable (Section 9, "
             "choice 3).</li>"
-            "<li><b>Acceptance stats.</b> After generation: coverage ≥ 99.5% of "
-            "utterances per split, measured \\(\\rho\\) for every unit reported "
-            "against Table 4's predictions, and the "
-            "\\(\\rho_{\\text{phone}} \\ge \\rho_{hi}\\) initialization check. A "
-            "large deviation flags an alignment bug before any GPU training "
-            "starts.</li>"
+            "<li><b>CTC-oracle reliability gates (revision 2).</b> The char-level "
+            "CTC aligners must prove themselves before any arm trains on their "
+            "boundaries: (i) the aligner's own greedy dev CER ≤ 15% (an aligner "
+            "that cannot roughly read the speech cannot place its units); (ii) "
+            "≥ 80% of char/mora boundaries fall within ±40 ms of an MFA phone "
+            "boundary — characters and moras are composed of whole phones, so "
+            "their onsets must coincide with phone onsets; (iii) per-unit duration "
+            "distributions must be plausible (no mass at one frame, no "
+            "several-second units).</li>"
+            "<li><b>Coverage and rates.</b> Coverage ≥ 99.5% of utterances per "
+            "split, and measured \\(\\rho\\) for every unit reported against "
+            "Table 4's predictions. A large deviation flags an alignment bug "
+            "before any GPU training starts.</li>"
+            "<li><b>Deferred (revision 2):</b> the zh initial/final (onset–rime) "
+            "intermediate oracle — ≈1.85 units/syllable ≈ 10 Hz via "
+            "<code>pypinyin</code> — is specified but not run in this round.</li>"
             "</ul>"
         )
         + hk.labeled_asset(
             table(
-                ["Language", "word", "written char", "intermediate", "phone (MFA)", "fixed k=5", "band \\([\\rho_{lo},\\rho_{hi}]\\)"],
+                ["Language", "word", "char-level oracle", "phone (MFA)", "fixed k=5", "band \\([\\rho_{lo},\\rho_{hi}]\\)"],
                 [
-                    (["en (measured)", "≈2.5–3 Hz", "≈14.6 Hz, \\(\\rho\\) 0.29 (char-CTC; the LS960 init)", "—", "≈10.5 Hz, \\(\\rho\\) 0.21", "10 Hz", "[0.15, 0.25] = [7.5, 12.5] Hz"], None),
-                    (["zh (pred.)", "≈2.5–3.5 Hz", "≈5–6 Hz, \\(\\rho\\) ≈0.11 (chars = syllables)", "initial/final ≈10 Hz, \\(\\rho\\) ≈0.20", "≈13–15 Hz, \\(\\rho\\) ≈0.24–0.28 (init)", "10 Hz", "same"], None),
-                    (["ja (pred.)", "≈2.5–3 Hz", "≈4–6 Hz (kanji-mixed; not used)", "mora ≈7.5 Hz, \\(\\rho\\) ≈0.15", "≈13–15 Hz, \\(\\rho\\) ≈0.26–0.30 (init)", "10 Hz", "same"], None),
+                    (["en (measured)", "≈2.5–3 Hz", "char ≈14.6 Hz, \\(\\rho\\) 0.29 (the LS960 init)", "≈10.5 Hz, \\(\\rho\\) 0.21", "10 Hz", "[0.15, 0.25] = [7.5, 12.5] Hz"], None),
+                    (["zh (pred.)", "≈2.5–3.5 Hz", "char = syllable ≈5–6 Hz, \\(\\rho\\) ≈0.11", "≈13–15 Hz, \\(\\rho\\) ≈0.24–0.28 (init)", "10 Hz", "[0.10, 0.20] = [5, 10] Hz (revision 2)"], None),
+                    (["ja (pred.)", "≈2.5–3 Hz", "mora ≈7.5 Hz, \\(\\rho\\) ≈0.15", "≈13–15 Hz, \\(\\rho\\) ≈0.26–0.30 (init)", "10 Hz", "[0.10, 0.20] = [5, 10] Hz (revision 2)"], None),
                 ],
             ),
             "Table",
             4,
             "Rate ladder per language (zh/ja values are predictions, replaced by measured "
-            "values at the S1 gate; en is measured from the completed study). The "
-            "initialization invariant of the 2026-09-18 revision: the unit used for the "
-            "policy cold start and decoder init must satisfy "
-            "\\(\\rho_{\\text{init}} \\ge \\rho_{hi}\\), so the rate band's pressure at "
-            "initialization is strictly downward in every language — in English the "
-            "character unit satisfied this (0.29 ≥ 0.25), and in zh/ja the phone unit "
-            "does. A zh character-unit init (\\(\\rho\\approx0.11 < \\rho_{lo}\\)) would "
-            "instead have had the band floor force ≈50% more boundaries than the "
-            "initialization emits — upsampling, inverting the study's direction.",
+            "values at the S1 gate; en is measured from the completed study). Revision 2 "
+            "lowers the zh/ja band to [0.10, 0.20] (5–10 Hz): the floor sits at the zh "
+            "syllable rate and the top at the fixed control, so both char-level rates are "
+            "attainable inside the band and the learned arm operates closer to the "
+            "char-level rate than the English band would allow. The initialization "
+            "invariant of revision 1 still holds, with more margin: the phone-rate init "
+            "(\\(\\rho\\approx0.26\\text{–}0.30\\)) sits well above \\(\\rho_{hi}=0.20\\), "
+            "so rate pressure at initialization is strictly downward. S1 additionally "
+            "checks that each measured char-level rate lies inside the band "
+            "(\\(\\rho_{lo} \\le \\rho_{\\text{char}} \\le \\rho_{hi}\\)); if zh's "
+            "measured rate falls below 0.10, the floor is lowered to it.",
             title="Rate ladder and the initialization invariant",
         ),
     )
@@ -396,8 +399,9 @@ def build(args):
             "warmup. The init unit is chosen by the invariant of Table 4: from a "
             "phone-rate start (\\(\\rho\\approx0.26\\text{–}0.30\\), 13–15 Hz, "
             "\\(\\ge \\rho_{hi}\\)) the band can only pull the rate down into "
-            "[0.15, 0.25] = 7.5–12.5 Hz, mirroring the English geometry (char "
-            "0.29 → realized ≈0.22, i.e. 14.6 → ≈10.9 Hz). Because 2,400 steps "
+            "[0.10, 0.20] = 5–10 Hz, the same direction as the English geometry "
+            "(char 0.29 → realized ≈0.22, i.e. 14.6 → ≈10.9 Hz) but with a longer "
+            "compression journey, monitored by the Section 7 guard. Because 2,400 steps "
             "exceeds one epoch on these corpora, the existing "
             "fraction-of-first-epoch knob cannot express it; a small "
             "--warmup_optimizer_steps extension (absolute steps) is added with a "
@@ -406,8 +410,8 @@ def build(args):
         + phase(
             "2",
             "Joint GRPO to 24,000 steps",
-            "Identical to LS960 step24k: NLL reward, K=4 rollouts, rate band "
-            "\\(\\rho\\in[0.15,0.25]\\) (7.5–12.5 Hz) with "
+            "LS960 step24k settings with the revision-2 band: NLL reward, K=4 "
+            "rollouts, rate band \\(\\rho\\in[0.10,0.20]\\) (5–10 Hz) with "
             "\\(\\lambda_{\\text{cap}}=1.0\\), "
             "rate_channel auto, lr 2e-4 (decoder) / 5e-5 (policy), entropy 0, BF16, "
             "300 s batches, validation at warmup end and every 4k steps, selection "
@@ -418,7 +422,7 @@ def build(args):
         + phase(
             "3",
             "CE baselines",
-            "fixed k=5, syllable (zh), initial/final (zh) / mora (ja), and phone "
+            "fixed k=5, char-level oracle (zh characters / ja moras), and phone "
             "oracle: 10 epochs CE with dev-selection at 500 s batches × "
             "grad-accumulation 2 — the protocol of the matched 100 h controls. At "
             "these corpus sizes 10 CE epochs (≈10 passes) is comparable data "
@@ -447,7 +451,7 @@ def build(args):
                     (["Policy", "Transformer-AR", "4 layers, 256-d, 4 heads, FFN 1024, dropout 0, history window 64, max positions 4096, preallocated cache", "yes"], None),
                     (["Pooling", "BiGRU residual", "hidden 128, 1 layer, dropout 0", "yes"], None),
                     (["RL", "GRPO", "K=4, NLL reward, pg_weight 1.0, entropy 0, rl_update_mode combined_on_policy", "yes"], None),
-                    (["Rate", "band", "\\(\\rho_{lo}=0.15\\) (7.5 Hz), \\(\\rho_{hi}=0.25\\) (12.5 Hz), \\(\\lambda_{\\text{cap}}=1.0\\), rate_channel auto", "yes (choice 5)"], None),
+                    (["Rate", "band", "\\(\\rho_{lo}=0.10\\) (5 Hz), \\(\\rho_{hi}=0.20\\) (10 Hz), \\(\\lambda_{\\text{cap}}=1.0\\), rate_channel auto", "changed (revision 2): LS960 used [0.15, 0.25]"], None),
                     (["Optimization", "LRs", "decoder 2e-4 (warmup and joint), policy 5e-5; BF16; grad-accum 1 (learned) / 2 (CE)", "yes"], None),
                     (["Batching", "duration budget", "300 s learned, 400 s cold start, 500 s CE arms; min 2 utts; train cap 25 s/utt", "yes"], None),
                     (["Schedule", "steps", "24,000 optimizer steps; warmup 2,400 absolute steps (new knob); validate every 4,000 + warmup end", "24k/4k yes; warmup knob new"], None),
@@ -499,16 +503,16 @@ def build(args):
         "8 · Compute and schedule",
         body=hk.tiles(
             [
-                ("GPU budget", "≈440 A100-h", "Dominated by 6 learned 24k-step runs (~45 h each); the 21 CE runs (~4 h each) add ≈85 h"),
+                ("GPU budget", "≈425 A100-h", "Dominated by 6 learned 24k-step runs (~45 h each); the 18 CE runs (~4 h each) add ≈72 h"),
                 ("Wall time", "≈6–7 days", "At the account's 3-GPU concurrency cap; CPU alignment runs in parallel on med"),
                 ("Storage", "≈35 GB data + ≈25 GB results", "AISHELL-1 15 GB, ReazonSpeech small 6 GB, JSUT 2.7 GB, boundary targets, checkpoints"),
-                ("New code", "small, tested", "2 prep scripts, pypinyin initial/final + fugashi mora conversion, --warmup_optimizer_steps knob, 2 launchers"),
+                ("New code", "small, tested", "3 prep scripts, fugashi mora conversion, --warmup_optimizer_steps knob, alignment + training launchers"),
             ]
         )
         + phase("S0", "Data + manifests (1–2 days, CPU)", "Download AISHELL-1 / ReazonSpeech small / JSUT; prep scripts with manifest unit tests (utterance counts, durations, date-disjoint ja splits). No GPU spent before these pass.")
         + phase("S1", "Alignment + targets (2–3 days, CPU + few GPU-h)", "MFA runs; char/mora CTC aligner training; generate per-utterance .pt targets; publish measured rate table (updates Table 4). <span class='gate'>Gate: coverage ≥99.5%, rates plausible</span>")
         + phase("S2", "Smoke (½ day, 2 GPU-h)", "One char/mora-oracle seed per language, 2k steps: verifies decoder path, CER scoring, text normalization end to end. <span class='gate'>Gate: decoder keeps Llama vs. switches to Qwen (choice 1)</span>")
-        + phase("S3", "CE baselines (2 days)", "zh: 4 CE arms (fixed k=5, syllable, initial/final, phone); ja: 3 CE arms (fixed k=5, mora, phone); 3 seeds each, 10-epoch CE, dev-selected.")
+        + phase("S3", "CE baselines (2 days)", "3 CE arms per language (fixed k=5, char-level oracle, phone oracle), 3 seeds each, 10-epoch CE, dev-selected. GPU jobs run on the a100 partition only.")
         + phase("S4", "Cold starts + learned arm (3–4 days)", "1 cold start per language, then 3 × 24k-step joint runs per language.")
         + phase("S5", "Analysis + report", "Tables, frontier figures, boundary audits; publish as a new report page; log results in project notes."),
     )
@@ -516,10 +520,10 @@ def build(args):
     # ------------------------------------------------------------------ 9
     body += hk.section(
         "9 · Key design choices",
-        lead="Each row is a real fork. Choices 3 and 5 were decided in the "
-        "2026-09-18 review (phone-anchored initialization, mora as the ja "
-        "character-analog); the remaining rows keep their recommendations and "
-        "gates, adopted at launch unless objected to.",
+        lead="Each row is a real fork. Choices 3, 5, and 7 are decided (2026-09-18 "
+        "reviews: phone-anchored initialization, mora as the ja character-analog, "
+        "lowered band, initial/final arm deferred); the remaining rows keep their "
+        "recommendations and gates, adopted at launch.",
         body=hk.labeled_asset(
             table(
                 ["#", "Choice", "Options", "Recommendation and why", "Gate / fallback"],
@@ -567,10 +571,20 @@ def build(args):
                     (
                         [
                             "5",
-                            "Rate band and initialization geometry — <b>decided 2026-09-18</b>",
-                            "(a) shared band [0.15, 0.25] (7.5–12.5 Hz) with phone-oracle init · (b) per-language band anchored below the char/mora rate",
-                            "<b>(a) adopted</b> — the band brackets the fixed k=5 control (ρ=0.20, 10 Hz) in every language, and the phone-rate init (\\(\\rho_{\\text{init}} \\ge \\rho_{hi}\\), Table 4) makes rate pressure strictly downward. A zh char-unit init under this band (ρ≈0.11 ≈ 5.5 Hz &lt; \\(\\rho_{lo}\\)) would have forced upsampling — the flaw this revision removes",
-                            "S1 gate re-opens the choice if measured \\(\\rho_{\\text{phone}} < 0.25\\) (12.5 Hz); per-language sub-unit bands remain the follow-up sweep",
+                            "Rate band and initialization geometry — <b>decided; band lowered in revision 2</b>",
+                            "(a) shared [0.15, 0.25] (7.5–12.5 Hz) · (b) shared lowered [0.10, 0.20] (5–10 Hz) · (c) per-language bands",
+                            "<b>(b) adopted (user-directed revision 2)</b> — floor at the zh syllable rate, top at the fixed control, so both char-level rates are attainable and the learned arm operates closer to the char-level rate. Phone-oracle init is kept from revision 1: \\(\\rho_{\\text{init}}\\approx0.26\\text{–}0.30 \\ge \\rho_{hi}=0.20\\), so rate pressure stays strictly downward (a zh char-unit init under the revision-1 band, ρ≈0.11 ≈ 5.5 Hz &lt; 0.15, would have forced upsampling)",
+                            "S1 checks \\(\\rho_{\\text{phone}} \\ge 0.20\\) (10 Hz) and \\(\\rho_{lo} \\le \\rho_{\\text{char}} \\le \\rho_{hi}\\); if zh's measured char rate falls below 0.10, the floor is lowered to it. Per-language recentered bands remain the follow-up",
+                        ],
+                        "recommended",
+                    ),
+                    (
+                        [
+                            "7",
+                            "Intermediate (initial/final) arm — <b>deferred in revision 2</b>",
+                            "(a) run zh initial/final now · (b) defer",
+                            "<b>(b) adopted (user-directed, time budget)</b> — the minimal set answers the headline question; the onset–rime unit inventory stays specified in Section 4 for the follow-up",
+                            "Revisit after the minimal replication reports",
                         ],
                         "recommended",
                     ),
@@ -589,8 +603,9 @@ def build(args):
             ),
             "Table",
             7,
-            "Design choices. Rows 3 and 5 are decided (2026-09-18 review); every other "
-            "recommendation is the option the schedule and budget in Section 8 assume.",
+            "Design choices. Rows 3, 5, and 7 are decided (2026-09-18 reviews); every "
+            "other recommendation is the option the schedule and budget in Section 8 "
+            "assume.",
             title="Sign-off list",
         ),
     )
@@ -601,14 +616,22 @@ def build(args):
         body=(
             "<ul>"
             "<li><b>Upsampling instead of downsampling (resolved by design).</b> With "
-            "a syllable-rate initialization (zh char, ρ≈0.11 ≈ 5.5 Hz) the band floor "
-            "at 0.15 (7.5 Hz) would have rewarded emitting ≈50% more boundaries than "
-            "the init distribution — the learned arm would upsample by construction. "
-            "The phone-anchored initialization (Table 4 invariant) plus the "
-            "\\(\\rho\\)-trajectory guard (Section 7) makes rate pressure strictly "
-            "downward. Residual risk: if measured \\(\\rho_{\\text{phone}}\\) lands "
-            "below 0.25 (12.5 Hz) in a language, the S1 gate re-opens the choice "
-            "(accept a neutral in-band init, or trim \\(\\rho_{hi}\\)).</li>"
+            "a syllable-rate initialization under the revision-1 band, the floor "
+            "would have rewarded emitting ≈50% more boundaries than the init "
+            "distribution — upsampling by construction. The phone-anchored "
+            "initialization (Table 4 invariant) plus the \\(\\rho\\)-trajectory "
+            "guard (Section 7) makes rate pressure strictly downward, and the "
+            "revision-2 band [0.10, 0.20] (5–10 Hz) widens the init margin "
+            "(\\(\\rho_{\\text{init}}\\approx0.26\\text{–}0.30\\) vs. "
+            "\\(\\rho_{hi}=0.20\\)).</li>"
+            "<li><b>Longer compression journey (new in revision 2).</b> The learned "
+            "arm must travel from the phone-rate init (13–15 Hz) down to 5–10 Hz — "
+            "roughly twice the relative compression the English run performed "
+            "(14.6 → ≈10.9 Hz). The decoder warmup adapts at the init rate, so early "
+            "joint steps pair a compressing policy with a decoder trained at a "
+            "higher rate; the 4k-step validations and the \\(\\rho\\)-trajectory "
+            "guard monitor the transient, and the dev-selected checkpoint protects "
+            "the reported result from a slow transient.</li>"
             "<li><b>ReazonSpeech transcript noise.</b> Subtitle-derived labels inflate "
             "absolute CER and blur the mora oracle. Mitigations: encoder is in-domain "
             "by construction, JSUT provides a clean secondary test, and alignment "
