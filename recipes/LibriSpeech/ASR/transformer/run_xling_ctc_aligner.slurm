@@ -37,6 +37,7 @@ echo "=== $(date) xling CTC aligner lang=$LANG_CODE level=$UNITS_LEVEL on $(host
   --train_units "$MANIFEST_DIR/train_units_${UNITS_LEVEL}.tsv" \
   --dev_csv "$MANIFEST_DIR/dev.csv" \
   --dev_units "$MANIFEST_DIR/dev_units_${UNITS_LEVEL}.tsv" \
+  --epochs "${CTC_EPOCHS:-3}" \
   --head_dir "$OUT_ROOT/ctc_head" \
   --boundary_out "$OUT_ROOT/boundaries/${UNITS_LEVEL}" \
   --stats_out "$OUT_ROOT/boundaries/${UNITS_LEVEL}_stats.json" \

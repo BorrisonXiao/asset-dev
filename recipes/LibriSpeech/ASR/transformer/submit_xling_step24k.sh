@@ -57,6 +57,7 @@ lang_config() {
       G2P_NAME=mandarin_china_mfa
       DATA_FOLDER=$DATASETS/aishell/data_aishell
       MFA_SPEAKER_CHARS=11
+      CTC_EPOCHS=5
       SAFETY_EPOCHS=16
       COLDSTART_EPOCHS=6
       VALID_CSV_BASE=dev_sub.csv
@@ -73,6 +74,7 @@ lang_config() {
       G2P_NAME=japanese_mfa
       DATA_FOLDER=$DATASETS/reazonspeech_small
       MFA_SPEAKER_CHARS=
+      CTC_EPOCHS=6
       SAFETY_EPOCHS=32
       COLDSTART_EPOCHS=10
       VALID_CSV_BASE=dev.csv
@@ -124,7 +126,7 @@ for lang in $LANGS; do
   # the --export list itself — sbatch splits that list on commas (see the
   # 2026-08 LS960 split-list bug in docs/project_notes/bugs.md).
   ctc_job=$(EXTRA_SPLITS="$ALIGN_EXTRA" submit_job "${GPU_IDENTITY[@]}" --job-name="x${lang}_ctc" \
-    --export="ALL,LANG_CODE=$lang,SSL_HUB=$SSL_HUB,MANIFEST_DIR=$M,UNITS_LEVEL=$UNITS_LEVEL,OUT_ROOT=$T" \
+    --export="ALL,LANG_CODE=$lang,SSL_HUB=$SSL_HUB,MANIFEST_DIR=$M,UNITS_LEVEL=$UNITS_LEVEL,OUT_ROOT=$T,CTC_EPOCHS=$CTC_EPOCHS" \
     run_xling_ctc_aligner.slurm)
   log_job "$lang" ctc_aligner "$ctc_job" "$UNITS_LEVEL"
   echo "[$lang] CTC aligner -> $ctc_job"
@@ -134,7 +136,8 @@ for lang in $LANGS; do
     # Resubmission path: an earlier MFA job survived a failed sibling stage.
     mfa_job=${!reuse_var}
   else
-    mfa_job=$(EXTRA_CSVS="$GATE_EXTRA" submit_job "${CPU_IDENTITY[@]}" --job-name="x${lang}_mfa" \
+    mfa_job=$(EXTRA_CSVS="$GATE_EXTRA" submit_job "${GPU_IDENTITY[@]}" --job-name="x${lang}_mfa" \
+      --gpus=1 --partition=a100 --cpus-per-task=32 --mem=180G --time=1-00:00:00 \
       --export="ALL,LANG_CODE=$lang,MANIFEST_DIR=$M,WORK_DIR=$T/mfa,DICT_NAME=$DICT_NAME,ACOUSTIC_NAME=$ACOUSTIC_NAME,G2P_NAME=$G2P_NAME,OUT_ROOT=$T,SPEAKER_CHARS=$MFA_SPEAKER_CHARS" \
       run_xling_mfa.slurm)
   fi
@@ -145,7 +148,8 @@ for lang in $LANGS; do
 
   gate_dep=""
   [[ "$DRY_RUN" == 1 ]] || gate_dep="--dependency=afterok:${ctc_job}:${mfa_job} --kill-on-invalid-dep=yes"
-  gate_job=$(EXTRA_CSVS="$GATE_EXTRA" submit_job "${CPU_IDENTITY[@]}" --job-name="x${lang}_gate" $gate_dep \
+  gate_job=$(EXTRA_CSVS="$GATE_EXTRA" submit_job "${GPU_IDENTITY[@]}" --job-name="x${lang}_gate" $gate_dep \
+    --gpus=1 --partition=a100 --cpus-per-task=4 --mem=16G --time=02:00:00 \
     --export="ALL,MANIFEST_DIR=$M,OUT_ROOT=$T,UNITS_LEVEL=$UNITS_LEVEL,RHO_LO=$RHO_LO,RHO_HI=$RHO_HI" \
     run_xling_gate.slurm)
   log_job "$lang" gate "$gate_job" "afterok:$ctc_job,$mfa_job"
