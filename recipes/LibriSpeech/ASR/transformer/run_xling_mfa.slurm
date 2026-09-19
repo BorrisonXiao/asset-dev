@@ -18,7 +18,14 @@ set -euo pipefail
 export PYTHONUNBUFFERED=1
 # MFA shells out to OpenFst/Kaldi/postgres binaries via PATH.
 export PATH=/home/jhu/jsalt2026-ext-cxiao7/cxiao/envs/mfa/bin:$PATH
-export MFA_ROOT_DIR=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/mfa
+# MFA keeps a sqlite database under MFA_ROOT_DIR; sqlite over weka fails
+# intermittently under multiprocess access ("unable to open database file"
+# at TextGrid export, job 597228). Work on node-local storage and read the
+# pretrained models from a copy; only the exported TextGrids land on weka.
+WEKA_MFA=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/mfa
+export MFA_ROOT_DIR=${SLURM_TMPDIR:-/tmp}/mfa_${SLURM_JOB_ID}
+mkdir -p "$MFA_ROOT_DIR"
+cp -r "$WEKA_MFA/pretrained_models" "$MFA_ROOT_DIR/"
 
 cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
 

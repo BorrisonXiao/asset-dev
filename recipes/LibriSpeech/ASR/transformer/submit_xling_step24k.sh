@@ -74,7 +74,12 @@ lang_config() {
       ACOUSTIC_NAME=japanese_mfa
       G2P_NAME=japanese_mfa
       DATA_FOLDER=$DATASETS/reazonspeech_small
-      MFA_SPEAKER_CHARS=
+      # ReazonSpeech has no speaker labels; a flat corpus is ONE speaker to
+      # MFA, which parallelizes by speaker (job 597228 warned "only having 1
+      # speakers" and ran single-worker). 5-char utt prefixes give ~192
+      # pseudo-speaker groups - arbitrary fMLLR groups over random TV
+      # utterances act as light adaptation and restore parallelism.
+      MFA_SPEAKER_CHARS=5
       CTC_EPOCHS=6
       RHO_LO=0.095   # measured ja mora rate 0.098 (4.9 Hz), a hair under 0.10
       SAFETY_EPOCHS=32
