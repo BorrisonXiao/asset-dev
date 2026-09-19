@@ -164,8 +164,14 @@ for lang in $LANGS; do
     echo "[$lang] CTC aligner -> $ctc_job"
   fi
 
+  mfa_done_var="REUSE_MFA_DONE_${lang^^}"
   reuse_var="REUSE_MFA_JOB_${lang^^}"
-  if [[ -n "${!reuse_var:-}" ]]; then
+  if [[ -n "${!mfa_done_var:-}" ]]; then
+    # MFA already completed; its targets are on disk and its purged job id
+    # cannot serve as a dependency.
+    mfa_job=""
+    echo "[$lang] MFA already complete; phone targets reused"
+  elif [[ -n "${!reuse_var:-}" ]]; then
     # Resubmission path: an earlier MFA job survived a failed sibling stage.
     mfa_job=${!reuse_var}
   else
@@ -181,8 +187,11 @@ for lang in $LANGS; do
 
   gate_dep=""
   dep_ids="$mfa_job"
-  [[ -n "$ctc_job" ]] && dep_ids="${ctc_job}:${mfa_job}"
-  [[ "$DRY_RUN" == 1 ]] || gate_dep="--dependency=afterok:${dep_ids} --kill-on-invalid-dep=yes"
+  [[ -n "$ctc_job" && -n "$mfa_job" ]] && dep_ids="${ctc_job}:${mfa_job}"
+  [[ -n "$ctc_job" && -z "$mfa_job" ]] && dep_ids="$ctc_job"
+  if [[ "$DRY_RUN" != 1 && -n "$dep_ids" ]]; then
+    gate_dep="--dependency=afterok:${dep_ids} --kill-on-invalid-dep=yes"
+  fi
   gate_job=$(EXTRA_CSVS="$GATE_EXTRA" submit_job "${GPU_IDENTITY[@]}" --job-name="x${lang}_gate" $gate_dep \
     --gpus=1 --partition=a100 --cpus-per-task=4 --mem=16G --time=02:00:00 \
     --export="ALL,MANIFEST_DIR=$M,OUT_ROOT=$T,UNITS_LEVEL=$UNITS_LEVEL,RHO_LO=$RHO_LO,RHO_HI=$RHO_HI" \
