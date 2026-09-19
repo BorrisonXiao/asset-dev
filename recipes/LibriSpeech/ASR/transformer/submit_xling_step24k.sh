@@ -56,6 +56,7 @@ lang_config() {
       ACOUSTIC_NAME=mandarin_mfa
       G2P_NAME=mandarin_china_mfa
       DATA_FOLDER=$DATASETS/aishell/data_aishell
+      MFA_SPEAKER_CHARS=11
       SAFETY_EPOCHS=16
       COLDSTART_EPOCHS=6
       VALID_CSV_BASE=dev_sub.csv
@@ -71,6 +72,7 @@ lang_config() {
       ACOUSTIC_NAME=japanese_mfa
       G2P_NAME=japanese_mfa
       DATA_FOLDER=$DATASETS/reazonspeech_small
+      MFA_SPEAKER_CHARS=
       SAFETY_EPOCHS=32
       COLDSTART_EPOCHS=10
       VALID_CSV_BASE=dev.csv
@@ -127,9 +129,14 @@ for lang in $LANGS; do
   log_job "$lang" ctc_aligner "$ctc_job" "$UNITS_LEVEL"
   echo "[$lang] CTC aligner -> $ctc_job"
 
-  mfa_job=$(EXTRA_CSVS="$GATE_EXTRA" submit_job "${CPU_IDENTITY[@]}" --job-name="x${lang}_mfa" \
-    --export="ALL,LANG_CODE=$lang,MANIFEST_DIR=$M,WORK_DIR=$T/mfa,DICT_NAME=$DICT_NAME,ACOUSTIC_NAME=$ACOUSTIC_NAME,G2P_NAME=$G2P_NAME,OUT_ROOT=$T" \
-    run_xling_mfa.slurm)
+  if [[ -n "${REUSE_MFA_JOB:-}" ]]; then
+    # Resubmission path: an earlier MFA job survived a failed sibling stage.
+    mfa_job=$REUSE_MFA_JOB
+  else
+    mfa_job=$(EXTRA_CSVS="$GATE_EXTRA" submit_job "${CPU_IDENTITY[@]}" --job-name="x${lang}_mfa" \
+      --export="ALL,LANG_CODE=$lang,MANIFEST_DIR=$M,WORK_DIR=$T/mfa,DICT_NAME=$DICT_NAME,ACOUSTIC_NAME=$ACOUSTIC_NAME,G2P_NAME=$G2P_NAME,OUT_ROOT=$T,SPEAKER_CHARS=$MFA_SPEAKER_CHARS" \
+      run_xling_mfa.slurm)
+  fi
   log_job "$lang" mfa "$mfa_job" "$ACOUSTIC_NAME"
   echo "[$lang] MFA + phone targets -> $mfa_job"
 

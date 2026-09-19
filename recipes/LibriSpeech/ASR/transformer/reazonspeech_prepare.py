@@ -117,9 +117,12 @@ def split_of(name, dev_per_mille=16, test_per_mille=32):
 
 
 def _probe(path):
+    """Full-decode probe: a header can parse while the FLAC stream is corrupt
+    (one such file ships in small-v2), so read the samples, not just info."""
     try:
-        info = sf.info(path)
-        return round(info.frames / info.samplerate, 3), info.samplerate
+        with sf.SoundFile(path) as fh:
+            frames = len(fh.read(dtype="float32"))
+            return round(frames / fh.samplerate, 3), fh.samplerate
     except Exception:
         return None, None
 

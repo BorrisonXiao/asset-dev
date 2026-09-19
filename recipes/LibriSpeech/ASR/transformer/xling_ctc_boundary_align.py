@@ -108,11 +108,20 @@ def duration_batches(rows, batch_seconds, max_utts):
 
 
 def load_batch_audio(batch, device):
-    waves = []
+    """Load a batch; a corrupt file drops its utterance (logged), not the job."""
+    waves, kept = [], []
     for utt, dur, wav in batch:
-        audio, sr = torchaudio.load(wav)
+        try:
+            audio, sr = torchaudio.load(wav)
+        except Exception as exc:
+            print(f"SKIP undecodable audio {utt} ({wav}): {exc}", flush=True)
+            continue
         assert sr == SAMPLE_RATE, f"{wav}: {sr} Hz"
         waves.append(audio.mean(dim=0))
+        kept.append((utt, dur, wav))
+    batch[:] = kept
+    if not waves:
+        return None, None, None
     lens = [w.numel() for w in waves]
     padded = torch.zeros(len(waves), max(lens))
     mask = torch.zeros(len(waves), max(lens), dtype=torch.long)
@@ -137,6 +146,8 @@ def greedy_unit_error_rate(head, ssl, rows, units_by_utt, vocab, device,
     with torch.no_grad():
         for batch in duration_batches(rows, batch_seconds, max_utts):
             padded, mask, lens = load_batch_audio(batch, device)
+            if padded is None:
+                continue
             logits = head(ssl_forward(ssl, padded, mask))
             best = logits.argmax(dim=-1).cpu()
             for i, (utt, _, _) in enumerate(batch):
@@ -186,6 +197,8 @@ def train_head(args, ssl, vocab, device):
         random.Random(1000 + epoch).shuffle(batches)
         for batch in batches:
             padded, mask, lens = load_batch_audio(batch, device)
+            if padded is None:
+                continue
             logits = head(ssl_forward(ssl, padded, mask))
             frame_lens = torch.tensor(
                 [num_encoder_frames(n) for n in lens], dtype=torch.long
@@ -247,7 +260,11 @@ def align_split(name, csv_path, units_path, head, ssl, vocab, args, device):
     head.eval()
     with torch.no_grad():
         for batch in duration_batches(rows, args.batch_seconds, args.max_utts):
+            n_before = len(batch)
             padded, mask, lens = load_batch_audio(batch, device)
+            stats["failed"] += n_before - len(batch)
+            if padded is None:
+                continue
             logits = head(ssl_forward(ssl, padded, mask))
             log_probs = torch.log_softmax(logits.float(), dim=-1)
             for i, (utt, _, _) in enumerate(batch):
