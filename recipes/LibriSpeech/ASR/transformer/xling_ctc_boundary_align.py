@@ -269,7 +269,17 @@ def align_split(name, csv_path, units_path, head, ssl, vocab, args, device):
             log_probs = torch.log_softmax(logits.float(), dim=-1)
             for i, (utt, _, _) in enumerate(batch):
                 T = num_encoder_frames(lens[i])
-                ids = [vocab[u] for u in units_by_utt[utt]]
+                units = units_by_utt[utt]
+                oov = [u for u in units if u not in vocab]
+                if oov:
+                    # Units outside the train inventory cannot be aligned;
+                    # eval manifests are pre-filtered for this, so any hit
+                    # here is worth seeing in the log.
+                    print(f"OOV units for {utt}: {oov}", flush=True)
+                    stats["oov_units"] = stats.get("oov_units", 0) + 1
+                    stats["failed"] += 1
+                    continue
+                ids = [vocab[u] for u in units]
                 if len(ids) == 0 or len(ids) > T:
                     stats["failed"] += 1
                     continue

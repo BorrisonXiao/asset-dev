@@ -129,9 +129,10 @@ for lang in $LANGS; do
   log_job "$lang" ctc_aligner "$ctc_job" "$UNITS_LEVEL"
   echo "[$lang] CTC aligner -> $ctc_job"
 
-  if [[ -n "${REUSE_MFA_JOB:-}" ]]; then
+  reuse_var="REUSE_MFA_JOB_${lang^^}"
+  if [[ -n "${!reuse_var:-}" ]]; then
     # Resubmission path: an earlier MFA job survived a failed sibling stage.
-    mfa_job=$REUSE_MFA_JOB
+    mfa_job=${!reuse_var}
   else
     mfa_job=$(EXTRA_CSVS="$GATE_EXTRA" submit_job "${CPU_IDENTITY[@]}" --job-name="x${lang}_mfa" \
       --export="ALL,LANG_CODE=$lang,MANIFEST_DIR=$M,WORK_DIR=$T/mfa,DICT_NAME=$DICT_NAME,ACOUSTIC_NAME=$ACOUSTIC_NAME,G2P_NAME=$G2P_NAME,OUT_ROOT=$T,SPEAKER_CHARS=$MFA_SPEAKER_CHARS" \
