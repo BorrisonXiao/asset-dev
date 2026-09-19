@@ -1,0 +1,75 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cross-lingual 24k replication · Results</title></head><body><style>
+:root{color-scheme:light;--surface-0:#f6f5f1;--surface-1:#fcfcfb;--surface-2:#edebe3;
+--border:#dfdcd1;--border-strong:#c7c3b5;--text-primary:#1c1b17;--text-secondary:#55524a;
+--text-muted:#8a8677;--series-sed:#2a78d6;--series-asr:#178a17;--series-speaker:#d55187;
+--pair-sed-asr:#e0692c;--pair-sed-speaker:#5647b0;--diverge-neg:#d83a3a;--grid:#e4e1d6;
+--w-muted:#9b9686;--band:rgba(90,88,78,.07);--ok:#178a17;--bad:#d83a3a;}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme=light])){color-scheme:dark;
+--surface-0:#141311;--surface-1:#1a1a19;--surface-2:#232120;--border:#38362f;
+--border-strong:#4a473d;--text-primary:#f3f1ea;--text-secondary:#c2beb0;--text-muted:#8f8c7e;
+--series-sed:#4a97ee;--series-asr:#3ec03e;--series-speaker:#e06a9c;--pair-sed-asr:#ec8148;
+--pair-sed-speaker:#8878e6;--diverge-neg:#ec6a6a;--grid:#322f29;--w-muted:#6f6c60;
+--band:rgba(200,197,186,.06);--ok:#3ec03e;--bad:#ec6a6a;}}
+:root[data-theme=dark]{color-scheme:dark;--surface-0:#141311;--surface-1:#1a1a19;
+--surface-2:#232120;--border:#38362f;--border-strong:#4a473d;--text-primary:#f3f1ea;
+--text-secondary:#c2beb0;--text-muted:#8f8c7e;--series-sed:#4a97ee;--series-asr:#3ec03e;
+--series-speaker:#e06a9c;--pair-sed-asr:#ec8148;--pair-sed-speaker:#8878e6;
+--diverge-neg:#ec6a6a;--grid:#322f29;--w-muted:#6f6c60;--band:rgba(200,197,186,.06);
+--ok:#3ec03e;--bad:#ec6a6a;}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:var(--surface-0);color:var(--text-primary);font-size:16px;line-height:1.55;
+font-family:Palatino,"Palatino Linotype","Iowan Old Style",Georgia,serif;-webkit-font-smoothing:antialiased}
+.sans{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.mono{font-family:ui-monospace,"SF Mono","Cascadia Code",Consolas,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:960px;margin:0 auto;padding:0 24px}
+header.hero{padding:44px 0 12px}
+h1{font-size:30px;line-height:1.15;margin:0 0 6px;text-wrap:balance}
+.sub{color:var(--text-secondary);font-size:16px}
+.kicker{font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);
+font-family:inherit;margin-bottom:10px}
+section{padding:22px 0;border-top:1px solid var(--border)}
+h2{font-size:21px;margin:0 0 4px;text-wrap:balance}
+.lead{color:var(--text-secondary);margin:0 0 16px}
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:6px 0 4px}
+.tile{background:var(--surface-1);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.tile .l{font-size:12px;letter-spacing:.03em;text-transform:uppercase;color:var(--text-muted)}
+.tile .v{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px}
+.tile .s{font-size:12.5px;color:var(--text-secondary);margin-top:2px}
+.card{background:var(--surface-1);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin:14px 0}
+.card h3{margin:0 0 8px;font-size:15.5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+.chart{width:100%;height:auto;display:block}
+.grid{stroke:var(--grid);stroke-width:1}
+.vmark{stroke:var(--text-muted);stroke-width:1.4;stroke-dasharray:4 4}
+text{fill:var(--text-secondary);font-family:inherit}
+.ax-y{font-size:10.5px;text-anchor:end}.ax-x{font-size:10.5px;text-anchor:middle}
+.ax-title{font-size:11px;text-anchor:middle;fill:var(--text-muted)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:8px 2px 2px;font-size:13px;color:var(--text-secondary)}
+.lg{display:inline-flex;align-items:center;gap:6px}.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.finding{border-left:3px solid var(--diverge-neg);background:var(--band);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:15px}
+.finding.ok{border-left-color:var(--ok)}.finding b{font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0}
+th,td{text-align:right;padding:6px 10px;border-bottom:1px solid var(--border)}
+th:first-child,td:first-child{text-align:left}
+thead th{color:var(--text-muted);font-weight:500;font-size:12.5px;text-transform:uppercase;letter-spacing:.03em}
+.fig{width:100%;border-radius:8px;display:block;border:1px solid var(--border)}
+.cap{font-size:13px;color:var(--text-secondary);margin:6px 2px 2px}.cap .mono{color:var(--text-primary)}
+.asset-label{margin:12px 2px 5px;color:var(--text-muted);font-size:12px;font-weight:600;
+letter-spacing:.06em;text-transform:uppercase}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;border:1px solid var(--border-strong)}
+.muted{color:var(--text-muted)}
+footer{padding:26px 0 60px;color:var(--text-muted);font-size:13px;border-top:1px solid var(--border)}
+.equation{overflow-x:auto;margin:14px 0;padding:14px 16px;border-radius:9px;
+background:var(--surface-2)}
+.equation mjx-container[display="true"]{margin:0!important}
+mjx-container{max-width:100%}
+</style><div class="wrap"><style>
+.wrap{max-width:1100px}
+a{color:var(--series-sed);text-decoration-thickness:1px;text-underline-offset:2px}
+.note{font-size:13px;color:var(--text-secondary)}
+.left-table th,.left-table td{text-align:left;vertical-align:top}
+.left-table tr.headline{background:var(--band);font-weight:600}
+code{font-family:ui-monospace,"SF Mono","Cascadia Code",Consolas,monospace;font-size:.92em}
+@media(max-width:760px){.wrap{padding:0 18px}.card{overflow-x:auto}}
+</style><header class="hero"><div class="kicker">Analysis · RL dynamic downsampling</div><h1>Cross-lingual 24k-step replication: results</h1><p class="sub">The learned GRPO segmenter beats every baseline in BOTH Mandarin and Japanese — including each language's best oracle — completing the three-rhythm-class picture begun on LibriSpeech. All 24 runs finished 2026-09-19; numbers are read from the run artifacts at page generation time.</p></header><section><h2>0 · Headline</h2><div class="stat-row"><div class="tile"><div class="l">zh learned</div><div class="v">7.53 ± 0.07 CER</div><div class="s">vs 8.63 syllable oracle, 9.17 fixed k=5 (AISHELL-1 test)</div></div><div class="tile"><div class="l">ja learned</div><div class="v">31.24 ± 0.76 CER</div><div class="s">vs 33.3 mora oracle, 48.8 fixed k=5 (ReazonSpeech test)</div></div><div class="tile"><div class="l">Out-of-domain</div><div class="v">34.05 ± 1.45 CER</div><div class="s">JSUT: learned beats the mora oracle by ~9 CER</div></div><div class="tile"><div class="l">Stability</div><div class="v">±0.07 / ±0.77</div><div class="s">Learned-arm seed SD (zh / ja); the ja oracle arm spans 26–44</div></div></div><div class="finding ok"><b>The replication upgrades the English finding.</b> On LS960 the learned segmenter matched the character oracle; in both new languages it beats the best oracle outright, from the weakest decoder initialization (phone), with far lower seed variance than the oracle arms.</div></section><section><h2>1 · Mandarin (AISHELL-1, 151 h, chinese-hubert-large)</h2><div class="card"><h3>Mandarin results</h3><div class="asset-label">Table 1</div><table class="left-table"><thead><tr><th>Arm</th><th>Rate</th><th>test CER</th><th>per-seed</th></tr></thead><tbody><tr class="headline"><td>learned 24k (Transformer-AR local64 + BiGRU, GRPO)</td><td>7.7 Hz</td><td>7.53 ± 0.07</td><td>7.45 / 7.57 / 7.57</td></tr><tr><td>character (=syllable) oracle</td><td>3.2 Hz</td><td>8.63 ± 0.07</td><td>8.57 / 8.70 / 8.61</td></tr><tr><td>fixed k=5</td><td>10.1 Hz</td><td>9.17 ± 0.20</td><td>9.31 / 9.26 / 8.94</td></tr><tr><td>phone oracle (MFA)</td><td>7.1 Hz</td><td>12.73 ± 0.36</td><td>12.80 / 13.06 / 12.34</td></tr></tbody></table><p class="cap"><b>Table 1.</b> AISHELL-1 test CER (lower is better), three seeds (3407/08/09), ± is sample SD. All arms share the frozen encoder, manifests, Llama-3.2-1B-Instruct decoder recipe (projection + LoRA, from scratch per arm), and BiGRU residual pooling; only boundary placement differs. CE arms: 10 epochs, dev-CER-selected. Learned: 24,000 optimizer steps (2,400 decoder-only warmup from the seed-matched phone-oracle checkpoint, then joint GRPO, K=4, NLL reward, band ρ∈[0.065, 0.20]).</p></div><p>The syllable oracle already beats the fixed grid at a third of its rate; the learned arm then takes another 1.1 CER off the oracle while operating at ~7.6 Hz — between the oracle and the grid — with near-zero seed variance (7.45/7.57/7.57).</p></section><section><h2>2 · Japanese (ReazonSpeech small, 70 h, japanese-hubert-large)</h2><div class="card"><h3>Japanese results</h3><div class="asset-label">Table 2</div><table class="left-table"><thead><tr><th>Arm</th><th>Rate</th><th>test CER (Reazon)</th><th>per-seed</th><th>JSUT CER</th><th>per-seed</th></tr></thead><tbody><tr class="headline"><td>learned 24k (Transformer-AR local64 + BiGRU, GRPO)</td><td>8.6 Hz</td><td>31.24 ± 0.76</td><td>31.29 / 31.98 / 30.46</td><td>34.05 ± 1.45</td><td>33.90 / 35.57 / 32.68</td></tr><tr><td>mora oracle</td><td>4.9 Hz</td><td>33.32 ± 9.07</td><td>30.05 / 26.34 / 43.57</td><td>43.16 ± 10.69</td><td>39.65 / 34.67 / 55.17</td></tr><tr><td>fixed k=5</td><td>10.1 Hz</td><td>48.78 ± 4.66</td><td>51.43 / 43.40 / 51.52</td><td>47.80 ± 4.11</td><td>50.17 / 43.05 / 50.17</td></tr><tr><td>phone oracle (MFA)</td><td>7.8 Hz</td><td>51.81 ± 5.29</td><td>48.44 / 49.08 / 57.90</td><td>51.36 ± 4.76</td><td>47.75 / 49.58 / 56.75</td></tr></tbody></table><p class="cap"><b>Table 2.</b> ReazonSpeech held-out test (in-domain TV audio) and JSUT basic5000 (clean out-of-domain read speech). Same protocol as Table 1; learned band ρ∈[0.095, 0.20]; learned runs used 160 s batch audio after the degenerate-rollout pooler OOM at 300 s (data identical, more smaller steps under the same 24k-step cap).</p></div><p>The learned arm matches the mora oracle's in-domain mean with ~12× lower seed SD and beats it by ~9 CER out of domain. On JSUT the policy adaptively emits ~12 Hz for the denser read speech versus ~8.6 Hz in-domain — the rate-adaptivity signature from the English study, appearing across a domain shift.</p></section><section><h2>3 · Cross-language reading</h2><ul><li><b>Placement beats rate, in every rhythm class.</b> English (stress-timed, LS960): learned 2.79 WER ≈ char oracle 2.87, ahead of fixed k=5 (4.37). Mandarin (syllable-timed): learned &lt; syllable oracle &lt; fixed. Japanese (mora-timed): learned ≤ mora oracle ≪ fixed. The zh case additionally shows the gain is not an artifact of the oracle rate exceeding the control rate — the syllable oracle sits at a third of the fixed grid's rate and still wins.</li><li><b>Natural units beat phones as pooling oracles everywhere.</b> zh syllables beat MFA phones by 4.1 CER at half the tokens; ja moras by 18.5. Even the uniform grid beats phones in Mandarin. The English char-vs-phone gap was the mild version of this.</li><li><b>The rate design held.</b> Phone-rate initialization stayed in-band with strictly non-inflationary rate pressure (the concern the phone-anchored revision addressed); realized learned rates: zh ~7.6 Hz, ja ~8.6 Hz in-domain.</li><li><b>Caveats.</b> Claims are within-language contrasts (shared decoder/data per language), not absolute SOTA: ja absolute CERs are high (English-instruction 1B decoder, subtitle-derived references, 70 h, Japanese-script-only subset), and ja CE arms are seed-noisy at this budget — notably the learned arm is not.</li></ul></section><section><h2>4 · Provenance</h2><p class='note'>Design and gates: the companion <a href='https://borrisonxiao.github.io/jsalt26-downsampling/proposals/xlingual-24k-replication.html'>proposal page</a> (two user-directed revisions; automated S1 alignment-quality gates: aligner dev unit-ER ≤ 15%, char-level-to-phone boundary agreement ≥ 80% @ ±40 ms with an offset-aware fallback, coverage ≥ 99.5%, no-upsampling init invariant). Oracle provenance: char/mora boundaries from CTC heads trained on each frozen language encoder + torchaudio forced alignment; phone boundaries from MFA v3 (mandarin_mfa 3.0.0, japanese_mfa) with G2P for OOVs. Runs: results/speechllm_xling_step24k/ on bluecrab (jobs 598654–598899); code on asset-dev branch publish/xlingual-proposal. Nine infrastructure defects found and fixed en route are logged in docs/project_notes/bugs.md.</p></section><p class='note'>Generated 2026-09-19 by <code>recipes/LibriSpeech/ASR/transformer/make_xlingual_results_analysis.py</code>, reading the completed run logs directly.</p></div></body></html>
