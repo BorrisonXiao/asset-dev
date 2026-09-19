@@ -138,11 +138,19 @@ for lang in $LANGS; do
   # variables on the submit command (inherited via --export=ALL), never inside
   # the --export list itself — sbatch splits that list on commas (see the
   # 2026-08 LS960 split-list bug in docs/project_notes/bugs.md).
-  ctc_job=$(EXTRA_SPLITS="$ALIGN_EXTRA" submit_job "${GPU_IDENTITY[@]}" --job-name="x${lang}_ctc" \
-    --export="ALL,LANG_CODE=$lang,SSL_HUB=$SSL_HUB,MANIFEST_DIR=$M,UNITS_LEVEL=$UNITS_LEVEL,OUT_ROOT=$T,CTC_EPOCHS=$CTC_EPOCHS" \
-    run_xling_ctc_aligner.slurm)
-  log_job "$lang" ctc_aligner "$ctc_job" "$UNITS_LEVEL"
-  echo "[$lang] CTC aligner -> $ctc_job"
+  ctc_done_var="REUSE_CTC_DONE_${lang^^}"
+  if [[ -n "${!ctc_done_var:-}" ]]; then
+    # A completed aligner's targets are on disk; a purged job id cannot be a
+    # dependency, so the gate depends on MFA alone.
+    ctc_job=""
+    echo "[$lang] CTC aligner already complete; targets reused"
+  else
+    ctc_job=$(EXTRA_SPLITS="$ALIGN_EXTRA" submit_job "${GPU_IDENTITY[@]}" --job-name="x${lang}_ctc" \
+      --export="ALL,LANG_CODE=$lang,SSL_HUB=$SSL_HUB,MANIFEST_DIR=$M,UNITS_LEVEL=$UNITS_LEVEL,OUT_ROOT=$T,CTC_EPOCHS=$CTC_EPOCHS" \
+      run_xling_ctc_aligner.slurm)
+    log_job "$lang" ctc_aligner "$ctc_job" "$UNITS_LEVEL"
+    echo "[$lang] CTC aligner -> $ctc_job"
+  fi
 
   reuse_var="REUSE_MFA_JOB_${lang^^}"
   if [[ -n "${!reuse_var:-}" ]]; then
@@ -160,7 +168,9 @@ for lang in $LANGS; do
   dep() { if [[ "$DRY_RUN" == 1 ]]; then :; else printf -- '--dependency=afterok:%s' "$1"; fi; }
 
   gate_dep=""
-  [[ "$DRY_RUN" == 1 ]] || gate_dep="--dependency=afterok:${ctc_job}:${mfa_job} --kill-on-invalid-dep=yes"
+  dep_ids="$mfa_job"
+  [[ -n "$ctc_job" ]] && dep_ids="${ctc_job}:${mfa_job}"
+  [[ "$DRY_RUN" == 1 ]] || gate_dep="--dependency=afterok:${dep_ids} --kill-on-invalid-dep=yes"
   gate_job=$(EXTRA_CSVS="$GATE_EXTRA" submit_job "${GPU_IDENTITY[@]}" --job-name="x${lang}_gate" $gate_dep \
     --gpus=1 --partition=a100 --cpus-per-task=4 --mem=16G --time=02:00:00 \
     --export="ALL,MANIFEST_DIR=$M,OUT_ROOT=$T,UNITS_LEVEL=$UNITS_LEVEL,RHO_LO=$RHO_LO,RHO_HI=$RHO_HI" \

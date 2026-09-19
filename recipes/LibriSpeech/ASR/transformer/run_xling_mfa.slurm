@@ -16,6 +16,8 @@
 
 set -euo pipefail
 export PYTHONUNBUFFERED=1
+# MFA shells out to OpenFst/Kaldi/postgres binaries via PATH.
+export PATH=/home/jhu/jsalt2026-ext-cxiao7/cxiao/envs/mfa/bin:$PATH
 export MFA_ROOT_DIR=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/mfa
 
 cd /weka/scratch/jhu/jsalt2026-lgarci27/omnienc/users/cxiao/jointllm/recipes/LibriSpeech/ASR/transformer
