@@ -166,6 +166,40 @@ def main():
     }
     print("char rate:", json.dumps(report["char_rate"]))
 
+    # The coverage thresholds tolerate a few unalignable utterances, but the
+    # training loader hard-fails on ANY missing boundary file — so once the
+    # checks pass, prune the stragglers from the manifests (all arms share
+    # them; targets are keyed by utterance id, nothing else changes).
+    if report["pass"]:
+        pruned = {}
+        # Selection subsets (e.g. zh dev_sub.csv) live beside the split csvs
+        # and must stay consistent with them.
+        extra_subsets = [
+            p
+            for p in (
+                os.path.join(os.path.dirname(args.csv[0]), "dev_sub.csv"),
+            )
+            if os.path.exists(p)
+        ]
+        for path in list(args.csv) + extra_subsets:
+            with open(path, newline="", encoding="utf-8") as fh:
+                rows = list(csv.reader(fh))
+            header, body = rows[0], rows[1:]
+            kept = [
+                r
+                for r in body
+                if os.path.exists(os.path.join(args.char_dir, r[0] + ".pt"))
+                and os.path.exists(os.path.join(args.phone_dir, r[0] + ".pt"))
+            ]
+            if len(kept) != len(body):
+                with open(path, "w", newline="", encoding="utf-8") as fh:
+                    writer = csv.writer(fh)
+                    writer.writerow(header)
+                    writer.writerows(kept)
+                pruned[os.path.basename(path)] = len(body) - len(kept)
+        report["pruned_missing_targets"] = pruned
+        print("pruned:", json.dumps(pruned))
+
     os.makedirs(os.path.dirname(args.report), exist_ok=True)
     with open(args.report, "w") as fh:
         json.dump(report, fh, indent=2)
