@@ -138,6 +138,13 @@ def main():
     import fugashi
 
     tagger = fugashi.Tagger()
+    dropped = {
+        "missing_audio": 0,
+        "empty_text": 0,
+        "duration": 0,
+        "non_japanese_script": 0,
+        "mora": 0,
+    }
     audio_root = os.path.join(args.data_folder, "audio")
     if not args.skip_extract:
         os.makedirs(audio_root, exist_ok=True)
@@ -148,19 +155,18 @@ def main():
             print("extracted", shard)
 
     rows = {"train": [], "dev": [], "test": []}
-    dropped = {
-        "missing_audio": 0,
-        "empty_text": 0,
-        "duration": 0,
-        "non_japanese_script": 0,
-        "mora": 0,
-    }
-    entries = []
+    entries, seen_names = [], set()
     with open(os.path.join(args.data_folder, "small.tsv"), encoding="utf-8") as fh:
         for line in fh:
             parts = line.rstrip("\n").split("\t")
             if len(parts) != 2:
                 continue
+            # small.tsv ships a handful of duplicate names (13 measured);
+            # keep the first occurrence.
+            if parts[0] in seen_names:
+                dropped["duplicate_name"] = dropped.get("duplicate_name", 0) + 1
+                continue
+            seen_names.add(parts[0])
             entries.append(parts)
 
     paths = [os.path.join(audio_root, name) for name, _ in entries]

@@ -137,7 +137,14 @@ for lang in $LANGS; do
       phone_jobs[${pair%%:*}]=${pair##*:}
     done
   fi
-  if [[ "${RESUBMIT_LEARNED_ONLY:-0}" != 1 ]]; then
+  gate_done_var="REUSE_GATE_DONE_${lang^^}"
+  if [[ -n "${!gate_done_var:-}" ]]; then
+    # The gate already PASSED for this language; targets are on disk and its
+    # purged job id cannot be a dependency — the chain starts unconditionally.
+    gate_job=""
+    echo "[$lang] gate already passed; alignment stage reused"
+  fi
+  if [[ "${RESUBMIT_LEARNED_ONLY:-0}" != 1 && -z "${!gate_done_var:-}" ]]; then
   # ---- alignment stage -----------------------------------------------------
   # NOTE: values that may contain commas/spaces are passed as environment
   # variables on the submit command (inherited via --export=ALL), never inside
@@ -209,7 +216,9 @@ for lang in $LANGS; do
   cold_args+=" --warmstart_target alignment --boundary_target_dir $T/boundaries/phone"
   cold_args+=" --max_batch_length_train 400 --max_batch_length_val 100 --grad_accumulation_factor 1"
   cold_dep=""
-  [[ "$DRY_RUN" == 1 ]] || cold_dep="--dependency=afterok:$gate_job --kill-on-invalid-dep=yes"
+  if [[ "$DRY_RUN" != 1 && -n "$gate_job" ]]; then
+    cold_dep="--dependency=afterok:$gate_job --kill-on-invalid-dep=yes"
+  fi
   cold_job=$(EXTRA_ARGS="$cold_args" submit_job "${GPU_IDENTITY[@]}" --job-name="x${lang}_cold" $cold_dep \
     --cpus-per-task=12 --mem=64G --time=1-00:00:00 \
     --export="ALL,PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,MODE=coldstart,BACKBONE=transformer_ar,EPOCHS=$COLDSTART_EPOCHS" \
