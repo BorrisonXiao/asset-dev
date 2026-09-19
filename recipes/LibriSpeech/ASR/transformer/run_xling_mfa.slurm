@@ -50,7 +50,7 @@ $PY xling_mfa_corpus.py --csv "${CSVS[@]}" --language "$LANG_CODE" --corpus_dir 
 SPEAKER_ARG=()
 if [[ -n "${SPEAKER_CHARS:-}" ]]; then SPEAKER_ARG=(--speaker_characters "$SPEAKER_CHARS"); fi
 
-echo "=== $(date) MFA align (dict=$DICT_ARG) ==="
+echo "=== $(date) MFA align (dict=$DICT_NAME g2p=$G2P_NAME) ==="
 $MFA align --clean --overwrite --use_mp -j "$SLURM_CPUS_PER_TASK" \
   "${SPEAKER_ARG[@]}" \
   --g2p_model_path "$G2P_NAME" \
