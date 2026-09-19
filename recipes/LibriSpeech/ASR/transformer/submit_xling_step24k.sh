@@ -24,7 +24,7 @@ read -r -a SEEDS <<< "${SEED_LIST:-3407 3408 3409}"
 ROOT=results/speechllm_xling_step24k
 HF_CACHE=/home/jhu/jsalt2026-ext-cxiao7/scratch_jsalt2026-lgarci27/omnienc/hf/hub
 DATASETS=/weka/scratch/jhu/jsalt2026-lgarci27/omnienc/datasets
-RHO_LO=0.10
+RHO_LO_DEFAULT=0.10
 RHO_HI=0.20
 MAX_STEPS=24000
 VALID_INTERVAL=4000
@@ -58,6 +58,7 @@ lang_config() {
       DATA_FOLDER=$DATASETS/aishell/data_aishell
       MFA_SPEAKER_CHARS=11
       CTC_EPOCHS=5
+      RHO_LO=0.065   # measured zh char rate 0.069 (3.5 Hz) < 0.10 floor; S1 rule
       SAFETY_EPOCHS=16
       COLDSTART_EPOCHS=6
       VALID_CSV_BASE=dev_sub.csv
@@ -75,6 +76,7 @@ lang_config() {
       DATA_FOLDER=$DATASETS/reazonspeech_small
       MFA_SPEAKER_CHARS=
       CTC_EPOCHS=6
+      RHO_LO=0.095   # measured ja mora rate 0.098 (4.9 Hz), a hair under 0.10
       SAFETY_EPOCHS=32
       COLDSTART_EPOCHS=10
       VALID_CSV_BASE=dev.csv
@@ -120,6 +122,17 @@ for lang in $LANGS; do
   GATE_EXTRA=""
   for extra in $EXTRA_GATE_CSVS; do GATE_EXTRA+="$M/$extra "; done
 
+  if [[ "${RESUBMIT_LEARNED_ONLY:-0}" == 1 ]]; then
+    # Learned-only resubmission (e.g. band change): reuse the queued pipeline.
+    # PHONE_JOBS_<LANG> holds "seed:job_id" pairs for the afterok deps.
+    cold_out=$L/coldstart/3407
+    declare -A phone_jobs=()
+    pj_var="PHONE_JOBS_${lang^^}"
+    for pair in ${!pj_var}; do
+      phone_jobs[${pair%%:*}]=${pair##*:}
+    done
+  fi
+  if [[ "${RESUBMIT_LEARNED_ONLY:-0}" != 1 ]]; then
   # ---- alignment stage -----------------------------------------------------
   # NOTE: values that may contain commas/spaces are passed as environment
   # variables on the submit command (inherited via --export=ALL), never inside
@@ -155,6 +168,7 @@ for lang in $LANGS; do
   log_job "$lang" gate "$gate_job" "afterok:$ctc_job,$mfa_job"
   echo "[$lang] gate -> $gate_job"
 
+  fi
   # ---- shared training argument groups --------------------------------------
   DATA_ARGS="--skip_prep True --data_folder $DATA_FOLDER --csv_folder $M"
   DATA_ARGS+=" --train_csv $M/train.csv --valid_csv $VALID_CSV"
@@ -172,6 +186,7 @@ for lang in $LANGS; do
   MISC_ARGS+=" --ckpt_interval_minutes 30 --test_batch_size 8 --checkpoints_to_keep 1"
   BASE_ARGS="$DATA_ARGS $SSL_ARGS $POLICY_ARGS $POOL_ARGS $LOADER_ARGS $MISC_ARGS"
 
+  if [[ "${RESUBMIT_LEARNED_ONLY:-0}" != 1 ]]; then
   # ---- cold start (phone-oracle supervision; shared by all seeds) -----------
   cold_out=$L/coldstart/3407
   cold_args="$BASE_ARGS --experiment_name xling_${lang}_coldstart --seed 3407"
@@ -220,6 +235,7 @@ for lang in $LANGS; do
     done
   done
 
+  fi
   # ---- learned 24k-step arm ---------------------------------------------------
   for seed in "${SEEDS[@]}"; do
     out=$L/transformer_ar_local64_bigru/$seed

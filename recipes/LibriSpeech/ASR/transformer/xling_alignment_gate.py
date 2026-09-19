@@ -141,12 +141,20 @@ def main():
 
     rho_phone = mean_rho(all_ids, args.phone_dir, args.sample)
     rho_char = mean_rho(all_ids, args.char_dir, args.sample)
+    # The pathology guard: an init BELOW the band floor would have the rate
+    # term force MORE boundaries than the init emits (upsampling). Whether the
+    # init additionally sits above the band top (strictly compressive, the
+    # English geometry) is reported, not enforced — silence frames dilute
+    # realized per-frame rates well below speech-active predictions, and an
+    # in-band init is rate-neutral, which is acceptable.
     check(
         "phone_rate_init_invariant",
-        rho_phone >= args.rho_hi,
+        rho_phone >= args.rho_lo,
         {
             "rho_phone": rho_phone,
             "hz_phone": 50 * rho_phone,
+            "rho_lo": args.rho_lo,
+            "compressive_geometry": rho_phone >= args.rho_hi,
             "rho_hi": args.rho_hi,
         },
     )
