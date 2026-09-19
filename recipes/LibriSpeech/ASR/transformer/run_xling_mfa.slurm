@@ -43,40 +43,9 @@ if [[ -n "${EXTRA_CSVS:-}" ]]; then for c in $EXTRA_CSVS; do CSVS+=("$c"); done;
 echo "=== $(date) MFA corpus prep lang=$LANG_CODE ==="
 $PY xling_mfa_corpus.py --csv "${CSVS[@]}" --language "$LANG_CODE" --corpus_dir "$CORPUS"
 
-BASE_DICT=$(find "$MFA_ROOT_DIR/pretrained_models/dictionary" -name "${DICT_NAME}.dict" | head -1)
-[[ -s "$BASE_DICT" ]] || { echo "Missing dictionary model: $DICT_NAME" >&2; exit 1; }
-DICT_ARG="$BASE_DICT"
-if [[ -n "${G2P_NAME:-}" ]]; then
-  echo "=== $(date) G2P for OOVs ==="
-  # Corpus vocabulary minus dictionary entries, then G2P the difference and
-  # merge into one combined dictionary file.
-  $PY - "$CORPUS" "$BASE_DICT" "$WORK_DIR/oovs.txt" <<'PYEOF'
-import glob, sys
-corpus, dict_path, out = sys.argv[1:4]
-vocab = set()
-for lab in glob.glob(corpus + "/*.lab"):
-    with open(lab, encoding="utf-8") as fh:
-        vocab.update(fh.read().split())
-known = set()
-with open(dict_path, encoding="utf-8") as fh:
-    for line in fh:
-        parts = line.split()
-        if parts:
-            known.add(parts[0])
-oovs = sorted(vocab - known)
-with open(out, "w", encoding="utf-8") as fh:
-    fh.write("\n".join(oovs) + "\n")
-print(f"vocab={len(vocab)} oov={len(oovs)}")
-PYEOF
-  if [[ -s "$WORK_DIR/oovs.txt" ]]; then
-    $MFA g2p "$WORK_DIR/oovs.txt" "$G2P_NAME" "$WORK_DIR/oov_dict.txt" \
-      --use_mp -j "$SLURM_CPUS_PER_TASK" || true
-    if [[ -s "$WORK_DIR/oov_dict.txt" ]]; then
-      cat "$BASE_DICT" "$WORK_DIR/oov_dict.txt" > "$WORK_DIR/combined.dict"
-      DICT_ARG="$WORK_DIR/combined.dict"
-    fi
-  fi
-fi
+# OOVs are handled by MFA itself: its tokenizer produces the dictionary's
+# word conventions from the raw lab text, and --g2p_model_path generates
+# pronunciations for anything still out of vocabulary.
 
 SPEAKER_ARG=()
 if [[ -n "${SPEAKER_CHARS:-}" ]]; then SPEAKER_ARG=(--speaker_characters "$SPEAKER_CHARS"); fi
@@ -84,7 +53,8 @@ if [[ -n "${SPEAKER_CHARS:-}" ]]; then SPEAKER_ARG=(--speaker_characters "$SPEAK
 echo "=== $(date) MFA align (dict=$DICT_ARG) ==="
 $MFA align --clean --overwrite --use_mp -j "$SLURM_CPUS_PER_TASK" \
   "${SPEAKER_ARG[@]}" \
-  "$CORPUS" "$DICT_ARG" "$ACOUSTIC_NAME" "$ALIGNED" \
+  --g2p_model_path "$G2P_NAME" \
+  "$CORPUS" "$DICT_NAME" "$ACOUSTIC_NAME" "$ALIGNED" \
   --output_format long_textgrid
 
 echo "=== $(date) TextGrid -> phone boundaries ==="

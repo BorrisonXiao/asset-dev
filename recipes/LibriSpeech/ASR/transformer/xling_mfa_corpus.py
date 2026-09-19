@@ -2,9 +2,11 @@
 """Build an MFA corpus directory (audio symlinks + .lab files) from a manifest.
 
 MFA aligns ``<utt>.wav|.flac`` against ``<utt>.lab``. The lab text must be
-word-tokenized for the MFA dictionaries: AISHELL transcripts are already
-space-segmented (used as-is); Japanese text is tokenized with fugashi
-(unidic-lite), matching the japanese_mfa dictionary's word conventions.
+RAW and UNSPACED for zh/ja: MFA 3.4 tokenizes internally (pkuseg / sudachipy)
+into exactly the word conventions its dictionaries use, and it treats input
+spaces as symbols to preserve — pre-segmented text becomes underscore-joined
+compound OOVs (ja: the whole utterance aligned as one ``spn``; zh: spaces
+reported as OOV tokens). Measured 2026-09-19 on the real tokenizers.
 
 Everything is placed flat in one directory (utt ids are globally unique), so
 the MFA output TextGrids land flat as well.
@@ -26,12 +28,6 @@ def main():
     parser.add_argument("--corpus_dir", required=True)
     args = parser.parse_args()
 
-    tagger = None
-    if args.language == "ja":
-        import fugashi
-
-        tagger = fugashi.Tagger()
-
     os.makedirs(args.corpus_dir, exist_ok=True)
     n = 0
     for path in args.csv:
@@ -42,8 +38,7 @@ def main():
                 link = os.path.join(args.corpus_dir, utt + ext)
                 if not os.path.lexists(link):
                     os.symlink(wav, link)
-                if args.language == "ja":
-                    text = " ".join(w.surface for w in tagger(text))
+                text = text.replace(" ", "")
                 with open(
                     os.path.join(args.corpus_dir, utt + ".lab"),
                     "w",
