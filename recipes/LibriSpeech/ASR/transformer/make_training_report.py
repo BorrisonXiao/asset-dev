@@ -1817,7 +1817,7 @@ def label_report_assets(body):
     """Insert sequential, visible labels before every table and figure."""
     counts = {"table": 0, "figure": 0}
     pattern = re.compile(
-        r'<table\b|<img\s+class=["\']fig["\']|<svg\b[^>]*\bclass="chart"[^>]*>'
+        r'<table\b|<figure\b[^>]*>|<img\s+class=["\']fig["\']|<svg\b[^>]*\bclass="chart"[^>]*>'
     )
 
     def add_label(match):
@@ -1827,7 +1827,7 @@ def label_report_assets(body):
         label = '<div class="asset-label %s-label">%s %d</div>' % (
             kind, kind.title(), counts[kind]
         )
-        return label + tag
+        return tag + label if tag.startswith("<figure") else label + tag
 
     return pattern.sub(add_label, body)
 
