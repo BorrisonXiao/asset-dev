@@ -378,7 +378,7 @@ def training_figures(hk, data):
                 'adaptive check). The red ring is seed 3409’s raw-WER failure at step 1,000. The target stays fixed, '
                 'the rate penalty stays on, and two passing quality-and-rate checks at 1,500 and 2,000 allow lowering to resume. '
                 'All curves stop at the 8,000-update budget, not at a WER threshold. The target floor is 7.5 Hz; none reached it. '
-                'Exact target-change steps and final values are in Table 8; the downloadable evidence below contains every plotted value.</figcaption></figure>')
+                'Exact target-change steps and final values are in Table 8.</figcaption></figure>')
     return figures
 
 
@@ -456,7 +456,7 @@ def build_section(hk, data=None):
         result_rows.append([label] + [f'{mean:.3f} ± {sd:.3f}' for mean, sd in values])
     body += hk.card(table(["Continuation", "Test-clean WER (%)", "Test-other WER (%)", "Clean rate (Hz)", "Other rate (Hz)"],
         result_rows, "Table 6. Final step-8,000 checkpoints; three-seed mean ± sample SD, not standard error. "
-        "Lower WER and lower rate are desirable. WER is the logged main-scorer value; see the scoring note below.",
+        "Lower WER and lower rate are desirable. WER is the logged main-scorer value.",
         "adaptive-results"), title="Completed test results — same training budget")
     body += '<p>Table 6 shows a rate–quality trade-off, not an accuracy win. Adaptive uses '
     body += f'{reduction:.1f}% less test-other rate than original, with mean WER +{delta:.3f} percentage point. '
@@ -487,23 +487,6 @@ def build_section(hk, data=None):
         '(5.619% versus a 5.486% limit; its EMA still passed). The target stayed at 11.312 Hz and both policy and decoder continued learning with the penalty active. '
         'Checks at 1,500 and 2,000 passed, so the target fell to 10.812 Hz at 2,000. Seeds 3407 and 3408 had no failed quality checks; '
         'their holds came from rate attainment or the two-check requirement.</p>', title="What actually happened during training")
-    sources = ''.join(f'<li>Seed {r["seed"]}: <code>{html.escape(r["source_checkpoint"])}</code></li>'
-                      for r in data["runs"] if r["arm"] == "adaptive")
-    body += hk.card(
-        '<p><b>Scoring note:</b> the main scorer splits on a literal space, while per-utterance diagnostics collapse whitespace. '
-        'A leading space therefore adds one main-scorer error in eight seed-3408/3409 split/run results (about 0.002 WER percentage point each). '
-        'Saved predictions reproduce both conventions exactly. The tables retain the logged scores; no predictions or scoring code were changed. '
-        'The evidence snapshot also records normalized WER and the affected utterance IDs. The earlier strict LaTeX collector remains unchanged.</p>'
-        '<p><b>Checkpoint choice:</b> tests use final step 8,000 in every arm, fixed before testing. The separate lowest-rate, quality-qualified dev selector '
-        'can choose an earlier checkpoint, including step 0 for an original-target control; that selector is not used for these tables. '
-        'Test scores never controlled the EMA or target schedule.</p>'
-        '<details><summary>Exact initialization checkpoints and reproducible evidence</summary><ul>' + sources + '</ul>'
-        '<p>Source family: <code>speechllm_ls960_step24k_corrected/transformer_ar_local64_bigru/nll_mt</code>. '
-        'The encoder is WavLM-Large, not the multilingual HuBERT encoders in the preceding section.</p>'
-        '<p><a href="https://borrisonxiao.github.io/jsalt26-downsampling/reports/adaptive-frequency-results-20260919.json">Download the audited JSON snapshot</a>: '
-        'full precision, both scoring conventions, dev checks, checkpoint/job provenance and input SHA256 values. '
-        'Regenerate it with <code>python recipes/LibriSpeech/ASR/transformer/adaptive_frequency_report.py --collect</code>, then run the training-report generator. '
-        'No new training or inference is needed.</p></details>', title="Scoring and provenance")
     return hk.section("Adaptive frequency continuation — completed three-seed results",
         lead=f"After a good LS960 starting point, adaptive training lowers the test-other rate by {reduction:.1f}% versus original-target continuation, with a {delta:.3f}-point increase in mean WER. Completed September 19, 2026; this is a measured result, not the earlier proposal.",
         body=body).replace('<section>', '<section id="adaptive-frequency-results">', 1)

@@ -177,6 +177,19 @@ class TestReportCurves(unittest.TestCase):
             REPORT.curve_svg("test", "Test", "Test", [dict(key="outside", color="blue", points=[(0, 15)])],
                              (8.5, 12), (9, 10, 11, 12), "Rate (Hz)")
 
+    def test_removed_section_and_its_cross_references_stay_removed(self):
+        self.hk.card = lambda inner, title=None: f'<div><h3>{title}</h3>{inner}</div>'
+        self.hk.equation = lambda tex: tex
+        self.hk.section = lambda title, lead, body: f'<section><h2>{title}</h2><p>{lead}</p>{body}</section>'
+        markup = REPORT.build_section(self.hk, self.data)
+        for removed in ("Scoring and provenance", "Scoring note:", "Checkpoint choice:",
+                        "Exact initialization checkpoints and reproducible evidence",
+                        "Download the audited JSON snapshot", "scoring note below", "downloadable evidence below"):
+            self.assertNotIn(removed, markup)
+        self.assertIn('id="adaptive-results"', markup)
+        self.assertIn('id="adaptive-decisions"', markup)
+        self.assertEqual(markup.count('<svg '), 8)
+
 
 if __name__ == "__main__":
     unittest.main()
