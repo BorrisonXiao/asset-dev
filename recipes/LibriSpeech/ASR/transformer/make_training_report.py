@@ -23,6 +23,7 @@ import torch
 # reusable HTML toolkit from the html-report skill
 sys.path.insert(0, os.path.expanduser("~/.claude-scale/skills/html-report"))
 import htmlkit as hk  # noqa: E402
+from adaptive_frequency_report import build_section as adaptive_frequency_section
 
 DATA = "/export/jsalt26/omnienc/users/cxiao/datasets"
 SSL_CACHE = "/export/jsalt26/omnienc/users/cxiao/hf/hub"
@@ -3214,6 +3215,13 @@ def build(args):
     # so use a wider desktop column while retaining the existing responsive cap.
     body = (
         '<style>.wrap{max-width:1100px}'
+        '.report-jumps{display:flex;flex-wrap:wrap;gap:10px 22px;margin:18px 0 28px}'
+        '.report-jumps a{color:var(--text-secondary);text-underline-offset:3px}'
+        '#adaptive-frequency-results code{white-space:normal;overflow-wrap:anywhere}'
+        '#adaptive-frequency-results summary{cursor:pointer;font-weight:600;padding:4px 0}'
+        '#adaptive-setup th,#adaptive-setup td,#adaptive-arms th,#adaptive-arms td'
+        '{text-align:left;vertical-align:top}'
+        '#adaptive-setup th:first-child,#adaptive-setup td:first-child{width:23%}'
         '.card{min-width:0;max-width:100%;overflow-x:auto}'
         '.asset-label{margin:14px 2px 5px;color:var(--text-muted);font-size:12px;'
         'font-weight:600;letter-spacing:.06em;text-transform:uppercase}'
@@ -3252,14 +3260,26 @@ def build(args):
         + hk.hero(
         "JSALT 2026 · RL dynamic downsampling",
         "Learned speech segmentation — cumulative results",
-        "Current LibriSpeech-960h scale-up results followed by the LibriSpeech-100h "
+        "Multilingual replications and the latest adaptive LS960 continuation results first, "
+        "followed by the earlier LibriSpeech-960h and LibriSpeech-100h "
         "experiments that isolate compression, boundary placement, initialization, "
         "label-dependent sampling, and inference cost. "
         "Corpus WER is recomputed from saved edit counts; ± is sample SD over seeds.",
         )
     )
 
-    body += nonasr_wip_section()
+    body += ('<nav class="report-jumps" aria-label="Jump to report section">'
+             '<a href="#multilingual-results">Multilingual experiments</a>'
+             '<a href="#adaptive-frequency-results">Adaptive continuation</a>'
+             '<a href="#earlier-results">Earlier experiments</a></nav>')
+    # Preserve the newer published multilingual addition in a reusable input,
+    # rather than dropping it whenever the local generator is run again.
+    multilingual_path = os.path.join(os.path.dirname(__file__), "report_sections",
+                                     "multilingual_20260919.html")
+    with open(multilingual_path, encoding="utf-8") as stream:
+        body += stream.read()
+    body += adaptive_frequency_section(hk)
+    body += nonasr_wip_section().replace('<section>', '<section id="earlier-results">', 1)
 
     body += hk.section("", body=hk.tiles([
         ("LS960 · Transformer AR + BiGRU",
