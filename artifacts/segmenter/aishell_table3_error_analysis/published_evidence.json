@@ -1,0 +1,59 @@
+{
+  "status": "aux_replication_complete",
+  "paper": "https://arxiv.org/pdf/2610.14309",
+  "published_source": "https://borrisonxiao.github.io/jsalt26-downsampling/research/xlingual-24k-results-standalone.html",
+  "published_source_file": "multilingual_20260919.html",
+  "published_source_sha256": "262b61b68507a298b26392b4da36ef53c89b2f7ce70b0c171d4b7a8a1199742b",
+  "arms": {
+    "fixed": {
+      "label": "Fixed grid (k = 5)",
+      "cer_mean": 9.17,
+      "cer_sample_sd": 0.2,
+      "tokens_per_second": 10.1,
+      "seed_cers_rounded": [
+        9.31,
+        9.26,
+        8.94
+      ]
+    },
+    "phone": {
+      "label": "Phone oracle†",
+      "cer_mean": 12.73,
+      "cer_sample_sd": 0.36,
+      "tokens_per_second": 7.1,
+      "seed_cers_rounded": [
+        12.8,
+        13.06,
+        12.34
+      ]
+    },
+    "character": {
+      "label": "Character oracle†",
+      "cer_mean": 8.63,
+      "cer_sample_sd": 0.07,
+      "tokens_per_second": 3.2,
+      "seed_cers_rounded": [
+        8.57,
+        8.7,
+        8.61
+      ]
+    },
+    "asset": {
+      "label": "ASSET (Transformer)",
+      "cer_mean": 7.53,
+      "cer_sample_sd": 0.07,
+      "tokens_per_second": 7.7,
+      "seed_cers_rounded": [
+        7.45,
+        7.57,
+        7.57
+      ]
+    }
+  },
+  "seeds": [
+    3407,
+    3408,
+    3409
+  ],
+  "gpu_count": 0
+}

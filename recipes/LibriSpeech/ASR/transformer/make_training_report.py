@@ -3270,6 +3270,7 @@ def build(args):
 
     body += ('<nav class="report-jumps" aria-label="Jump to report section">'
              '<a href="#multilingual-results">Multilingual experiments</a>'
+             '<a href="https://borrisonxiao.github.io/jsalt26-downsampling/research/table3-asr-errors.html" target="_top">Mandarin ASR errors</a>'
              '<a href="#adaptive-frequency-results">Adaptive continuation</a>'
              '<a href="#earlier-results">Earlier experiments</a></nav>')
     # Preserve the newer published multilingual addition in a reusable input,

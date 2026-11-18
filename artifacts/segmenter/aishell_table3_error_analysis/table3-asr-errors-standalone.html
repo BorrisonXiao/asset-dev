@@ -1,0 +1,98 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Table 3 Mandarin ASR error analysis</title></head><body><style>
+:root{color-scheme:light;--surface-0:#f6f5f1;--surface-1:#fcfcfb;--surface-2:#edebe3;
+--border:#dfdcd1;--border-strong:#c7c3b5;--text-primary:#1c1b17;--text-secondary:#55524a;
+--text-muted:#8a8677;--series-sed:#2a78d6;--series-asr:#178a17;--series-speaker:#d55187;
+--pair-sed-asr:#e0692c;--pair-sed-speaker:#5647b0;--diverge-neg:#d83a3a;--grid:#e4e1d6;
+--w-muted:#9b9686;--band:rgba(90,88,78,.07);--ok:#178a17;--bad:#d83a3a;}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme=light])){color-scheme:dark;
+--surface-0:#141311;--surface-1:#1a1a19;--surface-2:#232120;--border:#38362f;
+--border-strong:#4a473d;--text-primary:#f3f1ea;--text-secondary:#c2beb0;--text-muted:#8f8c7e;
+--series-sed:#4a97ee;--series-asr:#3ec03e;--series-speaker:#e06a9c;--pair-sed-asr:#ec8148;
+--pair-sed-speaker:#8878e6;--diverge-neg:#ec6a6a;--grid:#322f29;--w-muted:#6f6c60;
+--band:rgba(200,197,186,.06);--ok:#3ec03e;--bad:#ec6a6a;}}
+:root[data-theme=dark]{color-scheme:dark;--surface-0:#141311;--surface-1:#1a1a19;
+--surface-2:#232120;--border:#38362f;--border-strong:#4a473d;--text-primary:#f3f1ea;
+--text-secondary:#c2beb0;--text-muted:#8f8c7e;--series-sed:#4a97ee;--series-asr:#3ec03e;
+--series-speaker:#e06a9c;--pair-sed-asr:#ec8148;--pair-sed-speaker:#8878e6;
+--diverge-neg:#ec6a6a;--grid:#322f29;--w-muted:#6f6c60;--band:rgba(200,197,186,.06);
+--ok:#3ec03e;--bad:#ec6a6a;}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:var(--surface-0);color:var(--text-primary);font-size:16px;line-height:1.55;
+font-family:Palatino,"Palatino Linotype","Iowan Old Style",Georgia,serif;-webkit-font-smoothing:antialiased}
+.sans{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.mono{font-family:ui-monospace,"SF Mono","Cascadia Code",Consolas,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:960px;margin:0 auto;padding:0 24px}
+header.hero{padding:44px 0 12px}
+h1{font-size:30px;line-height:1.15;margin:0 0 6px;text-wrap:balance}
+.sub{color:var(--text-secondary);font-size:16px}
+.kicker{font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);
+font-family:inherit;margin-bottom:10px}
+section{padding:22px 0;border-top:1px solid var(--border)}
+h2{font-size:21px;margin:0 0 4px;text-wrap:balance}
+.lead{color:var(--text-secondary);margin:0 0 16px}
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:6px 0 4px}
+.tile{background:var(--surface-1);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.tile .l{font-size:12px;letter-spacing:.03em;text-transform:uppercase;color:var(--text-muted)}
+.tile .v{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px}
+.tile .s{font-size:12.5px;color:var(--text-secondary);margin-top:2px}
+.card{background:var(--surface-1);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin:14px 0}
+.card h3{margin:0 0 8px;font-size:15.5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+.chart{width:100%;height:auto;display:block}
+.grid{stroke:var(--grid);stroke-width:1}
+.vmark{stroke:var(--text-muted);stroke-width:1.4;stroke-dasharray:4 4}
+text{fill:var(--text-secondary);font-family:inherit}
+.ax-y{font-size:10.5px;text-anchor:end}.ax-x{font-size:10.5px;text-anchor:middle}
+.ax-title{font-size:11px;text-anchor:middle;fill:var(--text-muted)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:8px 2px 2px;font-size:13px;color:var(--text-secondary)}
+.lg{display:inline-flex;align-items:center;gap:6px}.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.finding{border-left:3px solid var(--diverge-neg);background:var(--band);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:15px}
+.finding.ok{border-left-color:var(--ok)}.finding b{font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0}
+th,td{text-align:right;padding:6px 10px;border-bottom:1px solid var(--border)}
+th:first-child,td:first-child{text-align:left}
+thead th{color:var(--text-muted);font-weight:500;font-size:12.5px;text-transform:uppercase;letter-spacing:.03em}
+.fig{width:100%;border-radius:8px;display:block;border:1px solid var(--border)}
+.cap{font-size:13px;color:var(--text-secondary);margin:6px 2px 2px}.cap .mono{color:var(--text-primary)}
+.asset-label{margin:12px 2px 5px;color:var(--text-muted);font-size:12px;font-weight:600;
+letter-spacing:.06em;text-transform:uppercase}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;border:1px solid var(--border-strong)}
+.muted{color:var(--text-muted)}
+footer{padding:26px 0 60px;color:var(--text-muted);font-size:13px;border-top:1px solid var(--border)}
+.equation{overflow-x:auto;margin:14px 0;padding:14px 16px;border-radius:9px;
+background:var(--surface-2)}
+.equation mjx-container[display="true"]{margin:0!important}
+mjx-container{max-width:100%}
+</style><div class="wrap"><style>
+    h1,h2{text-wrap:wrap}.wrap{max-width:1100px}.table-scroll{overflow-x:auto}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 18px}
+    .tabs button{font:inherit;color:var(--text-primary);background:var(--surface-1);border:1px solid var(--border-strong);padding:8px 14px;border-radius:8px;cursor:pointer}
+    .tabs button[aria-selected=true]{background:var(--surface-2);border-color:var(--series-sed)}
+    th,td{vertical-align:top}td:first-child{min-width:160px}
+    .zh{font-family:system-ui,sans-serif;line-height:1.9;overflow-wrap:anywhere}
+    .example{border-top:1px solid var(--border);padding:16px 0}.example p{margin:5px 0}
+    code{overflow-wrap:anywhere}.badge{font:13px system-ui,sans-serif;color:var(--text-secondary)}
+    .intro{font-size:17px}.evidence-list li{margin:8px 0}
+    </style><header class="hero"><div class="kicker">AISHELL-1 Mandarin · Auxiliary-loss replication</div><h1>What errors do the four Mandarin ASR systems make?</h1><p class="sub">ASSET has the lowest character error rate (CER). Its largest error reduction is in substitutions. The analysis covers 7,128 test utterances in each of 12 runs across three seeds.</p></header><div class="tabs" role="tablist" aria-label="Analysis views"><button type="button" id="tab-quantitative" role="tab" aria-selected="true" aria-controls="panel-quantitative" tabindex="0">Quantitative</button><button type="button" id="tab-examples" role="tab" aria-selected="false" aria-controls="panel-examples" tabindex="-1">Examples</button><button type="button" id="tab-interpretation" role="tab" aria-selected="false" aria-controls="panel-interpretation" tabindex="-1">Interpretation</button><button type="button" id="tab-evidence" role="tab" aria-selected="false" aria-controls="panel-evidence" tabindex="-1">Evidence</button></div><section id="panel-quantitative" role="tabpanel" aria-labelledby="tab-quantitative"><h2>Error rates and paired comparisons</h2><div class="card"><div class="asset-label">Table 1</div><div class="table-scroll"><table><thead><tr><th>System</th><th>Paper CER (%)</th><th>Replication CER (%)</th><th>3407</th><th>3408</th><th>3409</th></tr></thead><tbody><tr><td>Fixed grid (k = 5)</td><td>9.17 ± 0.20</td><td>9.36 ± 0.20</td><td>9.14</td><td>9.43</td><td>9.52</td></tr><tr><td>Phone oracle†</td><td>12.73 ± 0.36</td><td>12.74 ± 0.43</td><td>12.65</td><td>13.21</td><td>12.37</td></tr><tr><td>Character oracle†</td><td>8.63 ± 0.07</td><td>8.46 ± 0.16</td><td>8.28</td><td>8.59</td><td>8.53</td></tr><tr><td>ASSET (Transformer)</td><td>7.53 ± 0.07</td><td>7.63 ± 0.12</td><td>7.76</td><td>7.59</td><td>7.53</td></tr></tbody></table></div><p class="cap"><b>Table 1.</b> Published Table 3 and the new replication using the archived scorer. Replication seed columns show test CER. ± is sample SD across three seeds. † uses test transcripts to place boundaries.</p></div><div class="card"><div class="asset-label">Table 2</div><div class="table-scroll"><table><thead><tr><th>System</th><th>CER (%)</th><th>Substitution (%)</th><th>Deletion (%)</th><th>Insertion (%)</th><th>Exact utterances (%)</th><th>Utterances above 50% CER (%)</th></tr></thead><tbody><tr><td>Fixed grid (k = 5)</td><td>9.31 ± 0.26</td><td>8.55 ± 0.26</td><td>0.38 ± 0.05</td><td>0.39 ± 0.10</td><td>46.63 ± 0.70</td><td>0.96 ± 0.04</td></tr><tr><td>Phone oracle†</td><td>14.38 ± 0.44</td><td>12.27 ± 0.29</td><td>1.27 ± 0.06</td><td>0.84 ± 0.21</td><td>39.39 ± 0.58</td><td>4.13 ± 0.12</td></tr><tr><td>Character oracle†</td><td>8.33 ± 0.20</td><td>8.10 ± 0.19</td><td>0.11 ± 0.03</td><td>0.12 ± 0.01</td><td>49.63 ± 0.70</td><td>0.75 ± 0.13</td></tr><tr><td>ASSET (Transformer)</td><td>7.61 ± 0.14</td><td>7.10 ± 0.15</td><td>0.27 ± 0.06</td><td>0.23 ± 0.06</td><td>54.41 ± 0.91</td><td>0.80 ± 0.05</td></tr></tbody></table></div><p class="cap"><b>Table 2.</b> Replication CER after removing word separators. Edit rates use reference characters as the denominator. Utterance rates use test utterances. Values are mean ± sample SD across seeds.</p></div><div class="card"><div class="asset-label">Table 3</div><div class="table-scroll"><table><thead><tr><th>Baseline</th><th>ASSET fewer errors</th><th>ASSET more errors</th><th>Tied</th><th>Net edits removed</th></tr></thead><tbody><tr><td>Fixed grid (k = 5)</td><td>5,794</td><td>3,402</td><td>12,188</td><td>5,326</td></tr><tr><td>Phone oracle†</td><td>9,112</td><td>2,097</td><td>10,175</td><td>21,138</td></tr><tr><td>Character oracle†</td><td>5,095</td><td>3,831</td><td>12,458</td><td>2,244</td></tr></tbody></table></div><p class="cap"><b>Table 3.</b> Comparison on 21,384 seed–utterance pairs per baseline. The same utterance appears once per seed. Counts are descriptive and use character-only scoring.</p></div></section><section id="panel-examples" role="tabpanel" aria-labelledby="tab-examples" hidden><h2>What the models wrote</h2><p>These seed-3407 examples illustrate recurring error types and cases where ASSET loses to a baseline. Frequencies are in Tables 2 and 3.</p><article class="example"><h3>Similar-sounding substitutions</h3><p class="badge">BAC009S0764W0132 · seed 3407</p><p>The fixed grid changes three characters, and the character oracle writes 界线 in place of 界限. ASSET matches the reference.</p><p class="zh"><b>Reference</b> <span lang="zh">不得超越界限盲目扩张</span></p><p class="zh"><b>Fixed grid (k = 5)</b> <span lang="zh">不得超越借线忙目扩张</span> <span class="badge">(3 edits)</span></p><p class="zh"><b>Phone oracle†</b> <span lang="zh">不得超越借限盲目扩张</span> <span class="badge">(1 edits)</span></p><p class="zh"><b>Character oracle†</b> <span lang="zh">不得超越界线盲目扩张</span> <span class="badge">(1 edits)</span></p><p class="zh"><b>ASSET (Transformer)</b> <span lang="zh">不得超越界限盲目扩张</span> <span class="badge">(0 edits)</span></p></article><article class="example"><h3>Dropped phrase</h3><p class="badge">BAC009S0765W0315 · seed 3407</p><p>The phone oracle omits 之日起, the phrase that specifies when the buyback period begins.</p><p class="zh"><b>Reference</b> <span lang="zh">回购期限为自回购股份方案之日起至今年底</span></p><p class="zh"><b>Fixed grid (k = 5)</b> <span lang="zh">回购期限为自回购股份方案之日起至今年底</span> <span class="badge">(0 edits)</span></p><p class="zh"><b>Phone oracle†</b> <span lang="zh">回购期限为自回购股份方案至今年底</span> <span class="badge">(3 edits)</span></p><p class="zh"><b>Character oracle†</b> <span lang="zh">回购期限为自回购股份方案之日起至今年年底</span> <span class="badge">(1 edits)</span></p><p class="zh"><b>ASSET (Transformer)</b> <span lang="zh">回购期限为自回购股份方案之日起至今年底</span> <span class="badge">(0 edits)</span></p></article><article class="example"><h3>Repeated phrase</h3><p class="badge">BAC009S0764W0231 · seed 3407</p><p>The phone oracle ends with 概念概念 in place of 概念股. Both ASSET and the character oracle preserve the financial term.</p><p class="zh"><b>Reference</b> <span lang="zh">保障房和水利建设概念股</span></p><p class="zh"><b>Fixed grid (k = 5)</b> <span lang="zh">保障房和水利建设概念鼓</span> <span class="badge">(1 edits)</span></p><p class="zh"><b>Phone oracle†</b> <span lang="zh">保障房和水利建设概念概念</span> <span class="badge">(2 edits)</span></p><p class="zh"><b>Character oracle†</b> <span lang="zh">保障房和水利建设概念股</span> <span class="badge">(0 edits)</span></p><p class="zh"><b>ASSET (Transformer)</b> <span lang="zh">保障房和水利建设概念股</span> <span class="badge">(0 edits)</span></p></article><article class="example"><h3>Changed age expression</h3><p class="badge">BAC009S0764W0356 · seed 3407</p><p>The fixed grid changes 二十多岁 to 二十七岁. The phone and character oracles omit part of the age expression. ASSET preserves it.</p><p class="zh"><b>Reference</b> <span lang="zh">跑者从二十多岁到五十九岁</span></p><p class="zh"><b>Fixed grid (k = 5)</b> <span lang="zh">跑者从二十七岁到五十九岁</span> <span class="badge">(1 edits)</span></p><p class="zh"><b>Phone oracle†</b> <span lang="zh">跑者从二十岁到五十九岁</span> <span class="badge">(1 edits)</span></p><p class="zh"><b>Character oracle†</b> <span lang="zh">跑者从二十到五十九岁</span> <span class="badge">(2 edits)</span></p><p class="zh"><b>ASSET (Transformer)</b> <span lang="zh">跑者从二十多岁到五十九岁</span> <span class="badge">(0 edits)</span></p></article><article class="example"><h3>ASSET substitution</h3><p class="badge">BAC009S0764W0133 · seed 3407</p><p>ASSET writes 宋 for 宗 in the land-parcel expression. The three baselines match the reference.</p><p class="zh"><b>Reference</b> <span lang="zh">目前挂牌的只有几宗土地</span></p><p class="zh"><b>Fixed grid (k = 5)</b> <span lang="zh">目前挂牌的只有几宗土地</span> <span class="badge">(0 edits)</span></p><p class="zh"><b>Phone oracle†</b> <span lang="zh">目前挂牌的只有几宗土地</span> <span class="badge">(0 edits)</span></p><p class="zh"><b>Character oracle†</b> <span lang="zh">目前挂牌的只有几宗土地</span> <span class="badge">(0 edits)</span></p><p class="zh"><b>ASSET (Transformer)</b> <span lang="zh">目前挂牌的只有几宋土地</span> <span class="badge">(1 edits)</span></p></article><article class="example"><h3>ASSET insertion</h3><p class="badge">BAC009S0764W0176 · seed 3407</p><p>ASSET adds 速逐 to 骤跌. The character oracle matches the reference.</p><p class="zh"><b>Reference</b> <span lang="zh">当月住宅类商品房成交套数骤跌</span></p><p class="zh"><b>Fixed grid (k = 5)</b> <span lang="zh">当月住宅类商品房成交套数逐步下跌</span> <span class="badge">(3 edits)</span></p><p class="zh"><b>Phone oracle†</b> <span lang="zh">当月住宅楼盘商品房成交套数簊低</span> <span class="badge">(4 edits)</span></p><p class="zh"><b>Character oracle†</b> <span lang="zh">当月住宅类商品房成交套数骤跌</span> <span class="badge">(0 edits)</span></p><p class="zh"><b>ASSET (Transformer)</b> <span lang="zh">当月住宅类商品房成交套数骤速逐跌</span> <span class="badge">(2 edits)</span></p></article></section><section id="panel-interpretation" role="tabpanel" aria-labelledby="tab-interpretation" hidden><h2>What explains the CER gap</h2><p><b>Substitutions account for the largest gain.</b> ASSET averages 7.10 substitutions per 100 reference characters, versus 8.10 for the character oracle, 8.55 for the fixed grid and 12.27 for the phone oracle. Table 2 also shows lower insertion and deletion rates for the character oracle than for ASSET.</p><p><b>Residual errors still matter.</b> ASSET transcribes 54.4% of utterances exactly on average. Frequent substitutions include 他 ↔ 她 and 城 → 成. These pairs share a Mandarin pronunciation in the relevant readings. The phone oracle also has the highest deletion and insertion rates, with examples of dropped phrases and repetition.</p><p><b>The comparison covers complete systems.</b> The oracles use transcript-assisted boundaries, the baselines train for ten CE epochs, and ASSET uses 24,000 updates including a 2,400-update warmup with the seed-matched phone decoder. The results combine differences in boundary placement, token budget and training. Transcript examples establish edit patterns and help identify cases for acoustic review.</p></section><section id="panel-evidence" role="tabpanel" aria-labelledby="tab-evidence" hidden><h2>Data and scoring</h2><p>The replication used seeds 3407, 3408, 3409 and a shared filtered test manifest. Each prediction file covers all 7,128 manifest IDs with matching reference tokens. Independent scoring reproduces the saved CER numerator and denominator for every run.</p><p>The archived scorer inserts underscores between words before computing character edits. The character-only analysis removes these separators and computes minimum-edit alignments with diagonal, deletion, then insertion tie priority. Equally optimal alignments can redistribute edits across types.</p><p>The new ASSET runs apply the rate penalty as an auxiliary loss. Historical Table 3 used a reward-side rate penalty. The test manifest excludes 48 utterances from the full AISHELL-1 test split. All runs use development CER for checkpoint selection.</p><p>Background sources include the <a href="https://arxiv.org/pdf/2610.14309#page=4">ASSET paper, Table 3</a> and the <a href="https://borrisonxiao.github.io/jsalt26-downsampling/research/xlingual-24k-results-standalone.html">original multilingual results report</a>.</p></section><script>
+const tabs = [...document.querySelectorAll('[role=tab]')];
+function selectTab(tab) {
+  for (const other of tabs) {
+    const active = other === tab;
+    other.setAttribute('aria-selected', String(active));
+    other.tabIndex = active ? 0 : -1;
+    document.getElementById(other.getAttribute('aria-controls')).hidden = !active;
+  }
+}
+tabs.forEach((tab, index) => {
+  tab.addEventListener('click', () => selectTab(tab));
+  tab.addEventListener('keydown', event => {
+    const target = {ArrowRight: (index + 1) % tabs.length,
+      ArrowLeft: (index + tabs.length - 1) % tabs.length, Home: 0, End: tabs.length - 1}[event.key];
+    if (target === undefined) return;
+    event.preventDefault();
+    selectTab(tabs[target]);
+    tabs[target].focus();
+  });
+});
+</script></div></body></html>
