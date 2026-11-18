@@ -164,7 +164,7 @@ def collect(root, output):
     analyze(raw, output, paths, "historical", {})
 
 
-def collect_replication(root, output):
+def load_replication(root):
     collected = json.loads((root / "replication_results.json").read_text())
     manifest = root / "runs/zh/manifests/test.csv"
     if collected["rate_channel"] != "aux" or sha256(manifest) != collected["test_manifest_sha256"]:
@@ -201,7 +201,12 @@ def collect_replication(root, output):
             if rows.keys() != references.keys() or len(rows) != evidence["utterances"]:
                 raise ValueError(f"Test coverage mismatch: {path}")
             raw[key], paths[key], saved[key] = rows, path, evidence
-    analyze(raw, output, paths, "aux", saved, test_manifest_sha256=sha256(manifest))
+    return raw, paths, saved, collected["test_manifest_sha256"]
+
+
+def collect_replication(root, output):
+    raw, paths, saved, manifest_hash = load_replication(root)
+    analyze(raw, output, paths, "aux", saved, test_manifest_sha256=manifest_hash)
 
 
 def analyze(raw, output, paths, channel, saved, **metadata):

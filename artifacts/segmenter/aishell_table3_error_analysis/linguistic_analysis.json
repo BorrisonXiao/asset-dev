@@ -1,0 +1,2604 @@
+{
+  "status": "complete",
+  "rate_channel": "aux",
+  "pypinyin_version": "0.55.0",
+  "gpus": 0,
+  "seeds": [
+    3407,
+    3408,
+    3409
+  ],
+  "test_utterances": 7128,
+  "test_manifest_sha256": "1fc8735da775ddd5e2904ce91ed4243399ec9665b6a46128ca5e4af5d43fa53c",
+  "analysis_sha256": "e1b459c9b43f550530a1cb8f0602aa5f5a992fcc13e35a1e0d3d4cf6e844bfa4",
+  "source_files": [
+    {
+      "arm": "fixed",
+      "seed": 3407,
+      "path": "runs/zh/fixed_k5/3407/predictions/test.jsonl",
+      "sha256": "197bbadf9044ab934f2f9e2cc42c52ff2511e2ef5dd37fb1365e5e6c77813d08"
+    },
+    {
+      "arm": "fixed",
+      "seed": 3408,
+      "path": "runs/zh/fixed_k5/3408/predictions/test.jsonl",
+      "sha256": "f15c898531df1aeff3df2860a97bb96b4ff01841c979bdce0b6c0e0f2897a330"
+    },
+    {
+      "arm": "fixed",
+      "seed": 3409,
+      "path": "runs/zh/fixed_k5/3409/predictions/test.jsonl",
+      "sha256": "f7ecb33700508da1ac524646f21daa1262bcf4d03f6dbdbb2ce98c2b4966f81d"
+    },
+    {
+      "arm": "phone",
+      "seed": 3407,
+      "path": "runs/zh/phone_oracle/3407/predictions/test.jsonl",
+      "sha256": "d6adc0e49d9708e7c1bfbdd3f97c272e799e6b4d6d0e2b179c31350b5a036b84"
+    },
+    {
+      "arm": "phone",
+      "seed": 3408,
+      "path": "runs/zh/phone_oracle/3408/predictions/test.jsonl",
+      "sha256": "9ee3829705bfe3494899d7df7529556006fe7e4b7f463a6e1cf23c6cb5d123bb"
+    },
+    {
+      "arm": "phone",
+      "seed": 3409,
+      "path": "runs/zh/phone_oracle/3409/predictions/test.jsonl",
+      "sha256": "5642642b2d45967916a3926eaf25b6c89839e46af8d89839271ddad238dfe506"
+    },
+    {
+      "arm": "character",
+      "seed": 3407,
+      "path": "runs/zh/char_oracle/3407/predictions/test.jsonl",
+      "sha256": "c143d850975dbd53c9cea8db55e692060e448f69713cb09798a08dfaa4ac276b"
+    },
+    {
+      "arm": "character",
+      "seed": 3408,
+      "path": "runs/zh/char_oracle/3408/predictions/test.jsonl",
+      "sha256": "bb64fe19758321f7b325ab81f79d2d77bd6be5518834914109222c44a6ca21fd"
+    },
+    {
+      "arm": "character",
+      "seed": 3409,
+      "path": "runs/zh/char_oracle/3409/predictions/test.jsonl",
+      "sha256": "f29e9d4285a197027c38584cb6d4861e0c71ad2580575add456da5247b4d8150"
+    },
+    {
+      "arm": "asset",
+      "seed": 3407,
+      "path": "runs/zh/transformer_ar_local64_bigru/3407/predictions/test.jsonl",
+      "sha256": "ce09b418ddd5e2f83f575ccd22935b8d259121cc0e2d28164b6acddf40a2ac1d"
+    },
+    {
+      "arm": "asset",
+      "seed": 3408,
+      "path": "runs/zh/transformer_ar_local64_bigru/3408/predictions/test.jsonl",
+      "sha256": "3f80983887bd629bf7334069e9d60a49bc42a77c83b8907f2f38c3e37b780eee"
+    },
+    {
+      "arm": "asset",
+      "seed": 3409,
+      "path": "runs/zh/transformer_ar_local64_bigru/3409/predictions/test.jsonl",
+      "sha256": "9e6ec5f11e5de771a65704225f05dae3af4c6165b9418be03016b6da4147540f"
+    }
+  ],
+  "reference_spans_per_run": {
+    "number": 1920,
+    "person": 67,
+    "place": 893,
+    "organization": 133
+  },
+  "name_lexicon": {
+    "person": [
+      "李娜",
+      "陈凯琳",
+      "谢贤",
+      "周云露",
+      "朱茵",
+      "马云",
+      "王菲",
+      "朱军",
+      "杨扬",
+      "孙楠",
+      "刘翔",
+      "林丹",
+      "姚明",
+      "李宗伟",
+      "秦虹",
+      "王颖春",
+      "郎平",
+      "郭晶晶",
+      "丁俊晖",
+      "章子怡",
+      "刘德华",
+      "周杰伦",
+      "奥巴马",
+      "普京",
+      "梅西",
+      "费德勒",
+      "莎拉波娃",
+      "刘国梁",
+      "伍兹",
+      "施瓦辛格",
+      "郑嘉颖",
+      "陈嘉宝",
+      "李斯达"
+    ],
+    "place": [
+      "中国",
+      "北京",
+      "温州",
+      "美国",
+      "日本",
+      "上海",
+      "广州",
+      "深圳",
+      "香港",
+      "台湾",
+      "天津",
+      "重庆",
+      "韩国",
+      "英国",
+      "德国",
+      "法国",
+      "俄罗斯",
+      "澳大利亚",
+      "加拿大",
+      "新加坡",
+      "印度",
+      "巴西",
+      "杭州",
+      "南京",
+      "沈阳",
+      "张家口",
+      "江苏",
+      "武汉",
+      "四川",
+      "唐山",
+      "郑州",
+      "张家界",
+      "河北",
+      "山东",
+      "广东",
+      "陕西",
+      "浙江",
+      "河南",
+      "湖南",
+      "湖北",
+      "福建",
+      "青岛",
+      "大连",
+      "成都",
+      "厦门",
+      "澳门",
+      "苏州",
+      "西安",
+      "南宁",
+      "昆明",
+      "纽约",
+      "伦敦",
+      "巴黎",
+      "东京",
+      "柏林",
+      "莫斯科",
+      "北上广深"
+    ],
+    "organization": [
+      "搜狐",
+      "国家发改委",
+      "发改委",
+      "住房城乡建设部",
+      "教育部",
+      "财政部",
+      "商务部",
+      "证监会",
+      "央行",
+      "人民银行",
+      "中国银行",
+      "工商银行",
+      "建设银行",
+      "农业银行",
+      "招商银行",
+      "新华社",
+      "人民日报",
+      "经济日报",
+      "中央电视台",
+      "联合国",
+      "国际奥委会",
+      "百度",
+      "腾讯",
+      "阿里巴巴",
+      "微软",
+      "谷歌",
+      "高通",
+      "三星",
+      "苹果公司",
+      "苹果电脑公司",
+      "联想",
+      "华为",
+      "中国移动",
+      "中国联通",
+      "中国电信"
+    ]
+  },
+  "per_seed": {
+    "fixed": [
+      {
+        "seed": 3407,
+        "reference_characters": 103999,
+        "substitutions": 8711,
+        "pronunciation_counts": {
+          "same_syllable_different_tone": 1653,
+          "same_syllable_and_tone": 4299,
+          "different_syllable": 2758,
+          "unscored": 1
+        },
+        "pronunciation_rates": {
+          "same_syllable_and_tone": 4.133693593207627,
+          "same_syllable_different_tone": 1.5894383599842306,
+          "different_syllable": 2.6519485764286195,
+          "unscored": 0.0009615477071894922
+        },
+        "same_tone_share_of_scored_substitutions": 49.35706084959816,
+        "span_errors": {
+          "number": 59,
+          "person": 33,
+          "place": 28,
+          "organization": 2
+        },
+        "span_error_rates": {
+          "number": 3.0729166666666665,
+          "person": 49.25373134328358,
+          "place": 3.135498320268757,
+          "organization": 1.5037593984962405
+        },
+        "utterances_with_novel_repetition": 14,
+        "novel_repetition_utterance_rate": 0.19640852974186307,
+        "top_repeated_units": [
+          [
+            "判断",
+            1
+          ],
+          [
+            "脂肪",
+            1
+          ],
+          [
+            "物车",
+            1
+          ],
+          [
+            "晕倒",
+            1
+          ],
+          [
+            "苹果",
+            1
+          ],
+          [
+            "债券进行",
+            1
+          ],
+          [
+            "券进行债",
+            1
+          ],
+          [
+            "的风险",
+            1
+          ],
+          [
+            "风险的",
+            1
+          ],
+          [
+            "圳深",
+            1
+          ]
+        ]
+      },
+      {
+        "seed": 3408,
+        "reference_characters": 103999,
+        "substitutions": 8753,
+        "pronunciation_counts": {
+          "same_syllable_and_tone": 4299,
+          "different_syllable": 2784,
+          "same_syllable_different_tone": 1665,
+          "unscored": 5
+        },
+        "pronunciation_rates": {
+          "same_syllable_and_tone": 4.133693593207627,
+          "same_syllable_different_tone": 1.6009769324705045,
+          "different_syllable": 2.676948816815546,
+          "unscored": 0.004807738535947461
+        },
+        "same_tone_share_of_scored_substitutions": 49.142661179698216,
+        "span_errors": {
+          "number": 57,
+          "person": 30,
+          "place": 21,
+          "organization": 3
+        },
+        "span_error_rates": {
+          "number": 2.96875,
+          "person": 44.776119402985074,
+          "place": 2.3516237402015676,
+          "organization": 2.255639097744361
+        },
+        "utterances_with_novel_repetition": 15,
+        "novel_repetition_utterance_rate": 0.21043771043771045,
+        "top_repeated_units": [
+          [
+            "目盲",
+            1
+          ],
+          [
+            "盲目",
+            1
+          ],
+          [
+            "未来",
+            1
+          ],
+          [
+            "来未",
+            1
+          ],
+          [
+            "香港",
+            1
+          ],
+          [
+            "材料预素",
+            1
+          ],
+          [
+            "压抑",
+            1
+          ],
+          [
+            "深圳",
+            1
+          ],
+          [
+            "米二二",
+            1
+          ],
+          [
+            "一一八",
+            1
+          ]
+        ]
+      },
+      {
+        "seed": 3409,
+        "reference_characters": 103999,
+        "substitutions": 9206,
+        "pronunciation_counts": {
+          "same_syllable_and_tone": 4499,
+          "same_syllable_different_tone": 1707,
+          "different_syllable": 2999,
+          "unscored": 1
+        },
+        "pronunciation_rates": {
+          "same_syllable_and_tone": 4.326003134645525,
+          "same_syllable_different_tone": 1.6413619361724632,
+          "different_syllable": 2.883681573861287,
+          "unscored": 0.0009615477071894922
+        },
+        "same_tone_share_of_scored_substitutions": 48.87561108093428,
+        "span_errors": {
+          "number": 51,
+          "person": 34,
+          "place": 16,
+          "organization": 3
+        },
+        "span_error_rates": {
+          "number": 2.65625,
+          "person": 50.74626865671642,
+          "place": 1.7917133258678613,
+          "organization": 2.255639097744361
+        },
+        "utterances_with_novel_repetition": 15,
+        "novel_repetition_utterance_rate": 0.21043771043771045,
+        "top_repeated_units": [
+          [
+            "大侃",
+            1
+          ],
+          [
+            "的国家",
+            1
+          ],
+          [
+            "拉阿",
+            1
+          ],
+          [
+            "阿拉",
+            1
+          ],
+          [
+            "镇内一片",
+            1
+          ],
+          [
+            "业绩",
+            1
+          ],
+          [
+            "物车",
+            1
+          ],
+          [
+            "苹果",
+            1
+          ],
+          [
+            "员研究",
+            1
+          ],
+          [
+            "研究员",
+            1
+          ]
+        ]
+      }
+    ],
+    "phone": [
+      {
+        "seed": 3407,
+        "reference_characters": 103999,
+        "substitutions": 12693,
+        "pronunciation_counts": {
+          "different_syllable": 7771,
+          "same_syllable_different_tone": 1798,
+          "same_syllable_and_tone": 3120,
+          "unscored": 4
+        },
+        "pronunciation_rates": {
+          "same_syllable_and_tone": 3.0000288464312157,
+          "same_syllable_different_tone": 1.728862777526707,
+          "different_syllable": 7.472187232569544,
+          "unscored": 0.0038461908287579687
+        },
+        "same_tone_share_of_scored_substitutions": 24.588226022539207,
+        "span_errors": {
+          "number": 146,
+          "person": 48,
+          "place": 33,
+          "organization": 7
+        },
+        "span_error_rates": {
+          "number": 7.604166666666667,
+          "person": 71.64179104477611,
+          "place": 3.6954087346024638,
+          "organization": 5.2631578947368425
+        },
+        "utterances_with_novel_repetition": 30,
+        "novel_repetition_utterance_rate": 0.4208754208754209,
+        "top_repeated_units": [
+          [
+            "交所",
+            1
+          ],
+          [
+            "三六二",
+            1
+          ],
+          [
+            "六二三",
+            1
+          ],
+          [
+            "不明",
+            1
+          ],
+          [
+            "概念",
+            1
+          ],
+          [
+            "测试",
+            1
+          ],
+          [
+            "甚至",
+            1
+          ],
+          [
+            "路一",
+            1
+          ],
+          [
+            "县康山",
+            1
+          ],
+          [
+            "山县康",
+            1
+          ]
+        ]
+      },
+      {
+        "seed": 3408,
+        "reference_characters": 103999,
+        "substitutions": 13094,
+        "pronunciation_counts": {
+          "same_syllable_and_tone": 3221,
+          "same_syllable_different_tone": 1793,
+          "different_syllable": 8073,
+          "unscored": 7
+        },
+        "pronunciation_rates": {
+          "same_syllable_and_tone": 3.0971451648573542,
+          "same_syllable_different_tone": 1.7240550389907596,
+          "different_syllable": 7.7625746401407705,
+          "unscored": 0.0067308339503264454
+        },
+        "same_tone_share_of_scored_substitutions": 24.61221059066249,
+        "span_errors": {
+          "number": 173,
+          "person": 48,
+          "place": 44,
+          "organization": 7
+        },
+        "span_error_rates": {
+          "number": 9.010416666666666,
+          "person": 71.64179104477611,
+          "place": 4.927211646136618,
+          "organization": 5.2631578947368425
+        },
+        "utterances_with_novel_repetition": 34,
+        "novel_repetition_utterance_rate": 0.4769921436588103,
+        "top_repeated_units": [
+          [
+            "印象",
+            2
+          ],
+          [
+            "有说",
+            1
+          ],
+          [
+            "一千",
+            1
+          ],
+          [
+            "夫达",
+            1
+          ],
+          [
+            "达夫",
+            1
+          ],
+          [
+            "外媒",
+            1
+          ],
+          [
+            "拉纳",
+            1
+          ],
+          [
+            "建筑",
+            1
+          ],
+          [
+            "测试",
+            1
+          ],
+          [
+            "过于",
+            1
+          ]
+        ]
+      },
+      {
+        "seed": 3409,
+        "reference_characters": 103999,
+        "substitutions": 12503,
+        "pronunciation_counts": {
+          "same_syllable_and_tone": 3146,
+          "same_syllable_different_tone": 1738,
+          "different_syllable": 7617,
+          "unscored": 2
+        },
+        "pronunciation_rates": {
+          "same_syllable_and_tone": 3.0250290868181424,
+          "same_syllable_different_tone": 1.6711699150953374,
+          "different_syllable": 7.324108885662362,
+          "unscored": 0.0019230954143789844
+        },
+        "same_tone_share_of_scored_substitutions": 25.165986721062314,
+        "span_errors": {
+          "number": 139,
+          "person": 45,
+          "place": 27,
+          "organization": 3
+        },
+        "span_error_rates": {
+          "number": 7.239583333333333,
+          "person": 67.16417910447761,
+          "place": 3.0235162374020157,
+          "organization": 2.255639097744361
+        },
+        "utterances_with_novel_repetition": 11,
+        "novel_repetition_utterance_rate": 0.15432098765432098,
+        "top_repeated_units": [
+          [
+            "对市场",
+            2
+          ],
+          [
+            "租赁",
+            1
+          ],
+          [
+            "概念",
+            1
+          ],
+          [
+            "测试",
+            1
+          ],
+          [
+            "户棚",
+            1
+          ],
+          [
+            "棚户",
+            1
+          ],
+          [
+            "整形",
+            1
+          ],
+          [
+            "苹果",
+            1
+          ],
+          [
+            "领域",
+            1
+          ],
+          [
+            "截肢",
+            1
+          ]
+        ]
+      }
+    ],
+    "character": [
+      {
+        "seed": 3407,
+        "reference_characters": 103999,
+        "substitutions": 8194,
+        "pronunciation_counts": {
+          "same_syllable_and_tone": 3849,
+          "different_syllable": 2666,
+          "same_syllable_different_tone": 1674,
+          "unscored": 5
+        },
+        "pronunciation_rates": {
+          "same_syllable_and_tone": 3.7009971249723557,
+          "same_syllable_different_tone": 1.60963086183521,
+          "different_syllable": 2.5634861873671864,
+          "unscored": 0.004807738535947461
+        },
+        "same_tone_share_of_scored_substitutions": 47.002075955550126,
+        "span_errors": {
+          "number": 38,
+          "person": 21,
+          "place": 13,
+          "organization": 2
+        },
+        "span_error_rates": {
+          "number": 1.9791666666666667,
+          "person": 31.34328358208955,
+          "place": 1.4557670772676372,
+          "organization": 1.5037593984962405
+        },
+        "utterances_with_novel_repetition": 3,
+        "novel_repetition_utterance_rate": 0.04208754208754209,
+        "top_repeated_units": [
+          [
+            "水溶溶",
+            1
+          ],
+          [
+            "检测",
+            1
+          ],
+          [
+            "冰冰尔",
+            1
+          ],
+          [
+            "冰尔冰",
+            1
+          ],
+          [
+            "尔冰冰",
+            1
+          ]
+        ]
+      },
+      {
+        "seed": 3408,
+        "reference_characters": 103999,
+        "substitutions": 8551,
+        "pronunciation_counts": {
+          "same_syllable_and_tone": 3996,
+          "different_syllable": 2846,
+          "same_syllable_different_tone": 1707,
+          "unscored": 2
+        },
+        "pronunciation_rates": {
+          "same_syllable_and_tone": 3.842344637929211,
+          "same_syllable_different_tone": 1.6413619361724632,
+          "different_syllable": 2.7365647746612947,
+          "unscored": 0.0019230954143789844
+        },
+        "same_tone_share_of_scored_substitutions": 46.74230904199322,
+        "span_errors": {
+          "number": 48,
+          "person": 27,
+          "place": 8,
+          "organization": 2
+        },
+        "span_error_rates": {
+          "number": 2.5,
+          "person": 40.298507462686565,
+          "place": 0.8958566629339306,
+          "organization": 1.5037593984962405
+        },
+        "utterances_with_novel_repetition": 0,
+        "novel_repetition_utterance_rate": 0.0,
+        "top_repeated_units": []
+      },
+      {
+        "seed": 3409,
+        "reference_characters": 103999,
+        "substitutions": 8517,
+        "pronunciation_counts": {
+          "same_syllable_and_tone": 4025,
+          "different_syllable": 2798,
+          "same_syllable_different_tone": 1690,
+          "unscored": 4
+        },
+        "pronunciation_rates": {
+          "same_syllable_and_tone": 3.870229521437706,
+          "same_syllable_different_tone": 1.625015625150242,
+          "different_syllable": 2.690410484716199,
+          "unscored": 0.0038461908287579687
+        },
+        "same_tone_share_of_scored_substitutions": 47.28062962527898,
+        "span_errors": {
+          "number": 47,
+          "person": 34,
+          "place": 7,
+          "organization": 2
+        },
+        "span_error_rates": {
+          "number": 2.4479166666666665,
+          "person": 50.74626865671642,
+          "place": 0.7838745800671892,
+          "organization": 1.5037593984962405
+        },
+        "utterances_with_novel_repetition": 5,
+        "novel_repetition_utterance_rate": 0.07014590347923681,
+        "top_repeated_units": [
+          [
+            "到五十九岁",
+            1
+          ],
+          [
+            "一般",
+            1
+          ],
+          [
+            "所刺激",
+            1
+          ],
+          [
+            "五点",
+            1
+          ],
+          [
+            "记者",
+            1
+          ]
+        ]
+      }
+    ],
+    "asset": [
+      {
+        "seed": 3407,
+        "reference_characters": 103999,
+        "substitutions": 7556,
+        "pronunciation_counts": {
+          "same_syllable_and_tone": 3527,
+          "different_syllable": 2519,
+          "same_syllable_different_tone": 1509,
+          "unscored": 1
+        },
+        "pronunciation_rates": {
+          "same_syllable_and_tone": 3.391378763257339,
+          "same_syllable_different_tone": 1.4509754901489438,
+          "different_syllable": 2.422138674410331,
+          "unscored": 0.0009615477071894922
+        },
+        "same_tone_share_of_scored_substitutions": 46.68431502316347,
+        "span_errors": {
+          "number": 51,
+          "person": 23,
+          "place": 16,
+          "organization": 2
+        },
+        "span_error_rates": {
+          "number": 2.65625,
+          "person": 34.32835820895522,
+          "place": 1.7917133258678613,
+          "organization": 1.5037593984962405
+        },
+        "utterances_with_novel_repetition": 10,
+        "novel_repetition_utterance_rate": 0.14029180695847362,
+        "top_repeated_units": [
+          [
+            "马甲线",
+            1
+          ],
+          [
+            "一万",
+            1
+          ],
+          [
+            "经营",
+            1
+          ],
+          [
+            "芯片市场的",
+            1
+          ],
+          [
+            "称王",
+            1
+          ],
+          [
+            "服务",
+            1
+          ],
+          [
+            "物车",
+            1
+          ],
+          [
+            "泄露",
+            1
+          ],
+          [
+            "玻璃",
+            1
+          ],
+          [
+            "璃玻",
+            1
+          ]
+        ]
+      },
+      {
+        "seed": 3408,
+        "reference_characters": 103999,
+        "substitutions": 7260,
+        "pronunciation_counts": {
+          "same_syllable_different_tone": 1411,
+          "different_syllable": 2535,
+          "same_syllable_and_tone": 3313,
+          "unscored": 1
+        },
+        "pronunciation_rates": {
+          "same_syllable_and_tone": 3.185607553918788,
+          "same_syllable_different_tone": 1.3567438148443736,
+          "different_syllable": 2.4375234377253627,
+          "unscored": 0.0009615477071894922
+        },
+        "same_tone_share_of_scored_substitutions": 45.63989530238325,
+        "span_errors": {
+          "number": 64,
+          "person": 22,
+          "place": 18,
+          "organization": 3
+        },
+        "span_error_rates": {
+          "number": 3.3333333333333335,
+          "person": 32.83582089552239,
+          "place": 2.015677491601344,
+          "organization": 2.255639097744361
+        },
+        "utterances_with_novel_repetition": 9,
+        "novel_repetition_utterance_rate": 0.12626262626262627,
+        "top_repeated_units": [
+          [
+            "马甲线",
+            1
+          ],
+          [
+            "经营",
+            1
+          ],
+          [
+            "称王",
+            1
+          ],
+          [
+            "时提取",
+            1
+          ],
+          [
+            "然自",
+            1
+          ],
+          [
+            "自然",
+            1
+          ],
+          [
+            "联防",
+            1
+          ],
+          [
+            "一带",
+            1
+          ],
+          [
+            "永远",
+            1
+          ],
+          [
+            "利润",
+            1
+          ]
+        ]
+      },
+      {
+        "seed": 3409,
+        "reference_characters": 103999,
+        "substitutions": 7351,
+        "pronunciation_counts": {
+          "same_syllable_and_tone": 3425,
+          "different_syllable": 2430,
+          "same_syllable_different_tone": 1496
+        },
+        "pronunciation_rates": {
+          "same_syllable_and_tone": 3.293300897124011,
+          "same_syllable_different_tone": 1.4384753699554804,
+          "different_syllable": 2.3365609284704663,
+          "unscored": 0.0
+        },
+        "same_tone_share_of_scored_substitutions": 46.592300367296964,
+        "span_errors": {
+          "number": 60,
+          "person": 24,
+          "place": 12,
+          "organization": 4
+        },
+        "span_error_rates": {
+          "number": 3.125,
+          "person": 35.82089552238806,
+          "place": 1.343784994400896,
+          "organization": 3.007518796992481
+        },
+        "utterances_with_novel_repetition": 7,
+        "novel_repetition_utterance_rate": 0.09820426487093153,
+        "top_repeated_units": [
+          [
+            "马甲线",
+            1
+          ],
+          [
+            "王称",
+            1
+          ],
+          [
+            "称王",
+            1
+          ],
+          [
+            "苹果",
+            1
+          ],
+          [
+            "生态纲领",
+            1
+          ],
+          [
+            "欢迎",
+            1
+          ],
+          [
+            "防御",
+            1
+          ],
+          [
+            "罗维磊",
+            1
+          ]
+        ]
+      }
+    ]
+  },
+  "speaker_groups": [
+    {
+      "group": "S0764",
+      "utterances": 362,
+      "characters": 5290,
+      "systems": {
+        "fixed": {
+          "mean": 8.330182734719596,
+          "sample_sd": 0.5045287995232764
+        },
+        "phone": {
+          "mean": 11.518588531821047,
+          "sample_sd": 0.32541276203340497
+        },
+        "character": {
+          "mean": 6.45872715816005,
+          "sample_sd": 0.35128821335264926
+        },
+        "asset": {
+          "mean": 5.9672337744171395,
+          "sample_sd": 0.45105306031942727
+        }
+      }
+    },
+    {
+      "group": "S0765",
+      "utterances": 359,
+      "characters": 5278,
+      "systems": {
+        "fixed": {
+          "mean": 8.17228748263231,
+          "sample_sd": 0.3655919069952337
+        },
+        "phone": {
+          "mean": 13.508904888215232,
+          "sample_sd": 0.5126089146824062
+        },
+        "character": {
+          "mean": 7.944928634583807,
+          "sample_sd": 0.48279688906445284
+        },
+        "asset": {
+          "mean": 6.67550839964633,
+          "sample_sd": 0.17604344909392888
+        }
+      }
+    },
+    {
+      "group": "S0766",
+      "utterances": 340,
+      "characters": 4904,
+      "systems": {
+        "fixed": {
+          "mean": 10.066612289287656,
+          "sample_sd": 0.4239932075516772
+        },
+        "phone": {
+          "mean": 14.056552474170745,
+          "sample_sd": 0.21803989848212957
+        },
+        "character": {
+          "mean": 10.066612289287656,
+          "sample_sd": 0.08241133532478369
+        },
+        "asset": {
+          "mean": 8.584828711256119,
+          "sample_sd": 0.6024994576955205
+        }
+      }
+    },
+    {
+      "group": "S0767",
+      "utterances": 351,
+      "characters": 5122,
+      "systems": {
+        "fixed": {
+          "mean": 7.510087205518678,
+          "sample_sd": 0.16832639797445748
+        },
+        "phone": {
+          "mean": 13.009241181830014,
+          "sample_sd": 0.37367895925954914
+        },
+        "character": {
+          "mean": 7.2758037225042305,
+          "sample_sd": 0.2735630555379892
+        },
+        "asset": {
+          "mean": 6.618508395158141,
+          "sample_sd": 0.2056941380877146
+        }
+      }
+    },
+    {
+      "group": "S0768",
+      "utterances": 365,
+      "characters": 5215,
+      "systems": {
+        "fixed": {
+          "mean": 12.764461489293705,
+          "sample_sd": 1.1026025816512972
+        },
+        "phone": {
+          "mean": 20.632790028763182,
+          "sample_sd": 0.5904047677215974
+        },
+        "character": {
+          "mean": 12.074145094279322,
+          "sample_sd": 0.692532220174208
+        },
+        "asset": {
+          "mean": 10.77660594439118,
+          "sample_sd": 0.47900272279182327
+        }
+      }
+    },
+    {
+      "group": "S0769",
+      "utterances": 357,
+      "characters": 5139,
+      "systems": {
+        "fixed": {
+          "mean": 9.132775507556593,
+          "sample_sd": 0.6858678587097189
+        },
+        "phone": {
+          "mean": 15.080755010702472,
+          "sample_sd": 0.332516199467505
+        },
+        "character": {
+          "mean": 7.997664915353182,
+          "sample_sd": 0.18765617359394757
+        },
+        "asset": {
+          "mean": 7.452811831095544,
+          "sample_sd": 0.06740808747105935
+        }
+      }
+    },
+    {
+      "group": "S0770",
+      "utterances": 350,
+      "characters": 5056,
+      "systems": {
+        "fixed": {
+          "mean": 7.542194092827004,
+          "sample_sd": 0.31727872931213025
+        },
+        "phone": {
+          "mean": 13.014240506329115,
+          "sample_sd": 0.2246403617800747
+        },
+        "character": {
+          "mean": 7.311445147679325,
+          "sample_sd": 0.5980606261169096
+        },
+        "asset": {
+          "mean": 6.770833333333334,
+          "sample_sd": 0.628362476658431
+        }
+      }
+    },
+    {
+      "group": "S0901",
+      "utterances": 366,
+      "characters": 5251,
+      "systems": {
+        "fixed": {
+          "mean": 9.769567701390212,
+          "sample_sd": 0.572271156020443
+        },
+        "phone": {
+          "mean": 13.514886053450137,
+          "sample_sd": 0.4915908054732272
+        },
+        "character": {
+          "mean": 8.10639243318733,
+          "sample_sd": 0.3922939009834417
+        },
+        "asset": {
+          "mean": 7.604900653843712,
+          "sample_sd": 0.34190904613712264
+        }
+      }
+    },
+    {
+      "group": "S0902",
+      "utterances": 355,
+      "characters": 5136,
+      "systems": {
+        "fixed": {
+          "mean": 9.553478712357217,
+          "sample_sd": 0.3429961127134952
+        },
+        "phone": {
+          "mean": 15.97871235721703,
+          "sample_sd": 0.32366193249718817
+        },
+        "character": {
+          "mean": 8.657840083073728,
+          "sample_sd": 0.6102452750735463
+        },
+        "asset": {
+          "mean": 8.12564901349948,
+          "sample_sd": 0.21535124640494618
+        }
+      }
+    },
+    {
+      "group": "S0903",
+      "utterances": 371,
+      "characters": 5467,
+      "systems": {
+        "fixed": {
+          "mean": 9.042131577342845,
+          "sample_sd": 0.30074659972290774
+        },
+        "phone": {
+          "mean": 15.377111151759038,
+          "sample_sd": 1.1803849640287192
+        },
+        "character": {
+          "mean": 8.170233522346198,
+          "sample_sd": 0.622002956053857
+        },
+        "asset": {
+          "mean": 7.645875251509055,
+          "sample_sd": 0.497920526388008
+        }
+      }
+    },
+    {
+      "group": "S0904",
+      "utterances": 367,
+      "characters": 5463,
+      "systems": {
+        "fixed": {
+          "mean": 10.854841662090426,
+          "sample_sd": 0.42811698932917824
+        },
+        "phone": {
+          "mean": 14.113124656781988,
+          "sample_sd": 0.7246082889580632
+        },
+        "character": {
+          "mean": 9.3599365428031,
+          "sample_sd": 0.0762096283897539
+        },
+        "asset": {
+          "mean": 8.035877722862896,
+          "sample_sd": 0.22862888516926178
+        }
+      }
+    },
+    {
+      "group": "S0905",
+      "utterances": 357,
+      "characters": 5297,
+      "systems": {
+        "fixed": {
+          "mean": 8.237367063117487,
+          "sample_sd": 0.4396460505873408
+        },
+        "phone": {
+          "mean": 13.592599584670568,
+          "sample_sd": 0.9825949541002902
+        },
+        "character": {
+          "mean": 7.085771820527342,
+          "sample_sd": 0.1692068423604401
+        },
+        "asset": {
+          "mean": 6.450191932540432,
+          "sample_sd": 0.028837553929619345
+        }
+      }
+    },
+    {
+      "group": "S0906",
+      "utterances": 353,
+      "characters": 5125,
+      "systems": {
+        "fixed": {
+          "mean": 12.708943089430894,
+          "sample_sd": 0.6223544046259865
+        },
+        "phone": {
+          "mean": 19.284552845528456,
+          "sample_sd": 1.088901703774882
+        },
+        "character": {
+          "mean": 11.674796747967479,
+          "sample_sd": 0.39525241246799375
+        },
+        "asset": {
+          "mean": 10.88130081300813,
+          "sample_sd": 0.5006440428728662
+        }
+      }
+    },
+    {
+      "group": "S0907",
+      "utterances": 350,
+      "characters": 5041,
+      "systems": {
+        "fixed": {
+          "mean": 8.66891489783773,
+          "sample_sd": 0.2578853402102751
+        },
+        "phone": {
+          "mean": 13.62163591879918,
+          "sample_sd": 0.9397816967814242
+        },
+        "character": {
+          "mean": 7.319976195199366,
+          "sample_sd": 0.3952560770714397
+        },
+        "asset": {
+          "mean": 6.519870396085433,
+          "sample_sd": 0.03030202800341077
+        }
+      }
+    },
+    {
+      "group": "S0908",
+      "utterances": 353,
+      "characters": 5083,
+      "systems": {
+        "fixed": {
+          "mean": 8.977637877893633,
+          "sample_sd": 0.9144085404650437
+        },
+        "phone": {
+          "mean": 12.62377860843334,
+          "sample_sd": 0.43341102083699345
+        },
+        "character": {
+          "mean": 7.541478129713424,
+          "sample_sd": 0.34433170943209596
+        },
+        "asset": {
+          "mean": 6.813561545019345,
+          "sample_sd": 0.23635413851321563
+        }
+      }
+    },
+    {
+      "group": "S0912",
+      "utterances": 333,
+      "characters": 4879,
+      "systems": {
+        "fixed": {
+          "mean": 8.867937418869987,
+          "sample_sd": 0.8404194474103587
+        },
+        "phone": {
+          "mean": 13.534194165471066,
+          "sample_sd": 0.8601812248705138
+        },
+        "character": {
+          "mean": 7.733825237412038,
+          "sample_sd": 0.4251788722416239
+        },
+        "asset": {
+          "mean": 6.934481109516978,
+          "sample_sd": 0.02366674602130037
+        }
+      }
+    },
+    {
+      "group": "S0913",
+      "utterances": 361,
+      "characters": 5384,
+      "systems": {
+        "fixed": {
+          "mean": 9.943041109460129,
+          "sample_sd": 0.33706432859871777
+        },
+        "phone": {
+          "mean": 14.444031698860822,
+          "sample_sd": 0.7624964991748715
+        },
+        "character": {
+          "mean": 8.271421495789994,
+          "sample_sd": 0.5306751043610629
+        },
+        "asset": {
+          "mean": 8.426201089648341,
+          "sample_sd": 0.6501627336713757
+        }
+      }
+    },
+    {
+      "group": "S0914",
+      "utterances": 358,
+      "characters": 5299,
+      "systems": {
+        "fixed": {
+          "mean": 9.404290117632257,
+          "sample_sd": 0.692440369913034
+        },
+        "phone": {
+          "mean": 15.31106498081399,
+          "sample_sd": 1.0379888699670787
+        },
+        "character": {
+          "mean": 9.04573189910046,
+          "sample_sd": 0.36657991531316514
+        },
+        "asset": {
+          "mean": 8.165062590425867,
+          "sample_sd": 0.6648907472717519
+        }
+      }
+    },
+    {
+      "group": "S0915",
+      "utterances": 360,
+      "characters": 5282,
+      "systems": {
+        "fixed": {
+          "mean": 9.377760949135428,
+          "sample_sd": 0.16968736160228115
+        },
+        "phone": {
+          "mean": 13.568092894105767,
+          "sample_sd": 0.615903738985963
+        },
+        "character": {
+          "mean": 7.9010475829862425,
+          "sample_sd": 0.5305528097181293
+        },
+        "asset": {
+          "mean": 7.339391644579074,
+          "sample_sd": 0.18963750096323034
+        }
+      }
+    },
+    {
+      "group": "S0916",
+      "utterances": 360,
+      "characters": 5288,
+      "systems": {
+        "fixed": {
+          "mean": 7.312153303076147,
+          "sample_sd": 0.2931673210850601
+        },
+        "phone": {
+          "mean": 11.838124054462936,
+          "sample_sd": 0.7557201665161908
+        },
+        "character": {
+          "mean": 6.587241553202219,
+          "sample_sd": 0.2409419421787241
+        },
+        "asset": {
+          "mean": 6.354009077155824,
+          "sample_sd": 0.11502954860624466
+        }
+      }
+    }
+  ],
+  "length_groups": [
+    {
+      "group": "3–10",
+      "utterances": 1472,
+      "characters": 13406,
+      "systems": {
+        "fixed": {
+          "mean": 10.159630016410562,
+          "sample_sd": 0.5655837710657131
+        },
+        "phone": {
+          "mean": 15.244417922323338,
+          "sample_sd": 0.9584123463229407
+        },
+        "character": {
+          "mean": 9.247103287085384,
+          "sample_sd": 0.4442122818627534
+        },
+        "asset": {
+          "mean": 8.43403451191009,
+          "sample_sd": 0.29840494144170876
+        }
+      }
+    },
+    {
+      "group": "11–15",
+      "utterances": 2830,
+      "characters": 36607,
+      "systems": {
+        "fixed": {
+          "mean": 8.624033654765482,
+          "sample_sd": 0.26343734151918985
+        },
+        "phone": {
+          "mean": 12.620537055754363,
+          "sample_sd": 0.24975432829450087
+        },
+        "character": {
+          "mean": 7.757168483259122,
+          "sample_sd": 0.26335707060140034
+        },
+        "asset": {
+          "mean": 7.102466741333624,
+          "sample_sd": 0.1742527760681513
+        }
+      }
+    },
+    {
+      "group": "16–20",
+      "utterances": 2012,
+      "characters": 35986,
+      "systems": {
+        "fixed": {
+          "mean": 9.553715333740898,
+          "sample_sd": 0.2575358693735937
+        },
+        "phone": {
+          "mean": 14.83539895144408,
+          "sample_sd": 0.37548880228809933
+        },
+        "character": {
+          "mean": 8.473665684803349,
+          "sample_sd": 0.11185840118000275
+        },
+        "asset": {
+          "mean": 7.6789121695474165,
+          "sample_sd": 0.11285495774666508
+        }
+      }
+    },
+    {
+      "group": "21+",
+      "utterances": 814,
+      "characters": 18000,
+      "systems": {
+        "fixed": {
+          "mean": 9.61111111111111,
+          "sample_sd": 0.3275893997290128
+        },
+        "phone": {
+          "mean": 16.418518518518518,
+          "sample_sd": 0.7268300303400483
+        },
+        "character": {
+          "mean": 8.505555555555555,
+          "sample_sd": 0.24538958694842017
+        },
+        "asset": {
+          "mean": 7.875925925925926,
+          "sample_sd": 0.10834520352822284
+        }
+      }
+    }
+  ],
+  "top_pronunciation_pairs": {
+    "fixed": [
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "城",
+        "hypothesis": "成",
+        "reference_pinyin": "cheng2",
+        "hypothesis_pinyin": "cheng2",
+        "count": 192
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "他",
+        "hypothesis": "她",
+        "reference_pinyin": "ta1",
+        "hypothesis_pinyin": "ta1",
+        "count": 183
+      },
+      {
+        "class": "different_syllable",
+        "reference": "的",
+        "hypothesis": "地",
+        "reference_pinyin": "de5",
+        "hypothesis_pinyin": "di4",
+        "count": 80
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "她",
+        "hypothesis": "他",
+        "reference_pinyin": "ta1",
+        "hypothesis_pinyin": "ta1",
+        "count": 74
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "支",
+        "hypothesis": "之",
+        "reference_pinyin": "zhi1",
+        "hypothesis_pinyin": "zhi1",
+        "count": 67
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "他",
+        "hypothesis": "它",
+        "reference_pinyin": "ta1",
+        "hypothesis_pinyin": "ta1",
+        "count": 64
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "已",
+        "hypothesis": "以",
+        "reference_pinyin": "yi3",
+        "hypothesis_pinyin": "yi3",
+        "count": 61
+      },
+      {
+        "class": "different_syllable",
+        "reference": "地",
+        "hypothesis": "的",
+        "reference_pinyin": "di4",
+        "hypothesis_pinyin": "de5",
+        "count": 61
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "久",
+        "hypothesis": "九",
+        "reference_pinyin": "jiu3",
+        "hypothesis_pinyin": "jiu3",
+        "count": 59
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "今",
+        "hypothesis": "金",
+        "reference_pinyin": "jin1",
+        "hypothesis_pinyin": "jin1",
+        "count": 56
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "健",
+        "hypothesis": "建",
+        "reference_pinyin": "jian4",
+        "hypothesis_pinyin": "jian4",
+        "count": 55
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "家",
+        "hypothesis": "加",
+        "reference_pinyin": "jia1",
+        "hypothesis_pinyin": "jia1",
+        "count": 52
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "在",
+        "hypothesis": "再",
+        "reference_pinyin": "zai4",
+        "hypothesis_pinyin": "zai4",
+        "count": 45
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "鲜",
+        "hypothesis": "先",
+        "reference_pinyin": "xian1",
+        "hypothesis_pinyin": "xian1",
+        "count": 42
+      },
+      {
+        "class": "different_syllable",
+        "reference": "佟",
+        "hypothesis": "董",
+        "reference_pinyin": "tong2",
+        "hypothesis_pinyin": "dong3",
+        "count": 42
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "渔",
+        "hypothesis": "馀",
+        "reference_pinyin": "yu2",
+        "hypothesis_pinyin": "yu2",
+        "count": 40
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "美",
+        "hypothesis": "每",
+        "reference_pinyin": "mei3",
+        "hypothesis_pinyin": "mei3",
+        "count": 40
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "手",
+        "hypothesis": "首",
+        "reference_pinyin": "shou3",
+        "hypothesis_pinyin": "shou3",
+        "count": 40
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "还",
+        "hypothesis": "环",
+        "reference_pinyin": "huan2",
+        "hypothesis_pinyin": "huan2",
+        "count": 39
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "为",
+        "hypothesis": "未",
+        "reference_pinyin": "wei4",
+        "hypothesis_pinyin": "wei4",
+        "count": 39
+      },
+      {
+        "class": "same_syllable_different_tone",
+        "reference": "得",
+        "hypothesis": "的",
+        "reference_pinyin": "de2",
+        "hypothesis_pinyin": "de5",
+        "count": 38
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "嘉",
+        "hypothesis": "家",
+        "reference_pinyin": "jia1",
+        "hypothesis_pinyin": "jia1",
+        "count": 36
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "投",
+        "hypothesis": "头",
+        "reference_pinyin": "tou2",
+        "hypothesis_pinyin": "tou2",
+        "count": 36
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "战",
+        "hypothesis": "站",
+        "reference_pinyin": "zhan4",
+        "hypothesis_pinyin": "zhan4",
+        "count": 36
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "再",
+        "hypothesis": "在",
+        "reference_pinyin": "zai4",
+        "hypothesis_pinyin": "zai4",
+        "count": 34
+      }
+    ],
+    "phone": [
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "他",
+        "hypothesis": "她",
+        "reference_pinyin": "ta1",
+        "hypothesis_pinyin": "ta1",
+        "count": 184
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "城",
+        "hypothesis": "成",
+        "reference_pinyin": "cheng2",
+        "hypothesis_pinyin": "cheng2",
+        "count": 110
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "她",
+        "hypothesis": "他",
+        "reference_pinyin": "ta1",
+        "hypothesis_pinyin": "ta1",
+        "count": 87
+      },
+      {
+        "class": "different_syllable",
+        "reference": "的",
+        "hypothesis": "地",
+        "reference_pinyin": "de5",
+        "hypothesis_pinyin": "di4",
+        "count": 86
+      },
+      {
+        "class": "different_syllable",
+        "reference": "地",
+        "hypothesis": "的",
+        "reference_pinyin": "di4",
+        "hypothesis_pinyin": "de5",
+        "count": 80
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "今",
+        "hypothesis": "金",
+        "reference_pinyin": "jin1",
+        "hypothesis_pinyin": "jin1",
+        "count": 60
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "久",
+        "hypothesis": "九",
+        "reference_pinyin": "jiu3",
+        "hypothesis_pinyin": "jiu3",
+        "count": 52
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "美",
+        "hypothesis": "每",
+        "reference_pinyin": "mei3",
+        "hypothesis_pinyin": "mei3",
+        "count": 49
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "它",
+        "hypothesis": "他",
+        "reference_pinyin": "ta1",
+        "hypothesis_pinyin": "ta1",
+        "count": 48
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "鲜",
+        "hypothesis": "先",
+        "reference_pinyin": "xian1",
+        "hypothesis_pinyin": "xian1",
+        "count": 47
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "战",
+        "hypothesis": "站",
+        "reference_pinyin": "zhan4",
+        "hypothesis_pinyin": "zhan4",
+        "count": 46
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "已",
+        "hypothesis": "以",
+        "reference_pinyin": "yi3",
+        "hypothesis_pinyin": "yi3",
+        "count": 45
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "他",
+        "hypothesis": "它",
+        "reference_pinyin": "ta1",
+        "hypothesis_pinyin": "ta1",
+        "count": 43
+      },
+      {
+        "class": "same_syllable_different_tone",
+        "reference": "得",
+        "hypothesis": "的",
+        "reference_pinyin": "de2",
+        "hypothesis_pinyin": "de5",
+        "count": 42
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "还",
+        "hypothesis": "环",
+        "reference_pinyin": "huan2",
+        "hypothesis_pinyin": "huan2",
+        "count": 40
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "在",
+        "hypothesis": "再",
+        "reference_pinyin": "zai4",
+        "hypothesis_pinyin": "zai4",
+        "count": 33
+      },
+      {
+        "class": "different_syllable",
+        "reference": "投",
+        "hypothesis": "成",
+        "reference_pinyin": "tou2",
+        "hypothesis_pinyin": "cheng2",
+        "count": 33
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "终",
+        "hypothesis": "中",
+        "reference_pinyin": "zhong1",
+        "hypothesis_pinyin": "zhong1",
+        "count": 33
+      },
+      {
+        "class": "same_syllable_different_tone",
+        "reference": "于",
+        "hypothesis": "与",
+        "reference_pinyin": "yu2",
+        "hypothesis_pinyin": "yu3",
+        "count": 32
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "便",
+        "hypothesis": "变",
+        "reference_pinyin": "bian4",
+        "hypothesis_pinyin": "bian4",
+        "count": 32
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "防",
+        "hypothesis": "房",
+        "reference_pinyin": "fang2",
+        "hypothesis_pinyin": "fang2",
+        "count": 31
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "手",
+        "hypothesis": "首",
+        "reference_pinyin": "shou3",
+        "hypothesis_pinyin": "shou3",
+        "count": 31
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "为",
+        "hypothesis": "未",
+        "reference_pinyin": "wei4",
+        "hypothesis_pinyin": "wei4",
+        "count": 31
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "渔",
+        "hypothesis": "馀",
+        "reference_pinyin": "yu2",
+        "hypothesis_pinyin": "yu2",
+        "count": 30
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "心",
+        "hypothesis": "新",
+        "reference_pinyin": "xin1",
+        "hypothesis_pinyin": "xin1",
+        "count": 29
+      }
+    ],
+    "character": [
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "他",
+        "hypothesis": "她",
+        "reference_pinyin": "ta1",
+        "hypothesis_pinyin": "ta1",
+        "count": 209
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "城",
+        "hypothesis": "成",
+        "reference_pinyin": "cheng2",
+        "hypothesis_pinyin": "cheng2",
+        "count": 182
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "她",
+        "hypothesis": "他",
+        "reference_pinyin": "ta1",
+        "hypothesis_pinyin": "ta1",
+        "count": 100
+      },
+      {
+        "class": "different_syllable",
+        "reference": "的",
+        "hypothesis": "地",
+        "reference_pinyin": "de5",
+        "hypothesis_pinyin": "di4",
+        "count": 92
+      },
+      {
+        "class": "different_syllable",
+        "reference": "地",
+        "hypothesis": "的",
+        "reference_pinyin": "di4",
+        "hypothesis_pinyin": "de5",
+        "count": 78
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "支",
+        "hypothesis": "之",
+        "reference_pinyin": "zhi1",
+        "hypothesis_pinyin": "zhi1",
+        "count": 71
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "今",
+        "hypothesis": "金",
+        "reference_pinyin": "jin1",
+        "hypothesis_pinyin": "jin1",
+        "count": 56
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "健",
+        "hypothesis": "建",
+        "reference_pinyin": "jian4",
+        "hypothesis_pinyin": "jian4",
+        "count": 56
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "久",
+        "hypothesis": "九",
+        "reference_pinyin": "jiu3",
+        "hypothesis_pinyin": "jiu3",
+        "count": 55
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "已",
+        "hypothesis": "以",
+        "reference_pinyin": "yi3",
+        "hypothesis_pinyin": "yi3",
+        "count": 53
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "嘉",
+        "hypothesis": "家",
+        "reference_pinyin": "jia1",
+        "hypothesis_pinyin": "jia1",
+        "count": 52
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "在",
+        "hypothesis": "再",
+        "reference_pinyin": "zai4",
+        "hypothesis_pinyin": "zai4",
+        "count": 48
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "投",
+        "hypothesis": "头",
+        "reference_pinyin": "tou2",
+        "hypothesis_pinyin": "tou2",
+        "count": 48
+      },
+      {
+        "class": "same_syllable_different_tone",
+        "reference": "得",
+        "hypothesis": "的",
+        "reference_pinyin": "de2",
+        "hypothesis_pinyin": "de5",
+        "count": 46
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "还",
+        "hypothesis": "环",
+        "reference_pinyin": "huan2",
+        "hypothesis_pinyin": "huan2",
+        "count": 46
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "它",
+        "hypothesis": "他",
+        "reference_pinyin": "ta1",
+        "hypothesis_pinyin": "ta1",
+        "count": 42
+      },
+      {
+        "class": "different_syllable",
+        "reference": "佟",
+        "hypothesis": "董",
+        "reference_pinyin": "tong2",
+        "hypothesis_pinyin": "dong3",
+        "count": 41
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "鲜",
+        "hypothesis": "先",
+        "reference_pinyin": "xian1",
+        "hypothesis_pinyin": "xian1",
+        "count": 40
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "再",
+        "hypothesis": "在",
+        "reference_pinyin": "zai4",
+        "hypothesis_pinyin": "zai4",
+        "count": 39
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "家",
+        "hypothesis": "加",
+        "reference_pinyin": "jia1",
+        "hypothesis_pinyin": "jia1",
+        "count": 36
+      },
+      {
+        "class": "same_syllable_different_tone",
+        "reference": "紫",
+        "hypothesis": "子",
+        "reference_pinyin": "zi3",
+        "hypothesis_pinyin": "zi5",
+        "count": 36
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "美",
+        "hypothesis": "每",
+        "reference_pinyin": "mei3",
+        "hypothesis_pinyin": "mei3",
+        "count": 34
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "克",
+        "hypothesis": "客",
+        "reference_pinyin": "ke4",
+        "hypothesis_pinyin": "ke4",
+        "count": 32
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "防",
+        "hypothesis": "房",
+        "reference_pinyin": "fang2",
+        "hypothesis_pinyin": "fang2",
+        "count": 32
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "终",
+        "hypothesis": "中",
+        "reference_pinyin": "zhong1",
+        "hypothesis_pinyin": "zhong1",
+        "count": 32
+      }
+    ],
+    "asset": [
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "他",
+        "hypothesis": "她",
+        "reference_pinyin": "ta1",
+        "hypothesis_pinyin": "ta1",
+        "count": 137
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "她",
+        "hypothesis": "他",
+        "reference_pinyin": "ta1",
+        "hypothesis_pinyin": "ta1",
+        "count": 130
+      },
+      {
+        "class": "different_syllable",
+        "reference": "的",
+        "hypothesis": "地",
+        "reference_pinyin": "de5",
+        "hypothesis_pinyin": "di4",
+        "count": 113
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "城",
+        "hypothesis": "成",
+        "reference_pinyin": "cheng2",
+        "hypothesis_pinyin": "cheng2",
+        "count": 100
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "美",
+        "hypothesis": "每",
+        "reference_pinyin": "mei3",
+        "hypothesis_pinyin": "mei3",
+        "count": 87
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "已",
+        "hypothesis": "以",
+        "reference_pinyin": "yi3",
+        "hypothesis_pinyin": "yi3",
+        "count": 62
+      },
+      {
+        "class": "different_syllable",
+        "reference": "劵",
+        "hypothesis": "券",
+        "reference_pinyin": "juan4",
+        "hypothesis_pinyin": "quan4",
+        "count": 61
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "今",
+        "hypothesis": "金",
+        "reference_pinyin": "jin1",
+        "hypothesis_pinyin": "jin1",
+        "count": 59
+      },
+      {
+        "class": "different_syllable",
+        "reference": "地",
+        "hypothesis": "的",
+        "reference_pinyin": "di4",
+        "hypothesis_pinyin": "de5",
+        "count": 58
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "久",
+        "hypothesis": "九",
+        "reference_pinyin": "jiu3",
+        "hypothesis_pinyin": "jiu3",
+        "count": 56
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "它",
+        "hypothesis": "他",
+        "reference_pinyin": "ta1",
+        "hypothesis_pinyin": "ta1",
+        "count": 49
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "嘉",
+        "hypothesis": "家",
+        "reference_pinyin": "jia1",
+        "hypothesis_pinyin": "jia1",
+        "count": 47
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "健",
+        "hypothesis": "建",
+        "reference_pinyin": "jian4",
+        "hypothesis_pinyin": "jian4",
+        "count": 46
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "他",
+        "hypothesis": "它",
+        "reference_pinyin": "ta1",
+        "hypothesis_pinyin": "ta1",
+        "count": 44
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "在",
+        "hypothesis": "再",
+        "reference_pinyin": "zai4",
+        "hypothesis_pinyin": "zai4",
+        "count": 43
+      },
+      {
+        "class": "same_syllable_different_tone",
+        "reference": "得",
+        "hypothesis": "的",
+        "reference_pinyin": "de2",
+        "hypothesis_pinyin": "de5",
+        "count": 37
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "芳",
+        "hypothesis": "方",
+        "reference_pinyin": "fang1",
+        "hypothesis_pinyin": "fang1",
+        "count": 37
+      },
+      {
+        "class": "same_syllable_different_tone",
+        "reference": "于",
+        "hypothesis": "与",
+        "reference_pinyin": "yu2",
+        "hypothesis_pinyin": "yu3",
+        "count": 36
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "鲜",
+        "hypothesis": "先",
+        "reference_pinyin": "xian1",
+        "hypothesis_pinyin": "xian1",
+        "count": 32
+      },
+      {
+        "class": "same_syllable_different_tone",
+        "reference": "由",
+        "hypothesis": "有",
+        "reference_pinyin": "you2",
+        "hypothesis_pinyin": "you3",
+        "count": 32
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "再",
+        "hypothesis": "在",
+        "reference_pinyin": "zai4",
+        "hypothesis_pinyin": "zai4",
+        "count": 31
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "作",
+        "hypothesis": "做",
+        "reference_pinyin": "zuo4",
+        "hypothesis_pinyin": "zuo4",
+        "count": 31
+      },
+      {
+        "class": "same_syllable_different_tone",
+        "reference": "紫",
+        "hypothesis": "子",
+        "reference_pinyin": "zi3",
+        "hypothesis_pinyin": "zi5",
+        "count": 31
+      },
+      {
+        "class": "different_syllable",
+        "reference": "佟",
+        "hypothesis": "董",
+        "reference_pinyin": "tong2",
+        "hypothesis_pinyin": "dong3",
+        "count": 31
+      },
+      {
+        "class": "same_syllable_and_tone",
+        "reference": "心",
+        "hypothesis": "新",
+        "reference_pinyin": "xin1",
+        "hypothesis_pinyin": "xin1",
+        "count": 30
+      }
+    ]
+  },
+  "illustrative_examples": [
+    {
+      "arm": "asset",
+      "id": "BAC009S0769W0411",
+      "tag": [
+        "他",
+        "它",
+        "ta1",
+        "ta1"
+      ],
+      "reference": "他是一个大人",
+      "hypotheses": {
+        "fixed": [
+          "它是一个大人",
+          1
+        ],
+        "phone": [
+          "它是一个大人",
+          1
+        ],
+        "character": [
+          "他是一个大人",
+          0
+        ],
+        "asset": [
+          "它是一个大人",
+          1
+        ]
+      },
+      "category": "same_syllable_and_tone",
+      "title": "Same pronunciation",
+      "comment": "ASSET, the fixed grid and the phone oracle write 它 for 他. Both are tā. The character oracle preserves the reference pronoun."
+    },
+    {
+      "arm": "asset",
+      "id": "BAC009S0904W0308",
+      "tag": [
+        "子",
+        "自",
+        "zi3",
+        "zi4"
+      ],
+      "reference": "做到全方位亲子沟通",
+      "hypotheses": {
+        "fixed": [
+          "做到全方位亲子沟通",
+          0
+        ],
+        "phone": [
+          "做到全方位亲子沟通",
+          0
+        ],
+        "character": [
+          "做到全方位亲子沟通",
+          0
+        ],
+        "asset": [
+          "做到全方位亲自沟通",
+          1
+        ]
+      },
+      "category": "same_syllable_different_tone",
+      "title": "Same syllable, different tone",
+      "comment": "ASSET changes 亲子沟通 (parent–child communication) to 亲自沟通 (communicate in person). The three baselines preserve 亲子."
+    },
+    {
+      "arm": "phone",
+      "id": "BAC009S0912W0428",
+      "tag": "十九点二十六",
+      "reference": "十九点二十六分",
+      "hypotheses": {
+        "fixed": [
+          "十九点二十六分",
+          0
+        ],
+        "phone": [
+          "十二点十五分",
+          3
+        ],
+        "character": [
+          "十九点二十六分",
+          0
+        ],
+        "asset": [
+          "十九点二十六分",
+          0
+        ]
+      },
+      "category": "number",
+      "title": "Changed time",
+      "comment": "The phone oracle writes 12:15 for 19:26. The other three systems preserve the time."
+    },
+    {
+      "arm": "character",
+      "id": "BAC009S0764W0153",
+      "tag": "秦虹",
+      "reference": "住房城乡建设部政策研究中心主任秦虹表示",
+      "hypotheses": {
+        "fixed": [
+          "住宅城乡建设部政策研究中心主任钱红表示",
+          3
+        ],
+        "phone": [
+          "住宅城乡建设部政策研究中心主任孔玉峰表示",
+          4
+        ],
+        "character": [
+          "住房城乡建设部政策研究中心主任秦红表示",
+          1
+        ],
+        "asset": [
+          "住房城乡建设部政策研究中心主任秦虹表示",
+          0
+        ]
+      },
+      "category": "person",
+      "title": "Changed person name",
+      "comment": "The character oracle writes 秦红 for 秦虹. Both name spellings have the same Pinyin reading. ASSET preserves the reference spelling."
+    },
+    {
+      "arm": "character",
+      "id": "BAC009S0766W0350",
+      "tag": "北京",
+      "reference": "因此对于北京申办冬奥会的最终结果",
+      "hypotheses": {
+        "fixed": [
+          "因此对于北京申办冬奥会的最终结果",
+          0
+        ],
+        "phone": [
+          "因此对于北京身份冬奥会的最终结果",
+          2
+        ],
+        "character": [
+          "因此对于本经申办冬奥会的最终结果",
+          2
+        ],
+        "asset": [
+          "因此对于北京申办冬奥会的最终结果",
+          0
+        ]
+      },
+      "category": "place",
+      "title": "Changed place name",
+      "comment": "The character oracle changes 北京 (Beijing) to 本经. ASSET and the fixed grid match the full reference."
+    },
+    {
+      "arm": "asset",
+      "id": "BAC009S0766W0188",
+      "tag": "人民银行",
+      "reference": "人民银行多次提高存款准备金率和存贷款基准利率",
+      "hypotheses": {
+        "fixed": [
+          "人民银行多次提高存款准备金率和存贷款基准利率",
+          0
+        ],
+        "phone": [
+          "雷明彦银行多次提高存款净利润和存贷款几种利率",
+          9
+        ],
+        "character": [
+          "人民银行多次提高存款准备金率和存贷机制利率",
+          3
+        ],
+        "asset": [
+          "民营银行多次提高存款准备金率和存贷款基准利率",
+          2
+        ]
+      },
+      "category": "organization",
+      "title": "Changed organization",
+      "comment": "ASSET changes 人民银行 (People’s Bank) to 民营银行 (private bank). The fixed grid matches the full reference."
+    },
+    {
+      "arm": "asset",
+      "id": "BAC009S0764W0289",
+      "tag": [
+        "芯片市场的"
+      ],
+      "reference": "扩大它们在新的芯片市场的份额",
+      "hypotheses": {
+        "fixed": [
+          "扩大他们在新的芯片市场的份额",
+          1
+        ],
+        "phone": [
+          "扩大它们在新的芯片市场的份额",
+          0
+        ],
+        "character": [
+          "扩大他们在新的芯片市场的份额",
+          1
+        ],
+        "asset": [
+          "扩大他们在芯片市场的芯片市场的份额",
+          5
+        ]
+      },
+      "category": "repetition",
+      "title": "New adjacent repetition",
+      "comment": "ASSET repeats 芯片市场的 (chip market’s) back-to-back. The phone oracle matches the reference."
+    }
+  ]
+}

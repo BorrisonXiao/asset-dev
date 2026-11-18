@@ -16,3 +16,14 @@ python3 recipes/LibriSpeech/ASR/transformer/analyze_aishell_table3_errors.py \
 ```
 
 Run `recipes/LibriSpeech/ASR/transformer/make_aishell_table3_error_report.py` using a Python environment with the HTML report skill and NumPy available. This generates the standalone HTML from `analysis.json` and the regenerated `utterance_candidates.json`. The scoring and rendering steps use 0 GPUs.
+
+The **Linguistic patterns** tab uses context-sensitive dictionary readings from `pypinyin==0.55.0`, adjacent repeat detection, rule-tagged numeric expressions and a closed reference lexicon for person, place and organization names. It includes 20 speaker groups and four utterance-length bands. `linguistic_analysis.json` contains per-seed counts, denominators and seven selected matched transcript examples. The tags describe text edits and lexicon coverage. A listening study would be needed to make claims about spoken tone or error causes.
+
+After generating `analysis.json`, with `pypinyin==0.55.0` available, run:
+
+```bash
+python3 recipes/LibriSpeech/ASR/transformer/analyze_aishell_linguistic_errors.py \
+  --replication-root artifacts/reproductions/aishell_table3_20261112_recovery/asr_20261113
+```
+
+Then regenerate the HTML. The complete candidate pools remain in the experiment workspace.

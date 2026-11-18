@@ -30,6 +30,7 @@ SOURCE_URL = "https://borrisonxiao.github.io/jsalt26-downsampling/research/xling
 PAPER_URL = "https://arxiv.org/pdf/2610.14309"
 REPLICATION_TABS = (
     ("quantitative", "Quantitative"), ("examples", "Examples"),
+    ("linguistics", "Linguistic patterns"),
     ("interpretation", "Interpretation"), ("evidence", "Evidence"),
 )
 TAB_SCRIPT = """<script>
@@ -72,6 +73,83 @@ def table(number, headers, rows, caption):
     return hk.labeled_asset('<div class="table-scroll">' + contents + '</div>', "Table", number, caption)
 
 
+def linguistic_panel(data):
+    def average(values):
+        return f"{statistics.mean(values):.2f} ± {statistics.stdev(values):.2f}"
+
+    systems = data["per_seed"]
+    same = "same_syllable_and_tone"
+    tone = "same_syllable_different_tone"
+    different = "different_syllable"
+
+    def pronunciation_mean(arm, category):
+        return statistics.mean(run["pronunciation_rates"][category] for run in systems[arm])
+
+    body = (
+        f'<p>ASSET reduces different-syllable substitutions from {pronunciation_mean("phone", different):.2f} to '
+        f'{pronunciation_mean("asset", different):.2f} per 100 reference characters compared with the phone oracle. '
+        f'The phone oracle has a slightly lower same-syllable, same-tone rate ({pronunciation_mean("phone", same):.2f} versus '
+        f'{pronunciation_mean("asset", same):.2f}). Compared with the character oracle, ASSET’s largest substitution reduction is among same-syllable, same-tone pairs.</p>'
+    )
+    rows = [[LABELS[arm], *(average([run["pronunciation_rates"][key] for run in runs])
+                           for key in (same, tone, different, "unscored")),
+             average([run["novel_repetition_utterance_rate"] for run in runs])]
+            for arm, runs in systems.items()]
+    body += table(4, ["System", "Same syllable and tone", "Same syllable, different tone",
+                     "Different syllable", "Unscored substitutions", "New repeats (% of utterances)"], rows,
+                  "Substitution counts per 100 reference characters and repeated-text utterances per 100 utterances. Mean ± sample SD across three seeds. Pinyin categories use dictionary readings in context.")
+    pairs = [pair for pair in data["top_pronunciation_pairs"]["asset"] if pair["class"] == same][:3]
+    pair_text = ", ".join(f'{html.escape(pair["reference"])} → {html.escape(pair["hypothesis"])} '
+                          f'({html.escape(pair["reference_pinyin"])}, {pair["count"]} edits)' for pair in pairs)
+    body += (f'<p>Frequent same-tone ASSET substitutions across the three seeds include {pair_text}. '
+             'Repeated sequences are rare. This measure looks for a new adjacent repetition of a two- to eight-character unit in the hypothesis.</p>')
+
+    body += '<h3>Numbers and named expressions</h3>'
+    span_names = {"number": "Numeric expression", "person": "Person name", "place": "Place name", "organization": "Organization name"}
+    rows = [[label, f'{data["reference_spans_per_run"][key]:,}',
+             *(average([run["span_error_rates"][key] for run in systems[arm]]) for arm in ARMS)]
+            for key, label in span_names.items()]
+    body += table(5, ["Reference span", "Spans per run", *(LABELS[arm] for arm in ARMS)], rows,
+                  "Percentage of tagged reference spans with at least one character edit. Mean ± sample SD across seeds. Numbers use text rules and names use a curated reference lexicon.")
+    body += ('<p>The character oracle has the lowest error rate on tagged numbers, places and organizations. '
+             'ASSET has the lowest rate on the curated person-name set. That set is small, and the score covers exact name spelling in the listed spans.</p>')
+
+    body += '<h3>Utterance length and speaker</h3>'
+    groups = data["speaker_groups"]
+    wins = sum(group["systems"]["asset"]["mean"] < group["systems"]["character"]["mean"] for group in groups)
+    body += (f'<p>ASSET has the lowest CER in every length band and beats the character oracle for {wins} of '
+             f'{len(groups)} test speakers. The 11–15 character group has the lowest CER for all four systems. '
+             'These groups count reference characters and can differ in text content.</p>')
+
+    def group_rows(groups):
+        return [[group["group"], f'{group["utterances"]:,}',
+                 *(f'{s["mean"]:.2f} ± {s["sample_sd"]:.2f}' for s in (group["systems"][arm] for arm in ARMS))]
+                for group in groups]
+
+    group_headers = ["Utterances", *(LABELS[arm] for arm in ARMS)]
+    body += table(6, ["Reference length", *group_headers], group_rows(data["length_groups"]),
+                  "Character-only CER (%) by number of reference characters. Mean ± sample SD across seeds.")
+    body += '<details><summary>Show CER for all test speakers</summary>'
+    body += table(7, ["Speaker", *group_headers], group_rows(groups),
+                  "Character-only CER (%) on the same utterances per speaker. Mean ± sample SD across seeds.")
+    body += '</details><h3>Examples from the tagged errors</h3><p>Seven seed-3407 examples show how the four hypotheses differ on the same reference.</p>'
+    for case in data["illustrative_examples"]:
+        body += (f'<article class="example"><h4>{html.escape(case["title"])}</h4>'
+                 f'<p class="badge">{html.escape(case["id"])} · seed 3407</p><p>{html.escape(case["comment"])}</p>'
+                 f'<p class="zh"><b>Reference</b> <span lang="zh">{html.escape(case["reference"])}</span></p>')
+        for arm, (hypothesis, edits) in case["hypotheses"].items():
+            body += (f'<p class="zh"><b>{LABELS[arm]}</b> <span lang="zh">{html.escape(hypothesis)}</span> '
+                     f'<span class="badge">({edits} edits)</span></p>')
+        body += '</article>'
+    body += ('<h3>How the tags are assigned</h3><p><a href="https://pypi.org/project/pypinyin/0.55.0/">Pypinyin 0.55.0</a> '
+             'assigns a syllable and tone in the context of each transcript. Polyphonic characters can have different readings in the audio. '
+             'The tags describe transcript edits. The span analysis marks substitutions or deletions inside the reference span, '
+             'insertions between its characters, and adjacent numeral insertions for numeric spans. '
+             'The number rules and name lexicon cover a subset of expressions in the test data. '
+             'Rates are descriptive across training seeds, and the illustrative cases were selected by hand.</p>')
+    return body
+
+
 def build_replication(output, analysis, css):
     """Render verified auxiliary-loss scores, paired counts and audited examples."""
     archived = analysis["conventions"]["archived_recipe_word_boundaries"]
@@ -91,8 +169,14 @@ def build_replication(output, analysis, css):
         f"ASSET has the lowest character error rate (CER). Its largest error reduction is in substitutions. "
         f"The analysis covers {count:,} test utterances in each of 12 runs across three seeds.",
     )
+    linguistic_path = output / "linguistic_analysis.json"
+    linguistic = json.loads(linguistic_path.read_text()) if linguistic_path.is_file() else None
+    if linguistic and (linguistic["analysis_sha256"] != hashlib.sha256((output / "analysis.json").read_bytes()).hexdigest()
+                       or linguistic["rate_channel"] != "aux" or linguistic["status"] != "complete"):
+        raise ValueError("Linguistic evidence does not match this replication audit")
     body += '<div class="tabs" role="tablist" aria-label="Analysis views">'
-    for index, (key, label) in enumerate(REPLICATION_TABS):
+    tabs = [(key, label) for key, label in REPLICATION_TABS if linguistic or key != "linguistics"]
+    for index, (key, label) in enumerate(tabs):
         selected = 'true' if index == 0 else 'false'
         body += (f'<button type="button" id="tab-{key}" role="tab" aria-selected="{selected}" '
                  f'aria-controls="panel-{key}" tabindex="{0 if index == 0 else -1}">{label}</button>')
@@ -143,6 +227,8 @@ def build_replication(output, analysis, css):
                              f'<span class="badge">({row["errors"]} edits)</span></p>')
         example_html += '</article>'
     body += panel("examples", "What the models wrote", example_html)
+    if linguistic:
+        body += panel("linguistics", "Pronunciation, repeated text, names and numbers", linguistic_panel(linguistic))
 
     subst = {arm: statistics.mean(run["sub_rate"] for run in runs) for arm, runs in plain["per_seed"].items()}
     exact = {arm: statistics.mean(run["exact_match_pct"] for run in runs) for arm, runs in plain["per_seed"].items()}
